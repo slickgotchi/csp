@@ -1,0 +1,18 @@
+import { Game } from './scenes/Game';
+import './style.css'
+
+// create game config
+const config = {
+  type: Phaser.AUTO,
+  scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+      width: 1920,
+      height: 1080,
+  },
+  scene: [Game],
+  pixelArt: true
+}
+
+// create the phaser game
+const game = new Phaser.Game(config);
