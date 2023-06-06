@@ -1,16 +1,8 @@
 import { Client, Room } from 'colyseus';
 import GameState from './GameState';
-import { IMessage, messages, setupMessages } from '../messages/Messages';
+import { IInput, IMessage, messages, setupMessages } from '../messages/Messages';
 import { sGameObject } from '../types/sGameObject';
 
-interface IInput {
-    move: {
-        dx: number,
-        dy: number,
-    },
-    dt_ms: number,
-    id: number,
-}
 
 let last_processed_input = 0;
 
@@ -67,6 +59,10 @@ export default class GameRoom extends Room<GameState> {
                 const input: IInput = message.payload;
                 applyInput(this.gameObject, input);
                 last_processed_input = input.id;
+
+                if (input.key_release.l) {
+                    console.log('L released');
+                }
             }
         }
     }
@@ -99,7 +95,7 @@ const validateMessage = (message: IMessage) => {
     }
 
     // if 10 entries we can calc average delta
-    if (recv_ms_buffer.length === BUFFER_SIZE) {
+    if (recv_ms_buffer.length >= 10) {
         const av_delta_ms = averageDelta(recv_ms_buffer);
         message.payload.dt_ms = av_delta_ms;
         return message;

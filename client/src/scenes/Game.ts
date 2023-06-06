@@ -46,7 +46,7 @@ export class Game extends Phaser.Scene {
             x: 1000,
             y: 500,
         });
-        
+
         createPfPlayer({
             world: this.world,
             x: 1000,
@@ -56,7 +56,7 @@ export class Game extends Phaser.Scene {
 
         // SYSTEMS
         // 1. process server messages
-        this.systems.push(createServerMessageSystem(this.room));
+        this.systems.push(createServerMessageSystem(this.room, this.world));
 
         // 2. process client inputs
         this.systems.push(createClientInputSystem(this, this.room));

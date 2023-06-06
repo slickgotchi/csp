@@ -7,6 +7,9 @@ export interface IInput {
         dx: number,
         dy: number,
     },
+    key_release: {
+        l: boolean,
+    },
     dt_ms: number,
     id: number,
 }
