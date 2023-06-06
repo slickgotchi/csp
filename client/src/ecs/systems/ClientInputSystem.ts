@@ -17,6 +17,7 @@ interface IInput {
     id: number,
 }
 
+export const pending_inputs: IInput[] = [];
 export let sequence_number = 0;
 
 export const createClientInputSystem = (scene: Phaser.Scene, room: Room) => {
@@ -49,7 +50,7 @@ export const createClientInputSystem = (scene: Phaser.Scene, room: Room) => {
                 Transform.position.x[eid] += Player.speed[eid] * vel.x * timer.dt_ms * 0.001;
                 Transform.position.y[eid] += Player.speed[eid] * vel.y * timer.dt_ms * 0.001;
             } else {
-                if (Math.abs(vel.y) > 0.01 || Math.abs(vel.x) > 0.01) {
+                // if (Math.abs(vel.y) > 0.01 || Math.abs(vel.x) > 0.01) {
                     const input: IInput = {
                         move: {
                             dx: vel.x,
@@ -59,7 +60,13 @@ export const createClientInputSystem = (scene: Phaser.Scene, room: Room) => {
                         id: sequence_number++
                     }
                     room.send("client-input", input);
-                }
+
+                    // do client side prediction
+                    applyInput(eid, input);
+
+                    // add to pending inputs
+                    pending_inputs.push(input);
+                // }
             }
 
 
@@ -67,4 +74,9 @@ export const createClientInputSystem = (scene: Phaser.Scene, room: Room) => {
 
         return world;
     });
+}
+
+export const applyInput = (eid: number, input: IInput) => {
+    Transform.position.x[eid] += 400 * input.move.dx * input.dt_ms * 0.001;
+    Transform.position.y[eid] += 400 * input.move.dy * input.dt_ms * 0.001;
 }

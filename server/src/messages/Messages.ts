@@ -1,9 +1,8 @@
 import { Client } from "colyseus";
 import GameRoom from "../rooms/Game";
 
-export const messages: any[] = [];
 
-interface IInput {
+export interface IInput {
     move: {
         dx: number,
         dy: number,
@@ -11,6 +10,14 @@ interface IInput {
     dt_ms: number,
     id: number,
 }
+
+export interface IMessage {
+    name: string;
+    payload: IInput;
+    recv_ms: number;
+}
+
+export const messages: IMessage[] = [];
 
 export const setupMessages = (room: GameRoom) => {
 
