@@ -40,9 +40,7 @@ export const createClientInputSystem = (scene: Phaser.Scene, room: Room) => {
 
     const l_key = scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.L);
     let l_release = false;
-    l_key?.on('up', () => {
-        l_release = true;
-    });
+    l_key?.on('up', () => { l_release = true; });
 
     const timer = new Timer();
 
@@ -100,4 +98,9 @@ export const createClientInputSystem = (scene: Phaser.Scene, room: Room) => {
 export const applyInput = (eid: number, input: IInput) => {
     Transform.position.x[eid] += 400 * input.move.dx * input.dt_ms * 0.001;
     Transform.position.y[eid] += 400 * input.move.dy * input.dt_ms * 0.001;
+
+    if (input.key_release.l) {
+        Transform.position.x[eid] += input.move.dx * 500;
+        Transform.position.y[eid] += input.move.dy * 500;
+    }
 }

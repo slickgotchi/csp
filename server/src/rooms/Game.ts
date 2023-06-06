@@ -82,6 +82,11 @@ export default class GameRoom extends Room<GameState> {
 const applyInput = (gameObject: sGameObject, input: IInput) => {
     gameObject.position.x += 400 * input.move.dx * input.dt_ms * 0.001;
     gameObject.position.y += 400 * input.move.dy * input.dt_ms * 0.001;
+
+    if (input.key_release.l) {
+        gameObject.position.x += input.move.dx * 500;
+        gameObject.position.y += input.move.dy * 500;
+    }
 }
 
 const recv_ms_buffer: number[] = [];
