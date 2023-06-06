@@ -46,30 +46,23 @@ export const createClientInputSystem = (scene: Phaser.Scene, room: Room) => {
 
         const onUpdate = qUpdate(world);
         onUpdate.forEach(eid => {
-            if (!CSP.isAuthoritativeServer) {
-                Transform.position.x[eid] += Player.speed[eid] * vel.x * timer.dt_ms * 0.001;
-                Transform.position.y[eid] += Player.speed[eid] * vel.y * timer.dt_ms * 0.001;
-            } else {
-                // if (Math.abs(vel.y) > 0.01 || Math.abs(vel.x) > 0.01) {
-                    const input: IInput = {
-                        move: {
-                            dx: vel.x,
-                            dy: vel.y,
-                        },
-                        dt_ms: timer.dt_ms,
-                        id: sequence_number++
-                    }
-                    room.send("client-input", input);
+            const input: IInput = {
+                move: {
+                    dx: vel.x,
+                    dy: vel.y,
+                },
+                dt_ms: timer.dt_ms,
+                id: sequence_number++
+            }
+            room.send("client-input", input);
 
-                    // do client side prediction
-                    applyInput(eid, input);
-
-                    // add to pending inputs
-                    pending_inputs.push(input);
-                // }
+            if (ClientInput.isClientSidePrediction) {
+                // do client side prediction
+                applyInput(eid, input);
             }
 
-
+            // add to pending inputs
+            pending_inputs.push(input);
         });
 
         return world;

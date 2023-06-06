@@ -7,6 +7,7 @@ import { Client, Room } from 'colyseus.js';
 import { Schema } from "@colyseus/schema";
 import { IGameState } from '../../../server/src/types/IGameState';
 import { createServerMessageSystem } from "../ecs/systems/ServerMessageSystem";
+import { createPfPlayerShadow } from "../ecs/prefabs/pfPlayerShadow";
 
 export const CSP = {
     isClientSidePrediction: false,
@@ -40,11 +41,18 @@ export class Game extends Phaser.Scene {
         this.room = await this.client.joinOrCreate<IGameState & Schema>('game');
 
         // create prefabs
-        const playerEid = createPfPlayer({
+        createPfPlayerShadow({
             world: this.world,
             x: 1000,
             y: 500,
         });
+        
+        createPfPlayer({
+            world: this.world,
+            x: 1000,
+            y: 500,
+        });
+
 
         // SYSTEMS
         // 1. process server messages

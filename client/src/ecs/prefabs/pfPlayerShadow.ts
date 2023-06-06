@@ -14,17 +14,17 @@ interface iProps {
 }
 
 
-export const createPfPlayer = (props: iProps) => {
+export const createPfPlayerShadow = (props: iProps) => {
     const eid = addEntity(props.world);
 
     addComponent(props.world, Player, eid);
     Player.speed[eid] = 400;
 
-    addComponent(props.world, ClientInput, eid);
-    ClientInput.isClientSidePrediction[eid] = 1;
+    // addComponent(props.world, ClientInput, eid);
+    // ClientInput.isClientSidePrediction[eid] = 0;
 
     addComponent(props.world, ServerMessage, eid);
-    ServerMessage.isServerReconciliation[eid] = 1;
+    ServerMessage.isServerReconciliation[eid] = 0;
 
     addComponent(props.world, Transform, eid);
     Transform.position.x[eid] = props.x;
@@ -34,5 +34,5 @@ export const createPfPlayer = (props: iProps) => {
     Circle.radius[eid] = 50;
     
     addComponent(props.world, Color, eid);
-    Color.val[eid] = 0x66ff66;
+    Color.val[eid] = 0x0F8A0F;
 }
