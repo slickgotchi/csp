@@ -54,7 +54,10 @@ export class Game extends Phaser.Scene {
         });
 
         // create collider rect
-        this.add.rectangle(1200,300, 100, 100, 0xff6666);
+        this.add.rectangle( 1500,500, 200, 200, 0xff6666)
+            .setOrigin(0,0);
+
+        this.add.circle(1500,500,10,0xffffff);
 
 
         // SYSTEMS

@@ -8,6 +8,8 @@ import { Transform } from "../componets/Transform";
 import { Room } from 'colyseus.js';
 import { CSP } from "../../scenes/Game";
 
+import * as Collisions from 'detect-collisions';
+
 export interface IInput {
     move: {
         dx: number,
@@ -95,6 +97,20 @@ export const createClientInputSystem = (scene: Phaser.Scene, room: Room) => {
     });
 }
 
+const collisionSystem = new Collisions.System();
+
+const playerCollider = collisionSystem.createCircle({x:0,y:0}, 50);
+
+const boxCollider = collisionSystem.createBox(
+    {
+        x: 1500,
+        y: 500,
+    },
+    200,
+    200
+);
+
+
 export const applyInput = (eid: number, input: IInput) => {
     Transform.position.x[eid] += 400 * input.move.dx * input.dt_ms * 0.001;
     Transform.position.y[eid] += 400 * input.move.dy * input.dt_ms * 0.001;
@@ -103,4 +119,25 @@ export const applyInput = (eid: number, input: IInput) => {
         Transform.position.x[eid] += input.move.dx * 500;
         Transform.position.y[eid] += input.move.dy * 500;
     }
+
+    // COLLISIONS
+    // 1. set collider to player
+    playerCollider.setPosition(
+        Transform.position.x[eid],
+        Transform.position.y[eid]
+    );
+
+    // 2. do collisions
+    collisionSystem.checkOne(playerCollider, (resp: Collisions.Response) => {
+        const { overlapV } = collisionSystem.response;
+        playerCollider.setPosition(
+            playerCollider.x - overlapV.x,
+            playerCollider.y - overlapV.y
+        )
+    });
+
+    // 3. set player to new collider
+    Transform.position.x[eid] = playerCollider.x;
+    Transform.position.y[eid] = playerCollider.y;
+
 }

@@ -1,3 +1,0 @@
-
-
-import Collision from 'collisions';

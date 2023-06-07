@@ -4,12 +4,18 @@ import { IInput, IMessage, messages, setupMessages } from '../messages/Messages'
 import { sGameObject } from '../types/sGameObject';
 import { sRectangle } from '../types/sRectangle';
 
+import * as Collisions from 'detect-collisions';
+
 let last_processed_input = 0;
 
 export default class GameRoom extends Room<GameState> {
 
     private gameObject = new sGameObject();
-    private rectangle!: sRectangle;
+    private rectGo!: sRectangle;
+
+    private collisionSystem!: Collisions.System;
+    private boxCollider!: Collisions.Box;
+    private playerCollider!: Collisions.Circle;
 
 
     onCreate() {
@@ -41,13 +47,23 @@ export default class GameRoom extends Room<GameState> {
 
         // create collision stuff
         // setup rectangle
-        this.rectangle = new sRectangle();
-        this.rectangle.position.x = 1200;
-        this.rectangle.position.y = 300;
-        this.rectangle.width = 100;
-        this.rectangle.height = 100;
+        this.rectGo = new sRectangle();
+        this.rectGo.position.x = 1500;
+        this.rectGo.position.y = 500;
+        this.rectGo.width = 200;
+        this.rectGo.height = 200;
 
-        // setup player
+        // setup collisions
+        this.collisionSystem = new Collisions.System();
+        this.boxCollider = this.collisionSystem.createBox(
+            {
+                x: this.rectGo.position.x, 
+                y: this.rectGo.position.y
+            }, 
+            this.rectGo.width, 
+            this.rectGo.height
+        );
+        this.playerCollider = this.collisionSystem.createCircle({x:0,y:0}, 50);
     }
 
     private UPDATE_RATE_MS = 200;
@@ -83,7 +99,21 @@ export default class GameRoom extends Room<GameState> {
     }
 
     resolveCollisions() {
+        // 1. update collider positions as per processed server messages
+        this.playerCollider.setPosition(this.gameObject.position.x, this.gameObject.position.y);
 
+        // 2. check collisions
+        this.collisionSystem.checkOne(this.playerCollider, (response: Collisions.Response) => {
+            const { overlapV } = this.collisionSystem.response;
+            this.playerCollider.setPosition(
+                this.playerCollider.x - overlapV.x,
+                this.playerCollider.y - overlapV.y
+            )
+        })
+
+        // 3. update game object to new position
+        this.gameObject.position.x = this.playerCollider.x;
+        this.gameObject.position.y = this.playerCollider.y;
     }
 
     sendWorldState(dt_ms: number) {
