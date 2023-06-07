@@ -15,7 +15,9 @@
   },
   "dependencies": {
     "bitecs": "github:NateTHeGreatt/bitECS#master",
+    "collisions": "github:sinova/collisions",
     "colyseus.js": "^0.15.9",
+    "detect-collisions": "^8.0.5",
     "phaser": "^3.60.0"
   }
 }

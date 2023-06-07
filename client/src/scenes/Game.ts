@@ -53,6 +53,9 @@ export class Game extends Phaser.Scene {
             y: 500,
         });
 
+        // create collider rect
+        this.add.rectangle(1200,300, 100, 100, 0xff6666);
+
 
         // SYSTEMS
         // 1. process server messages

@@ -2,13 +2,15 @@ import { Client, Room } from 'colyseus';
 import GameState from './GameState';
 import { IInput, IMessage, messages, setupMessages } from '../messages/Messages';
 import { sGameObject } from '../types/sGameObject';
-
+import { sRectangle } from '../types/sRectangle';
 
 let last_processed_input = 0;
 
 export default class GameRoom extends Room<GameState> {
 
     private gameObject = new sGameObject();
+    private rectangle!: sRectangle;
+
 
     onCreate() {
         console.log('Room created');
@@ -31,9 +33,21 @@ export default class GameRoom extends Room<GameState> {
     createMatch() {
         console.log('Match created');
 
+
+
         setupMessages(this);
 
         this.setSimulationInterval((dt) => this.updateMatch(dt));
+
+        // create collision stuff
+        // setup rectangle
+        this.rectangle = new sRectangle();
+        this.rectangle.position.x = 1200;
+        this.rectangle.position.y = 300;
+        this.rectangle.width = 100;
+        this.rectangle.height = 100;
+
+        // setup player
     }
 
     private UPDATE_RATE_MS = 200;
@@ -41,6 +55,7 @@ export default class GameRoom extends Room<GameState> {
 
     updateMatch(dt_ms: number) {
         this.processMessages();
+        this.resolveCollisions();
         this.sendWorldState(dt_ms);
     }
 
@@ -65,6 +80,10 @@ export default class GameRoom extends Room<GameState> {
                 }
             }
         }
+    }
+
+    resolveCollisions() {
+
     }
 
     sendWorldState(dt_ms: number) {
