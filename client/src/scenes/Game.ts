@@ -8,6 +8,8 @@ import { Schema } from "@colyseus/schema";
 import { IGameState } from '../../../server/src/types/IGameState';
 import { createServerMessageSystem } from "../ecs/systems/ServerMessageSystem";
 import { createPfPlayerShadow } from "../ecs/prefabs/pfPlayerShadow";
+import { createInterpolateSystem } from "../ecs/systems/InterpolateSystem";
+import { createPingSystem } from "../ecs/systems/PingSystem";
 
 export const CSP = {
     isClientSidePrediction: false,
@@ -53,11 +55,18 @@ export class Game extends Phaser.Scene {
             y: 500,
         });
 
+        // add key text
+        this.add.circle(75, 175, 25, 0x00ff00);
+        this.add.text(125, 175, "Client Side Prediction Player", {fontSize: "36px"})
+            .setOrigin(0, 0.5);
+
+        this.add.circle(75, 250, 25, 0x0F8A0F);
+        this.add.text(125, 250, "Server Authoritative Player", {fontSize: "36px"})
+            .setOrigin(0,0.5);
+
         // create collider rect
         this.add.rectangle( 1500,500, 200, 200, 0xff6666)
             .setOrigin(0,0);
-
-        this.add.circle(1500,500,10,0xffffff);
 
 
         // SYSTEMS
@@ -68,9 +77,11 @@ export class Game extends Phaser.Scene {
         this.systems.push(createClientInputSystem(this, this.room));
 
         // 3. interpolation
+        this.systems.push(createInterpolateSystem());
 
         // 4. render
         this.systems.push(createCircleSystem(this.world, this));
+        this.systems.push(createPingSystem(this.room, this));
     }
 
     update() {

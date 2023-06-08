@@ -23,12 +23,15 @@ export interface IMessage {
 export const messages: IMessage[] = [];
 
 export const setupMessages = (room: GameRoom) => {
-
-    room.onMessage('client-input', (client: Client, msg: IInput) => {
+    room.onMessage('client-input', (client: Client, input: IInput) => {
         messages.push({
             name: 'client-input',
-            payload: msg,
+            payload: input,
             recv_ms: Date.now()
         });
     });
+
+    room.onMessage('ping-server', (client: Client, client_time_ms: number) => {
+        client.send('server-ping', client_time_ms);
+    })
 }

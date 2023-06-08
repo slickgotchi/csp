@@ -22,10 +22,20 @@ export interface IInput {
     id: number,
 }
 
+export const position_buffer: {
+    x: number,
+    y: number,
+    timestamp: number,
+}[] = [];
+export let interp_dt_ms = 0;
+export const setInterpDtMs = (dt_ms: number) => {
+    interp_dt_ms = dt_ms;
+}
+
 export const pending_inputs: IInput[] = [];
 export let sequence_number = 0;
 
-const EMIT_INTERVAL_MS = 100;
+const EMIT_INTERVAL_MS = 0;
 let accum = 0;
 
 
@@ -80,17 +90,26 @@ export const createClientInputSystem = (scene: Phaser.Scene, room: Room) => {
                 id: sequence_number++
             }
 
-            l_release = false;
-
             room.send("client-input", input);
 
+            // save data for dash render
+            const x0 = Transform.position.x[eid];
+            const y0 = Transform.position.y[eid];
+            
             if (ClientInput.isClientSidePrediction[eid]) {
                 // do client side prediction
-                applyInput(eid, input);
+                applyInput(eid, input, true);
             }
-
+            
             // add to pending inputs
             pending_inputs.push(input);
+            
+            // renderDash
+            if (l_release) {
+                renderDash(x0, y0, Transform.position.x[eid], Transform.position.y[eid], scene);
+            }
+            
+            l_release = false;
         });
 
         return world;
@@ -102,16 +121,11 @@ const collisionSystem = new Collisions.System();
 const playerCollider = collisionSystem.createCircle({x:0,y:0}, 50);
 
 const boxCollider = collisionSystem.createBox(
-    {
-        x: 1500,
-        y: 500,
-    },
-    200,
-    200
-);
+    {x: 1500,y:500},
+    200, 200
+)
 
-
-export const applyInput = (eid: number, input: IInput) => {
+export const applyInput = (eid: number, input: IInput, buffer: boolean = false) => {
     Transform.position.x[eid] += 400 * input.move.dx * input.dt_ms * 0.001;
     Transform.position.y[eid] += 400 * input.move.dy * input.dt_ms * 0.001;
 
@@ -140,4 +154,34 @@ export const applyInput = (eid: number, input: IInput) => {
     Transform.position.x[eid] = playerCollider.x;
     Transform.position.y[eid] = playerCollider.y;
 
+    // update position buffer
+    if (buffer) {
+        position_buffer.push({
+            x: Transform.position.x[eid],
+            y: Transform.position.y[eid],
+            timestamp: Date.now()
+        });
+        interp_dt_ms = 0;
+    }
+}
+
+
+const renderDash = (x0: number, y0: number, x1: number, y1: number, scene: Phaser.Scene) => {
+    const line = scene.add.line(
+        0,0,
+        x0,y0,
+        x1,y1,
+        0x66ff66
+    )
+        .setOrigin(0,0)
+        .setDepth(-1);
+
+    scene.add.tween({
+        targets: line,
+        alpha: 0,
+        duration: 250,
+        onComplete: () => {
+            line.destroy();
+        }
+    });
 }

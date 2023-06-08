@@ -1,8 +1,9 @@
-import { defineQuery, defineSystem, enterQuery, exitQuery } from "bitecs";
+import { defineQuery, defineSystem, enterQuery, exitQuery, hasComponent } from "bitecs";
 import { IWorld } from "bitecs";
 import { Circle } from "../componets/Circle";
 import { Transform } from "../componets/Transform";
 import { Color } from "../componets/Color";
+import { Interpolate } from "../componets/Interpolate";
 
 
 export const createCircleSystem = (world: IWorld, scene: Phaser.Scene) => {
@@ -29,10 +30,17 @@ export const createCircleSystem = (world: IWorld, scene: Phaser.Scene) => {
         onUpdate.forEach(eid => {
             const circle = circlesById.get(eid);
             if (circle) {
-                circle.setPosition(
-                    Transform.position.x[eid],
-                    Transform.position.y[eid]
-                )
+                if (hasComponent(world, Interpolate, eid)) {
+                    circle.setPosition(
+                        Interpolate.x[eid],
+                        Interpolate.y[eid]
+                    )
+                } else {
+                    circle.setPosition(
+                        Transform.position.x[eid],
+                        Transform.position.y[eid]
+                    )
+                }
             }
         })
 

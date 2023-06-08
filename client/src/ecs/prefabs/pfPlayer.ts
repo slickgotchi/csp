@@ -5,6 +5,7 @@ import { Color } from "../componets/Color";
 import { Player } from "../componets/Player";
 import { ClientInput } from "../componets/ClientInput";
 import { ServerMessage } from "../componets/ServerMessage";
+import { Interpolate } from "../componets/Interpolate";
 
 
 interface iProps {
@@ -29,6 +30,8 @@ export const createPfPlayer = (props: iProps) => {
     addComponent(props.world, Transform, eid);
     Transform.position.x[eid] = props.x;
     Transform.position.y[eid] = props.y;
+
+    // addComponent(props.world, Interpolate, eid);
 
     addComponent(props.world, Circle, eid);
     Circle.radius[eid] = 50;
