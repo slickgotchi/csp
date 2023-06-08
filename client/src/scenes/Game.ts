@@ -10,6 +10,8 @@ import { createServerMessageSystem } from "../ecs/systems/ServerMessageSystem";
 import { createPfPlayerShadow } from "../ecs/prefabs/pfPlayerShadow";
 import { createInterpolateSystem } from "../ecs/systems/InterpolateSystem";
 import { createPingSystem } from "../ecs/systems/PingSystem";
+import * as Collisions from 'detect-collisions';
+import { createCollisionsSystem } from "../ecs/systems/CollisionsSystem";
 
 export const CSP = {
     isClientSidePrediction: false,
@@ -21,6 +23,7 @@ export const CSP = {
 export class Game extends Phaser.Scene {
     private world!: IWorld;
     private systems: System[] = [];
+    private collisionSystem!: Collisions.System;
 
     // server connections
     private client!: Client;
@@ -37,23 +40,11 @@ export class Game extends Phaser.Scene {
     async create() {
         // create bitecs world
         this.world = createWorld();
+        this.collisionSystem = new Collisions.System();
 
         // create server connection
         this.client = new Client('ws://localhost:8345');
         this.room = await this.client.joinOrCreate<IGameState & Schema>('game');
-
-        // create prefabs
-        createPfPlayerShadow({
-            world: this.world,
-            x: 1000,
-            y: 500,
-        });
-
-        createPfPlayer({
-            world: this.world,
-            x: 1000,
-            y: 500,
-        });
 
         // add key text
         this.add.circle(75, 175, 25, 0x00ff00);
@@ -64,17 +55,13 @@ export class Game extends Phaser.Scene {
         this.add.text(125, 250, "Server Authoritative Player", {fontSize: "36px"})
             .setOrigin(0,0.5);
 
-        // create collider rect
-        this.add.rectangle( 1500,500, 200, 200, 0xff6666)
-            .setOrigin(0,0);
-
-
         // SYSTEMS
         // 1. process server messages
-        this.systems.push(createServerMessageSystem(this.room, this.world));
+        this.systems.push(createServerMessageSystem(this.room, this.world, this, this.collisionSystem));
 
         // 2. process client inputs
         this.systems.push(createClientInputSystem(this, this.room));
+        this.systems.push(createCollisionsSystem(this.collisionSystem));
 
         // 3. interpolation
         this.systems.push(createInterpolateSystem());

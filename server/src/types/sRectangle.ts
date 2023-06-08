@@ -1,20 +1,30 @@
 import { Schema, type } from "@colyseus/schema";
 import { sVector3 } from "./sVector3";
+import { sGameObject } from "./sGameObject";
+import { Box } from "detect-collisions";
 
+interface IProps {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
 
-export class sRectangle extends Schema {
-    @type(sVector3)
-    position: sVector3 = new sVector3();
-
+export class sRectangle extends sGameObject {
     @type('number')
     width: number = 100;
 
     @type('number')
     height: number = 100;
 
-    constructor() {
+    collider?: Box;
+
+    constructor(props: IProps) {
         super();
-        this.position.x = 1000;
-        this.position.y = 500;
+        this.type = "rectangle";
+        this.position.x = props.x;
+        this.position.y = props.y;
+        this.width = props.width;
+        this.height = props.height;
     }
 }

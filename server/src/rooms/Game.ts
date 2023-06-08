@@ -5,6 +5,9 @@ import { sGameObject } from '../types/sGameObject';
 import { sRectangle } from '../types/sRectangle';
 
 import * as Collisions from 'detect-collisions';
+import { createObjects } from './CreateObjects';
+import { createColliders } from './CreateColliders';
+import { sPlayer } from '../types/sPlayer';
 
 let last_processed_input = 0;
 
@@ -14,12 +17,11 @@ export default class GameRoom extends Room<GameState> {
     private rectGo!: sRectangle;
 
     private collisionSystem!: Collisions.System;
-    private boxCollider!: Collisions.Box;
-    private playerCollider!: Collisions.Circle;
-
 
     onCreate() {
         console.log('Room created');
+
+        this.setState(new GameState());
 
         this.maxClients = 1;
     }
@@ -39,31 +41,18 @@ export default class GameRoom extends Room<GameState> {
     createMatch() {
         console.log('Match created');
 
+        // create objects
+        createObjects(this);
 
-
+        // messages
         setupMessages(this);
 
-        this.setSimulationInterval((dt) => this.updateMatch(dt));
-
         // create collision stuff
-        // setup rectangle
-        this.rectGo = new sRectangle();
-        this.rectGo.position.x = 1500;
-        this.rectGo.position.y = 500;
-        this.rectGo.width = 200;
-        this.rectGo.height = 200;
-
-        // setup collisions
         this.collisionSystem = new Collisions.System();
-        this.boxCollider = this.collisionSystem.createBox(
-            {
-                x: this.rectGo.position.x, 
-                y: this.rectGo.position.y
-            }, 
-            this.rectGo.width, 
-            this.rectGo.height
-        );
-        this.playerCollider = this.collisionSystem.createCircle({x:0,y:0}, 50);
+        createColliders(this, this.collisionSystem);
+
+        // start updating
+        this.setSimulationInterval((dt) => this.updateMatch(dt));
     }
 
     private UPDATE_RATE_MS = 200;
@@ -99,21 +88,31 @@ export default class GameRoom extends Room<GameState> {
     }
 
     resolveCollisions() {
-        // 1. update collider positions as per processed server messages
-        this.playerCollider.setPosition(this.gameObject.position.x, this.gameObject.position.y);
+        // find player collider
+        this.state.gameObjects.forEach(go => {
+            if (go.type === 'player') {
+                const playerGo = go as sPlayer;
+                if (!playerGo.collider) return;
 
-        // 2. check collisions
-        this.collisionSystem.checkOne(this.playerCollider, (response: Collisions.Response) => {
-            const { overlapV } = this.collisionSystem.response;
-            this.playerCollider.setPosition(
-                this.playerCollider.x - overlapV.x,
-                this.playerCollider.y - overlapV.y
-            )
-        })
+                // 1. update collider positions as per processed server messages
+                playerGo.collider.setPosition(this.gameObject.position.x, this.gameObject.position.y);
 
-        // 3. update game object to new position
-        this.gameObject.position.x = this.playerCollider.x;
-        this.gameObject.position.y = this.playerCollider.y;
+                // 2. check collisions
+                this.collisionSystem.checkOne(playerGo.collider, (response: Collisions.Response) => {
+                    if (!playerGo.collider) return;
+                    const { overlapV } = this.collisionSystem.response;
+                    playerGo.collider.setPosition(
+                        playerGo.collider.x - overlapV.x,
+                        playerGo.collider.y - overlapV.y
+                    )
+                })
+
+                // 3. update game object to new position
+                this.gameObject.position.x = playerGo.collider.x;
+                this.gameObject.position.y = playerGo.collider.y;
+
+            }
+        });
     }
 
     sendWorldState(dt_ms: number) {

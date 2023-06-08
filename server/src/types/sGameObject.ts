@@ -9,6 +9,12 @@ export class sGameObject extends Schema {
     @type('number')
     angle: number = 0;
 
+    @type('number')
+    serverEid: number = 0;
+
+    @type('string')
+    type: string = "base";
+
     constructor() {
         super();
         this.position.x = 1000;

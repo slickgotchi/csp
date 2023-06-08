@@ -1,9 +1,17 @@
 import { IWorld, defineQuery, defineSystem, enterQuery, exitQuery } from "bitecs"
 import { Room } from "colyseus.js";
+import { Schema, ArraySchema } from "@colyseus/schema";
 import { Player } from "../componets/Player";
 import { Transform } from "../componets/Transform";
 import { IInput, applyInput, pending_inputs } from "./ClientInputSystem";
 import { ServerMessage } from "../componets/ServerMessage";
+import { IGameState } from "../../../../server/src/types/IGameState";
+import { sGameObject } from "../../../../server/src/types/sGameObject";
+import { sRectangle } from "../../../../server/src/types/sRectangle";
+import { sPlayer } from "../../../../server/src/types/sPlayer";
+import { createPfPlayer } from "../prefabs/pfPlayer";
+import { createPfPlayerShadow } from "../prefabs/pfPlayerShadow";
+import * as Collisions from 'detect-collisions';
 
 export interface IMessage {
     name: string;
@@ -17,7 +25,14 @@ export interface IMessage {
 // const messages: any[] = [];
 const messagesByEid = new Map<number, IMessage[]>();
 
-export const createServerMessageSystem = (room: Room, world: IWorld) => {
+export const createServerMessageSystem = (
+    room: Room<IGameState & Schema>, 
+    world: IWorld, 
+    scene: Phaser.Scene,
+    collisionSystem: Collisions.System
+    ) => {
+
+    console.log(collisionSystem);
 
     const onUpdate = defineQuery([Player]);
     const onAdd = enterQuery(onUpdate);
@@ -34,6 +49,45 @@ export const createServerMessageSystem = (room: Room, world: IWorld) => {
                 });
             }
         })
+    });
+    
+    room.state.gameObjects.onAdd((go: sGameObject, key: number) => {
+        if (!collisionSystem) {
+            console.log('collision system not defined');
+        }
+        switch(go.type) {
+            case 'player': {
+                createPfPlayerShadow({
+                    world: world,
+                    x: 1000,
+                    y: 500,
+                });
+        
+                createPfPlayer({
+                    world: world,
+                    x: 1000,
+                    y: 500,
+                });
+
+                break;
+            }
+            case 'rectangle': {
+                scene.add.rectangle(
+                    go.position.x,
+                    go.position.y,
+                    (go as sRectangle).width,
+                    (go as sRectangle).height,
+                    0xff6666)
+                        .setOrigin(0,0);
+                collisionSystem.createBox(
+                    {x: go.position.x, y: go.position.y},
+                    (go as sRectangle).width,
+                    (go as sRectangle).height
+                )
+                break;
+            }
+            default: break;
+        }
     });
 
     return defineSystem((world: IWorld) => {

@@ -44,7 +44,7 @@ export const createInterpolateSystem = () => {
                 Interpolate.x[eid] = ArcUtils.Scalar.lerp(position_buffer[a].x, position_buffer[b].x, interp);
                 Interpolate.y[eid] = ArcUtils.Scalar.lerp(position_buffer[a].y, position_buffer[b].y, interp);
             
-                while (position_buffer.length > 1) {
+                while (position_buffer.length > 2) {
                     position_buffer.shift();
                 }
             }

@@ -9,6 +9,7 @@ import { Room } from 'colyseus.js';
 import { CSP } from "../../scenes/Game";
 
 import * as Collisions from 'detect-collisions';
+import { circleCollidersByEid } from "./CollisionsSystem";
 
 export interface IInput {
     move: {
@@ -35,7 +36,7 @@ export const setInterpDtMs = (dt_ms: number) => {
 export const pending_inputs: IInput[] = [];
 export let sequence_number = 0;
 
-const EMIT_INTERVAL_MS = 0;
+const EMIT_INTERVAL_MS = 100;
 let accum = 0;
 
 
@@ -44,6 +45,8 @@ export const createClientInputSystem = (scene: Phaser.Scene, room: Room) => {
     const onUpdate = defineQuery([ClientInput, Player, Transform]);
     const onAdd = enterQuery(onUpdate);
     const onRemove = exitQuery(onUpdate);
+
+    const qPlayer = defineQuery(['player']);
 
     const w_key = scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.W);
     const a_key = scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.A);
@@ -116,14 +119,14 @@ export const createClientInputSystem = (scene: Phaser.Scene, room: Room) => {
     });
 }
 
-const collisionSystem = new Collisions.System();
+// const collisionSystem = new Collisions.System();
 
-const playerCollider = collisionSystem.createCircle({x:0,y:0}, 50);
+// const playerCollider = collisionSystem.createCircle({x:0,y:0}, 50);
 
-const boxCollider = collisionSystem.createBox(
-    {x: 1500,y:500},
-    200, 200
-)
+// const boxCollider = collisionSystem.createBox(
+//     {x: 1500,y:500},
+//     200, 200
+// )
 
 export const applyInput = (eid: number, input: IInput, buffer: boolean = false) => {
     Transform.position.x[eid] += 400 * input.move.dx * input.dt_ms * 0.001;
@@ -133,6 +136,11 @@ export const applyInput = (eid: number, input: IInput, buffer: boolean = false) 
         Transform.position.x[eid] += input.move.dx * 500;
         Transform.position.y[eid] += input.move.dy * 500;
     }
+
+    const playerCollider = circleCollidersByEid.get(eid);
+    if (!playerCollider) return;
+    const collisionSystem = playerCollider.system;
+    if (!collisionSystem) return;
 
     // COLLISIONS
     // 1. set collider to player
@@ -174,12 +182,14 @@ const renderDash = (x0: number, y0: number, x1: number, y1: number, scene: Phase
         0x66ff66
     )
         .setOrigin(0,0)
-        .setDepth(-1);
+        .setDepth(-1)
+        .setAlpha(0)
 
     scene.add.tween({
         targets: line,
-        alpha: 0,
-        duration: 250,
+        alpha: 1,
+        duration: 125,
+        yoyo: true,
         onComplete: () => {
             line.destroy();
         }
