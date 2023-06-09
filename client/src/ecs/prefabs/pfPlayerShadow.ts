@@ -3,7 +3,6 @@ import { Transform } from "../componets/Transform";
 import { Circle } from "../componets/Circle";
 import { Color } from "../componets/Color";
 import { Player } from "../componets/Player";
-import { ClientInput } from "../componets/ClientInput";
 import { ServerMessage } from "../componets/ServerMessage";
 
 

@@ -3,10 +3,10 @@ import { Transform } from "../componets/Transform";
 import { Circle } from "../componets/Circle";
 import { Color } from "../componets/Color";
 import { Player } from "../componets/Player";
-import { ClientInput } from "../componets/ClientInput";
 import { ServerMessage } from "../componets/ServerMessage";
 import { Interpolate } from "../componets/Interpolate";
 import { CircleCollider } from "../componets/CircleCollider";
+import { ClientPlayerInput } from "../componets/ClientPlayerInput";
 
 
 interface iProps {
@@ -24,8 +24,8 @@ export const createPfPlayer = (props: iProps) => {
     addComponent(props.world, Player, eid);
     Player.speed[eid] = 400;
 
-    addComponent(props.world, ClientInput, eid);
-    ClientInput.isClientSidePrediction[eid] = 1;
+    addComponent(props.world, ClientPlayerInput, eid);
+    ClientPlayerInput.isClientSidePrediction[eid] = 1;
 
     addComponent(props.world, ServerMessage, eid);
     ServerMessage.isServerReconciliation[eid] = 1;

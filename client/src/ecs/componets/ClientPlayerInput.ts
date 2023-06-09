@@ -1,6 +1,6 @@
 import { Types, defineComponent } from "bitecs";
 
 
-export const ClientInput = defineComponent({
+export const ClientPlayerInput = defineComponent({
     isClientSidePrediction: Types.ui8,
-})
+});

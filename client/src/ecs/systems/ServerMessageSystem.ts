@@ -3,7 +3,7 @@ import { Room } from "colyseus.js";
 import { Schema, ArraySchema } from "@colyseus/schema";
 import { Player } from "../componets/Player";
 import { Transform } from "../componets/Transform";
-import { IInput, applyInput, pending_inputs } from "./ClientInputSystem";
+import { IInput, applyInput, pending_inputs } from "./ClientPlayerInputSystem";
 import { ServerMessage } from "../componets/ServerMessage";
 import { IGameState } from "../../../../server/src/types/IGameState";
 import { sGameObject } from "../../../../server/src/types/sGameObject";
@@ -32,8 +32,6 @@ export const createServerMessageSystem = (
     collisionSystem: Collisions.System
     ) => {
 
-    console.log(collisionSystem);
-
     const onUpdate = defineQuery([Player]);
     const onAdd = enterQuery(onUpdate);
     const onRemove = exitQuery(onUpdate);
@@ -52,9 +50,6 @@ export const createServerMessageSystem = (
     });
     
     room.state.gameObjects.onAdd((go: sGameObject, key: number) => {
-        if (!collisionSystem) {
-            console.log('collision system not defined');
-        }
         switch(go.type) {
             case 'player': {
                 createPfPlayerShadow({

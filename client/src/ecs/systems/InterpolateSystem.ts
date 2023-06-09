@@ -3,7 +3,7 @@ import { Interpolate } from "../componets/Interpolate";
 import { Transform } from "../componets/Transform";
 import { Timer } from "../../utilities/Timer";
 import { ArcUtils } from "../../utilities/ArcUtils";
-import { interp_dt_ms, position_buffer, setInterpDtMs } from "./ClientInputSystem";
+import { position_buffer } from "./ClientPlayerInputSystem";
 
 interface IPosition {
     x: number;
@@ -31,7 +31,8 @@ export const createInterpolateSystem = () => {
 
         onUpdate(world).forEach(eid => {
             // update interp
-            setInterpDtMs(interp_dt_ms+timer.dt_ms);
+            // setInterpDtMs(interp_dt_ms+timer.dt_ms);
+            Interpolate.dt_ms[eid] += timer.dt_ms;
 
             let length = position_buffer.length;
             let a = length-2;
@@ -39,7 +40,7 @@ export const createInterpolateSystem = () => {
 
             if (length > 1) {
                 const delta_ms = position_buffer[b].timestamp - position_buffer[a].timestamp;
-                const interp = interp_dt_ms / delta_ms;
+                const interp = Interpolate.dt_ms[eid] / delta_ms;
 
                 Interpolate.x[eid] = ArcUtils.Scalar.lerp(position_buffer[a].x, position_buffer[b].x, interp);
                 Interpolate.y[eid] = ArcUtils.Scalar.lerp(position_buffer[a].y, position_buffer[b].y, interp);

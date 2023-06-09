@@ -38,6 +38,14 @@ export default class GameRoom extends Room<GameState> {
         console.log(`${client.sessionId} left room`);
     }
 
+    onDispose() {
+        console.log('onDispose');
+        while (this.state.gameObjects.length > 0) {
+            this.state.gameObjects.deleteAt(0)
+
+        }
+    }
+
     createMatch() {
         console.log('Match created');
 

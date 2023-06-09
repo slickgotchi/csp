@@ -2,7 +2,7 @@ import { IWorld, System, createWorld } from "bitecs";
 import * as Phaser from "phaser";
 import { createCircleSystem } from "../ecs/systems/CircleSystem";
 import { createPfPlayer } from "../ecs/prefabs/pfPlayer";
-import { createClientInputSystem } from "../ecs/systems/ClientInputSystem";
+import { createClientPlayerInputSystem } from "../ecs/systems/ClientPlayerInputSystem";
 import { Client, Room } from 'colyseus.js';
 import { Schema } from "@colyseus/schema";
 import { IGameState } from '../../../server/src/types/IGameState';
@@ -60,7 +60,7 @@ export class Game extends Phaser.Scene {
         this.systems.push(createServerMessageSystem(this.room, this.world, this, this.collisionSystem));
 
         // 2. process client inputs
-        this.systems.push(createClientInputSystem(this, this.room));
+        this.systems.push(createClientPlayerInputSystem(this, this.room));
         this.systems.push(createCollisionsSystem(this.collisionSystem));
 
         // 3. interpolation
