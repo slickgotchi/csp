@@ -3,7 +3,7 @@ import { Room } from "colyseus.js";
 import { Schema, ArraySchema } from "@colyseus/schema";
 import { Player } from "../componets/Player";
 import { Transform } from "../componets/Transform";
-import { IInput, applyInput, pending_inputs } from "./ClientPlayerInputSystem";
+import { IInput, applyInput, pending_inputs, resolveCollisions } from "./ClientPlayerInputSystem";
 import { ServerMessage } from "../componets/ServerMessage";
 import { IGameState } from "../../../../server/src/types/IGameState";
 import { sGameObject } from "../../../../server/src/types/sGameObject";
@@ -115,6 +115,7 @@ export const createServerMessageSystem = (
                                 pending_inputs.splice(j,1);
                             } else {
                                 applyInput(eid, input);
+                                resolveCollisions(eid);
                                 j++;
                             }
                         }

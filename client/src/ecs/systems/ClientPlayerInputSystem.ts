@@ -134,6 +134,9 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
                 } 
                 if (k_release) {
                     inputType = InputType.RangedAttack;
+                    waiting = true;
+                    setTimeout(() => {waiting = false}, 200);
+                    playRangedAttackAnim(scene, dir.x, dir.y, eid, 200);
                 }
             } else {
                 inputType = InputType.Waiting;
@@ -159,6 +162,7 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
             if (ClientPlayerInput.isClientSidePrediction[eid]) {
                 // do client side prediction
                 applyInput(eid, input);
+                resolveCollisions(eid);
                 saveBuffer(eid);
             }
             
@@ -166,8 +170,9 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
             pending_inputs.push(input);
             
             // reset key status'
-            l_release = false;
             j_release = false;
+            k_release = false;
+            l_release = false;
         });
 
         return world;
@@ -195,7 +200,9 @@ export const applyInput = (eid: number, input: IInput) => {
         }
         default: break;
     }
+}
 
+export const resolveCollisions = (eid: number) => {
     const playerCollider = circleCollidersByEid.get(eid);
     if (!playerCollider) return;
     const collisionSystem = playerCollider.system;
@@ -220,7 +227,6 @@ export const applyInput = (eid: number, input: IInput) => {
     // 3. set player to new collider
     Transform.x[eid] = playerCollider.x;
     Transform.y[eid] = playerCollider.y;
-
 }
 
 const saveBuffer = (eid: number) => {
@@ -259,23 +265,44 @@ const playDashAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, 
 }
 
 const playMeleeAttackAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, duration_ms: number) => {
-    const rect = scene.add.rectangle(
+    // create circle
+    const circ = scene.add.circle(
         Transform.x[eid] + dx*200,
         Transform.y[eid] + dy*200,
-        300,
-        300,
+        150,
         0xffffff
     );
-    rect.angle = ArcUtils.Angle.fromVector2({x:dx, y:dy});
-
+    circ.setAlpha(0.75);
+    
+    // tween
     scene.add.tween({
-        targets: rect,
+        targets: circ,
         alpha: 0,
-        duration: duration_ms*2,
-        ease: "Quad.easeIn",
+        duration: duration_ms,
         onComplete: () => {
-            rect.destroy();
+            circ.destroy();
         }
     })
 }   
 
+const playRangedAttackAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, duration_ms: number) => {
+    // create circle
+    const circ = scene.add.circle(
+        Transform.x[eid] + dx*85,
+        Transform.y[eid] + dy*85,
+        35,
+        0xffffff
+    );
+    circ.setAlpha(0.75);
+    
+    // tween
+    scene.add.tween({
+        targets: circ,
+        x: Transform.x[eid] + dx*1000,
+        y: Transform.y[eid] + dy*1000,
+        duration: duration_ms,
+        onComplete: () => {
+            circ.destroy();
+        }
+    });
+}
