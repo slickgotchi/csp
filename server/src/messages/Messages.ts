@@ -56,7 +56,5 @@ export const setupMessages = (room: GameRoom) => {
         });
     });
 
-    room.onMessage('ping-server', (client: Client, client_time_ms: number) => {
-        client.send('server-ping', client_time_ms);
-    })
+    
 }

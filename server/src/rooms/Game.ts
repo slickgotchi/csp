@@ -30,6 +30,10 @@ export default class GameRoom extends Room<GameState> {
 
         this.world = createWorld();
 
+        this.onMessage('ping-server', (client: Client, client_time_ms: number) => {
+            client.send('server-ping', client_time_ms);
+        })
+
         this.maxClients = 2;
     }
 
@@ -124,6 +128,8 @@ export default class GameRoom extends Room<GameState> {
         })
     }
 
+    count = 0;
+
     resolveCollisions() {
         // find player collider
         this.state.gameObjects.forEach(go => {
@@ -137,11 +143,14 @@ export default class GameRoom extends Room<GameState> {
                 // 2. check collisions
                 this.collisionSystem.checkOne(playerGo.collider, (response: Collisions.Response) => {
                     if (!playerGo.collider) return;
-                    const { overlapV } = this.collisionSystem.response;
-                    playerGo.collider.setPosition(
-                        playerGo.collider.x - overlapV.x,
-                        playerGo.collider.y - overlapV.y
-                    )
+                    const { overlapV, b } = this.collisionSystem.response;
+                    console.log('touch: ', this.count++);
+                    if (b.isStatic) {
+                        playerGo.collider.setPosition(
+                            playerGo.collider.x - overlapV.x,
+                            playerGo.collider.y - overlapV.y
+                        )
+                    }
                 })
 
                 // 3. update game object to new position

@@ -33,7 +33,8 @@ export const createPfRectangle = (props: IProps) => {
     rectGo.collider = props.system.createBox(
         {x: props.x, y: props.y},
         props.width,
-        props.height
+        props.height,
+        {isStatic: true}
     )
 
     // add sync component

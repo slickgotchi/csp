@@ -12,13 +12,15 @@ import GameRoom from "./Game";
 
 
 export const createPlayer = (room: GameRoom, world: IWorld, sessionId: string, system: Collisions.System) => {
+    const offset = room.clients.length === 1 ? -200 : 200;
+    
     // player
     createPfPlayer({
         room: room,
         world: world,
         system: system,
         sessionId: sessionId,
-        x: 1920/2,
+        x: 1920/2 + offset,
         y: 1080/2
     });
 }
