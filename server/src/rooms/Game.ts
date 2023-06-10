@@ -1,6 +1,6 @@
 import { Client, Room } from 'colyseus';
 import GameState from './GameState';
-import { IInput, IMessage, PlayerState, messages, setupMessages } from '../messages/Messages';
+import { IInput, IMessage, InputType, PlayerState, messages, setupMessages } from '../messages/Messages';
 import { sGameObject } from '../types/sGameObject';
 import { sRectangle } from '../types/sRectangle';
 
@@ -137,14 +137,24 @@ export default class GameRoom extends Room<GameState> {
 }
 
 const applyInput = (gameObject: sGameObject, input: IInput) => {
-    if (input.state === PlayerState.Moving) {
-        gameObject.position.x += 400 * input.move.dx * input.dt_ms * 0.001;
-        gameObject.position.y += 400 * input.move.dy * input.dt_ms * 0.001;
-    }
-
-    if (input.key_release.l && input.state === PlayerState.Moving) {
-        gameObject.position.x += input.move.dx * 500;
-        gameObject.position.y += input.move.dy * 500;
+    // apply input depending on state
+    switch(input.type) {
+        case InputType.Move: {
+            gameObject.position.x += 400 * input.move.dx * input.dt_ms * 0.001;
+            gameObject.position.y += 400 * input.move.dy * input.dt_ms * 0.001;
+            break;
+        }
+        case InputType.Dash: {
+            gameObject.position.x += input.move.dx * 500;
+            gameObject.position.y += input.move.dy * 500;
+            break;
+        }
+        case InputType.MeleeAttack: {
+            gameObject.position.x += input.move.dx * 100;
+            gameObject.position.y += input.move.dy * 100;
+            break;
+        }
+        default: break;
     }
 }
 

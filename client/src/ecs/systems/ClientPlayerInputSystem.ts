@@ -20,8 +20,17 @@ export enum PlayerState {
     Dash
 }
 
+export enum InputType {
+    Idol,
+    Move,
+    Dash,
+    MeleeAttack,
+    RangedAttack,
+    Waiting
+}
+
 export interface IInput {
-    state: PlayerState,
+    type: InputType,
     move: {
         dx: number,
         dy: number,
@@ -75,11 +84,11 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
     let accum = 0;
     
     let state = PlayerState.Moving;
-
     let dir = {
         x: 0,
         y: 1
     }
+    let waiting = false;
 
     return defineSystem((world: IWorld) => {
 
@@ -95,6 +104,7 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
         }
 
         // calc move direction vector
+        if (w_key?.isDown || a_key?.isDown || s_key?.isDown || d_key?.isDown) dir = {x:0,y:0}
         if (w_key?.isDown) dir.y = -1;
         if (a_key?.isDown) dir.x = -1;
         if (s_key?.isDown) dir.y = 1;
@@ -104,23 +114,34 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
 
         // update (NOTE: there should only ever be one client input eid)
         onUpdate(world).forEach(eid => {
-            // determine state
-            if (w_key?.isUp && a_key?.isUp && s_key?.isUp && d_key?.isUp) {
-                state = PlayerState.Idol;
-            } else {
-                state = PlayerState.Moving;
-                if (l_release) {
-                    state = PlayerState.Dash;
-                } else if (j_release) {
-                    state = PlayerState.MeleeAttack;
-                } else if (k_release) {
-                    state = PlayerState.RangedAttack;
+            // determine input type
+            let inputType = InputType.Idol;
+            if (!waiting) {
+                if (w_key?.isDown || a_key?.isDown || s_key?.isDown || d_key?.isDown) {
+                    inputType = InputType.Move;
                 }
+                if (l_release) {
+                    inputType = InputType.Dash;
+                    waiting = true;
+                    setTimeout(() => {waiting = false}, 100);
+                    playDashAnim(scene, dir.x, dir.y, eid, 100);
+                }
+                if (j_release) {
+                    inputType = InputType.MeleeAttack;
+                    waiting = true;
+                    setTimeout(() => {waiting = false}, 200);
+                    playMeleeAttackAnim(scene, dir.x, dir.y, eid, 200);
+                } 
+                if (k_release) {
+                    inputType = InputType.RangedAttack;
+                }
+            } else {
+                inputType = InputType.Waiting;
             }
 
             // create an input
             const input: IInput = {
-                state: state,
+                type: inputType,
                 move: {
                     dx: dir.x,
                     dy: dir.y,
@@ -134,38 +155,17 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
             }
 
             room.send("client-input", input);
-
-            // // melee attack
-            // if (j_release && state === PlayerState.Moving) {
-            //     const ATTACK_DURATION_MS = 500;
-            //     meleeAttack(norm.x, norm.y, eid, scene, ATTACK_DURATION_MS);
-            //     state = PlayerState.MeleeAttack;
-            //     setTimeout(() => {
-            //         state = PlayerState.Moving;
-            //     }, ATTACK_DURATION_MS)
-            // }
-            
-            // save data for dash render
-            const x0 = Transform.x[eid];
-            const y0 = Transform.y[eid];
             
             if (ClientPlayerInput.isClientSidePrediction[eid]) {
                 // do client side prediction
-                applyInput(eid, input, true);
-
+                applyInput(eid, input);
                 saveBuffer(eid);
             }
             
             // add to pending inputs
             pending_inputs.push(input);
             
-            // renderDash
-            if (l_release && state === PlayerState.Moving) {
-                console.log('l release');
-                renderDash(x0, y0, Transform.x[eid], Transform.y[eid], scene);
-            }
-            
-            
+            // reset key status'
             l_release = false;
             j_release = false;
         });
@@ -174,36 +174,26 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
     });
 }
 
-// Different types of input
-// 1. Move
-// 2. Instantaneous dash
-// 3. Melee attack over several ms that moves player
-// 4. Ranged attack with projectile that stops player movement
-// 5. 
-
-export const applyInput = (eid: number, input: IInput, buffer: boolean = false) => {
+// core input function
+export const applyInput = (eid: number, input: IInput) => {
     // apply input depending on state
-    switch(input.state) {
-        case PlayerState.Moving: {
+    switch(input.type) {
+        case InputType.Move: {
             Transform.x[eid] += 400 * input.move.dx * input.dt_ms * 0.001;
             Transform.y[eid] += 400 * input.move.dy * input.dt_ms * 0.001;
             break;
         }
-        case PlayerState.Dash: {
-
+        case InputType.Dash: {
+            Transform.x[eid] += input.move.dx * 500;
+            Transform.y[eid] += input.move.dy * 500;
             break;
         }
-        case PlayerState.MeleeAttack: {
-
+        case InputType.MeleeAttack: {
+            Transform.x[eid] += input.move.dx * 100;
+            Transform.y[eid] += input.move.dy * 100;
             break;
         }
         default: break;
-    }
-    
-
-    if (input.key_release.l) {
-        Transform.x[eid] += input.move.dx * 500;
-        Transform.y[eid] += input.move.dy * 500;
     }
 
     const playerCollider = circleCollidersByEid.get(eid);
@@ -243,109 +233,49 @@ const saveBuffer = (eid: number) => {
         Interpolate.dt_ms[eid] = 0; // reset interpolation time
 }
 
+const playDashAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, duration_ms: number) => {
+    const line = scene.add.line(
+        0,
+        0,
+        Transform.x[eid], // start x
+        Transform.y[eid], // start y
+        Transform.x[eid] + dx*500, // end x
+        Transform.y[eid] + dy*500, // end y
+        0x66ff66
+    )
+        .setOrigin(0,0)
+        .setDepth(-1)
+        .setAlpha(0)
 
-// const renderDash = (x0: number, y0: number, x1: number, y1: number, scene: Phaser.Scene) => {
-//     const line = scene.add.line(
-//         0,0,
-//         x0,y0,
-//         x1,y1,
-//         0x66ff66
-//     )
-//         .setOrigin(0,0)
-//         .setDepth(-1)
-//         .setAlpha(0)
+    scene.add.tween({
+        targets: line,
+        alpha: 1,
+        duration: duration_ms,
+        yoyo: true,
+        onComplete: () => {
+            line.destroy();
+        }
+    });
+}
 
-//     scene.add.tween({
-//         targets: line,
-//         alpha: 1,
-//         duration: 125,
-//         yoyo: true,
-//         onComplete: () => {
-//             line.destroy();
-//         }
-//     });
-// }
+const playMeleeAttackAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, duration_ms: number) => {
+    const rect = scene.add.rectangle(
+        Transform.x[eid] + dx*200,
+        Transform.y[eid] + dy*200,
+        300,
+        300,
+        0xffffff
+    );
+    rect.angle = ArcUtils.Angle.fromVector2({x:dx, y:dy});
 
-// const meleeAttack = (dx: number, dy: number, eid: number, scene: Phaser.Scene, duration: number) => {
-//     const dt = {t: 0};
+    scene.add.tween({
+        targets: rect,
+        alpha: 0,
+        duration: duration_ms*2,
+        ease: "Quad.easeIn",
+        onComplete: () => {
+            rect.destroy();
+        }
+    })
+}   
 
-//     const start = {
-//         x: Transform.x[eid],
-//         y: Transform.y[eid]
-//     }
-
-//     const thrust = 100;
-
-//     // animation split
-//     // 20% windup
-//     // 40% thrust
-//     // 40% attack flash
-//     const windup_ms = duration * 0.2;
-//     const thrust_ms = duration * 0.8;
-//     const flash_ms = duration * 0.6;
-
-//     const timeline = scene.add.timeline([
-//         {
-//             at: 0,
-//             tween: {
-//                 targets: dt,
-//                 t: 1,
-//                 onUpdate: () => {
-//                     Transform.x[eid] = start.x - dx*windup*dt.t;
-//                     Transform.y[eid] = start.y - dy*windup*dt.t;
-//                 },
-//                 onComplete: () => {
-//                     start.x = Transform.x[eid];
-//                     start.y = Transform.y[eid];
-//                     dt.t = 0;
-//                 },
-//                 duration: windup_ms
-//             }
-//         },
-//         {
-//             at: windup_ms,
-//             tween: {
-//                 targets: dt,
-//                 t: 1,
-//                 onUpdate: () => {
-//                     Transform.x[eid] = start.x + dx*thrust*dt.t;
-//                     Transform.y[eid] = start.y + dy*thrust*dt.t;
-//                 },
-//                 onComplete: () => {
-//                     dt.t = 0;
-//                 },
-//                 duration: thrust_ms
-//             }
-//         },
-//         {
-//             at: windup_ms,
-//             run: () => {
-//                 const WIDTH = 250;
-//                 const flash = scene.add.rectangle(
-//                     Transform.x[eid] + dx*WIDTH/2,
-//                     Transform.y[eid] + dy*WIDTH/2,
-//                     WIDTH,
-//                     WIDTH,
-//                     0xffffff
-//                 )
-                
-//                 scene.add.tween({
-//                     targets: flash,
-//                     alpha: 0,
-//                     duration: flash_ms,
-//                     onUpdate: () => {
-//                         flash.setPosition(
-//                             Transform.x[eid] + dx*WIDTH/2,
-//                             Transform.y[eid] + dy*WIDTH/2
-//                         )
-//                     },
-//                     onComplete: () => {
-//                         flash.destroy();
-//                     }
-//                 });
-//             }
-//         }
-//     ]);
-
-//     timeline.play();
-// }

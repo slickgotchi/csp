@@ -9,8 +9,16 @@ export enum PlayerState {
     Dash
 }
 
+export enum InputType {
+    Idol,
+    Move,
+    Dash,
+    MeleeAttack,
+    RangedAttack,
+}
+
 export interface IInput {
-    state: PlayerState,
+    type: InputType,
     move: {
         dx: number,
         dy: number,

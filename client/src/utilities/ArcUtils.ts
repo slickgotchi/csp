@@ -52,6 +52,11 @@ export const ArcUtils = {
         },
         lerp: (radA: number, radB: number, alpha: number) => {
             return radA + ArcUtils.Angle.shortestDistance(radA, radB) * alpha;
+        },
+        fromVector2: (vec: iVector2) => {
+            const rot =  Math.atan2(vec.y, vec.x);
+            const deg = 180 * rot / Math.PI;
+            return (360 + Math.round(deg))%360;
         }
     },
     Scalar: {
