@@ -13,6 +13,8 @@ import { createRectangles } from './CreateRectangles';
 import { createEnemies } from './CreateEnemies';
 
 // let last_processed_input = 0;
+const recvMsBuffersByClient = new Map<Client,number[]>();
+const BUFFER_SIZE = 50;
 
 export default class GameRoom extends Room<GameState> {
 
@@ -35,6 +37,8 @@ export default class GameRoom extends Room<GameState> {
         console.log(`onJoin(): ${client.sessionId}`);
 
         createPlayer(this, this.world, client.sessionId, this.collisionSystem);
+
+        recvMsBuffersByClient.set(client, []);
 
         if (this.clients.length === this.maxClients) {
             this.lock();
@@ -110,6 +114,9 @@ export default class GameRoom extends Room<GameState> {
                     }
                     enemyGo.x += enemyGo.dx * 50 * dt_ms * 0.001;
                     enemyGo.y += enemyGo.dy * 50 * dt_ms * 0.001;
+
+                    // update collider
+                    enemyGo.collider?.setPosition(enemyGo.x, enemyGo.y);
                     break;
                 }
                 default: break;
@@ -180,10 +187,16 @@ const applyInput = (gameObject: sGameObject, input: IInput) => {
     }
 }
 
-const recv_ms_buffer: number[] = [];
-const BUFFER_SIZE = 50;
+// const recv_ms_buffer: number[] = [];
+
 
 const validateMessage = (message: IMessage) => {
+    const recv_ms_buffer = recvMsBuffersByClient.get(message.client);
+    if (!recv_ms_buffer) {
+        recvMsBuffersByClient.set(message.client, []);
+        return message;
+    }
+
     // store receive times in buffer
     recv_ms_buffer.push(message.recv_ms);
     if (recv_ms_buffer.length > BUFFER_SIZE) {

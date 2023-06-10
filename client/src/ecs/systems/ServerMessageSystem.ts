@@ -52,12 +52,14 @@ export const createServerMessageSystem = (
     room.state.gameObjects.onAdd((go: sGameObject, key: string) => {
         switch(go.type) {
             case 'player': {
-                createPfPlayerShadow({
-                    world: world,
-                    serverEid: go.serverEid,
-                    x: go.x,
-                    y: go.y,
-                });
+                if (room.sessionId === (go as sPlayer).sessionId) {
+                    createPfPlayerShadow({
+                        world: world,
+                        serverEid: go.serverEid,
+                        x: go.x,
+                        y: go.y,
+                    });
+                }
         
                 createPfPlayer({
                     room: room,

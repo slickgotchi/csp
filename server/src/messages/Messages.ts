@@ -33,6 +33,7 @@ export interface IInput {
 }
 
 export interface IMessage {
+    client: Client;
     name: string;
     payload: IInput;
     recv_ms: number;
@@ -47,16 +48,12 @@ export const setupMessages = (room: GameRoom) => {
             if (go.type === 'player' && (go as sPlayer).sessionId === client.sessionId) {
                 (go as sPlayer).messages.push({
                     name: 'client-input',
+                    client: client,
                     payload: input,
                     recv_ms: Date.now()
                 });
             }
-        })
-        // messages.push({
-        //     name: 'client-input',
-        //     payload: input,
-        //     recv_ms: Date.now()
-        // });
+        });
     });
 
     room.onMessage('ping-server', (client: Client, client_time_ms: number) => {
