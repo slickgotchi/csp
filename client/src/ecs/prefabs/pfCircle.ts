@@ -15,8 +15,8 @@ export const createPfCircle = (props: iProps) => {
     const eid = addEntity(props.world);
 
     addComponent(props.world, Transform, eid);
-    Transform.position.x[eid] = props.x;
-    Transform.position.y[eid] = props.y;
+    Transform.x[eid] = props.x;
+    Transform.y[eid] = props.y;
 
     addComponent(props.world, Circle, eid);
     Circle.radius[eid] = props.radius;

@@ -19,8 +19,8 @@ export const createCircleSystem = (world: IWorld, scene: Phaser.Scene) => {
         const onAdd = qEnter(world);
         onAdd.forEach(eid => {
             circlesById.set(eid, scene.add.circle(
-                Transform.position.x[eid], 
-                Transform.position.y[eid], 
+                Transform.x[eid], 
+                Transform.y[eid], 
                 Circle.radius[eid],
                 Color.val[eid]
             ));
@@ -37,8 +37,8 @@ export const createCircleSystem = (world: IWorld, scene: Phaser.Scene) => {
                     )
                 } else {
                     circle.setPosition(
-                        Transform.position.x[eid],
-                        Transform.position.y[eid]
+                        Transform.x[eid],
+                        Transform.y[eid]
                     )
                 }
             }

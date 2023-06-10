@@ -1,6 +1,6 @@
 import { Client, Room } from 'colyseus';
 import GameState from './GameState';
-import { IInput, IMessage, messages, setupMessages } from '../messages/Messages';
+import { IInput, IMessage, PlayerState, messages, setupMessages } from '../messages/Messages';
 import { sGameObject } from '../types/sGameObject';
 import { sRectangle } from '../types/sRectangle';
 
@@ -19,7 +19,7 @@ export default class GameRoom extends Room<GameState> {
     private collisionSystem!: Collisions.System;
 
     onCreate() {
-        console.log('Room created');
+        console.log('onCreate()');
 
         this.setState(new GameState());
 
@@ -27,19 +27,20 @@ export default class GameRoom extends Room<GameState> {
     }
 
     onJoin(client: Client) {
-        console.log(`${client.sessionId} joined room`);
+        console.log(`onJoin(): ${client.sessionId}`);
 
         if (this.clients.length === this.maxClients) {
+            this.lock();
             this.createMatch();
         }
     }
 
     onLeave(client: Client) {
-        console.log(`${client.sessionId} left room`);
+        console.log(`onLeave(): ${client.sessionId}`);
     }
 
     onDispose() {
-        console.log('onDispose');
+        console.log('onDispose()\n');
         while (this.state.gameObjects.length > 0) {
             this.state.gameObjects.deleteAt(0)
 
@@ -47,7 +48,7 @@ export default class GameRoom extends Room<GameState> {
     }
 
     createMatch() {
-        console.log('Match created');
+        console.log('createMatch()');
 
         // create objects
         createObjects(this);
@@ -136,10 +137,12 @@ export default class GameRoom extends Room<GameState> {
 }
 
 const applyInput = (gameObject: sGameObject, input: IInput) => {
-    gameObject.position.x += 400 * input.move.dx * input.dt_ms * 0.001;
-    gameObject.position.y += 400 * input.move.dy * input.dt_ms * 0.001;
+    if (input.state === PlayerState.Moving) {
+        gameObject.position.x += 400 * input.move.dx * input.dt_ms * 0.001;
+        gameObject.position.y += 400 * input.move.dy * input.dt_ms * 0.001;
+    }
 
-    if (input.key_release.l) {
+    if (input.key_release.l && input.state === PlayerState.Moving) {
         gameObject.position.x += input.move.dx * 500;
         gameObject.position.y += input.move.dy * 500;
     }

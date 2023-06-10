@@ -2,13 +2,22 @@ import { Client } from "colyseus";
 import GameRoom from "../rooms/Game";
 
 
+export enum PlayerState {
+    Moving,
+    MeleeAttack,
+    RangedAttack,
+    Dash
+}
+
 export interface IInput {
+    state: PlayerState,
     move: {
         dx: number,
         dy: number,
     },
     key_release: {
         l: boolean,
+        j: boolean
     },
     dt_ms: number,
     id: number,

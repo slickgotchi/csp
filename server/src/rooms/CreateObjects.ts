@@ -12,7 +12,6 @@ export const createObjects = (room: Room<IGameState & Schema>) => {
         x: 1920/2,
         y: 1080/2,
     }));
-    console.log('add player');
 
     // rectangle
     room.state.gameObjects.push(new sRectangle({

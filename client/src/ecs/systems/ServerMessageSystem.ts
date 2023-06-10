@@ -103,8 +103,8 @@ export const createServerMessageSystem = (
                     messages.splice(i,1);
 
                     // do updates
-                    Transform.position.x[eid] = message.payload.gameObject.position.x;
-                    Transform.position.y[eid] = message.payload.gameObject.position.y;
+                    Transform.x[eid] = message.payload.gameObject.position.x;
+                    Transform.y[eid] = message.payload.gameObject.position.y;
                     
                     if (ServerMessage.isServerReconciliation[eid]) {
                         // do server reconciliation

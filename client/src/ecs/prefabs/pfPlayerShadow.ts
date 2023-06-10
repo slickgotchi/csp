@@ -26,8 +26,8 @@ export const createPfPlayerShadow = (props: iProps) => {
     ServerMessage.isServerReconciliation[eid] = 0;
 
     addComponent(props.world, Transform, eid);
-    Transform.position.x[eid] = props.x;
-    Transform.position.y[eid] = props.y;
+    Transform.x[eid] = props.x;
+    Transform.y[eid] = props.y;
 
     addComponent(props.world, Circle, eid);
     Circle.radius[eid] = 50;
