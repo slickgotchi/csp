@@ -11,6 +11,7 @@ import { ClientPlayerInput } from "../componets/ClientPlayerInput";
 
 interface iProps {
     world: IWorld;
+    serverEid: number;
     x: number;
     y: number;
 }
@@ -29,6 +30,7 @@ export const createPfPlayer = (props: iProps) => {
 
     addComponent(props.world, ServerMessage, eid);
     ServerMessage.isServerReconciliation[eid] = 1;
+    ServerMessage.serverEid[eid] = props.serverEid;
 
     addComponent(props.world, Transform, eid);
     Transform.x[eid] = props.x;

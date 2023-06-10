@@ -11,6 +11,7 @@ import * as Collisions from 'detect-collisions';
 import { circleCollidersByEid } from "./CollisionsSystem";
 import { Interpolate } from "../componets/Interpolate";
 import { ClientPlayerInput } from "../componets/ClientPlayerInput";
+import { positionBufferByEid, saveBuffer } from "./InterpolateSystem";
 
 export enum PlayerState {
     Idol,
@@ -43,11 +44,11 @@ export interface IInput {
     id: number,
 }
 
-export const position_buffer: {
-    x: number,
-    y: number,
-    timestamp: number,
-}[] = [];
+// export const position_buffer: {
+//     x: number,
+//     y: number,
+//     timestamp: number,
+// }[] = [];
 
 
 export const pending_inputs: IInput[] = [];
@@ -229,15 +230,7 @@ export const resolveCollisions = (eid: number) => {
     Transform.y[eid] = playerCollider.y;
 }
 
-const saveBuffer = (eid: number) => {
-    // update position buffer
-        position_buffer.push({
-            x: Transform.x[eid],
-            y: Transform.y[eid],
-            timestamp: Date.now()
-        });
-        Interpolate.dt_ms[eid] = 0; // reset interpolation time
-}
+
 
 const playDashAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, duration_ms: number) => {
     const line = scene.add.line(

@@ -4,6 +4,7 @@ import { sGameObject } from "./sGameObject";
 import { Box } from "detect-collisions";
 
 interface IProps {
+    serverEid: number;
     x: number;
     y: number;
     width: number;
@@ -22,8 +23,9 @@ export class sRectangle extends sGameObject {
     constructor(props: IProps) {
         super();
         this.type = "rectangle";
-        this.pos.x = props.x;
-        this.pos.y = props.y;
+        this.serverEid = props.serverEid;
+        this.x = props.x;
+        this.y = props.y;
         this.width = props.width;
         this.height = props.height;
     }

@@ -2,7 +2,9 @@ import { IWorld, addComponent, addEntity } from "bitecs"
 import { Transform } from "../componets/Transform";
 import { Circle } from "../componets/Circle";
 import { Color } from "../componets/Color";
-import { Player } from "../componets/Player";
+import { Interpolate } from "../componets/Interpolate";
+import { CircleCollider } from "../componets/CircleCollider";
+import { Enemy } from "../componets/Enemy";
 import { ServerMessage } from "../componets/ServerMessage";
 
 
@@ -14,26 +16,23 @@ interface iProps {
 }
 
 
-export const createPfPlayerShadow = (props: iProps) => {
+export const createPfEnemy = (props: iProps) => {
     const eid = addEntity(props.world);
 
-    addComponent(props.world, Player, eid);
-    Player.speed[eid] = 400;
-
-    // addComponent(props.world, ClientInput, eid);
-    // ClientInput.isClientSidePrediction[eid] = 0;
-
-    addComponent(props.world, ServerMessage, eid);
-    ServerMessage.isServerReconciliation[eid] = 0;
-    ServerMessage.serverEid[eid] = props.serverEid;
+    addComponent(props.world, Enemy, eid);
 
     addComponent(props.world, Transform, eid);
     Transform.x[eid] = props.x;
     Transform.y[eid] = props.y;
 
+    addComponent(props.world, ServerMessage, eid);
+    ServerMessage.serverEid[eid] = props.serverEid;
+
+    addComponent(props.world, Interpolate, eid);
+
     addComponent(props.world, Circle, eid);
-    Circle.radius[eid] = 50;
+    Circle.radius[eid] = 40;
     
     addComponent(props.world, Color, eid);
-    Color.val[eid] = 0x0F8A0F;
+    Color.val[eid] = 0xff6666;
 }

@@ -1,6 +1,6 @@
 import { IWorld, defineQuery, defineSystem, enterQuery, exitQuery } from "bitecs"
 import { Room } from "colyseus.js";
-import { Schema, ArraySchema } from "@colyseus/schema";
+import { Schema, MapSchema } from "@colyseus/schema";
 import { Player } from "../componets/Player";
 import { Transform } from "../componets/Transform";
 import { IInput, applyInput, pending_inputs, resolveCollisions } from "./ClientPlayerInputSystem";
@@ -12,14 +12,13 @@ import { sPlayer } from "../../../../server/src/types/sPlayer";
 import { createPfPlayer } from "../prefabs/pfPlayer";
 import { createPfPlayerShadow } from "../prefabs/pfPlayerShadow";
 import * as Collisions from 'detect-collisions';
+import { createPfEnemy } from "../prefabs/pfEnemy";
+import { sEnemy } from "../../../../server/src/types/sEnemy";
+import { saveBuffer } from "./InterpolateSystem";
 
 export interface IMessage {
     name: string;
-    gameObjects: ArraySchema<sGameObject>,
-    // {
-    //     gameObject: any;
-    //     last_processed_input: number;
-    // }
+    gameObjects: MapSchema<sGameObject, string>,
     recv_ms: number;
 }
 
@@ -33,53 +32,64 @@ export const createServerMessageSystem = (
     collisionSystem: Collisions.System
     ) => {
 
-    const onUpdate = defineQuery([Player]);
+    const onUpdate = defineQuery([ServerMessage]);
     const onAdd = enterQuery(onUpdate);
     const onRemove = exitQuery(onUpdate);
 
-    room.onMessage('server-update', payload => {
+    room.onMessage('server-update', () => {
         onUpdate(world).forEach(eid => {
             const messages = messagesByEid.get(eid);
             if (messages) {
                 messages.push({
                     name: 'server-update',
-                    gameObjects: payload,
+                    gameObjects: room.state.gameObjects,
                     recv_ms: Date.now()
                 });
             }
         })
     });
     
-    room.state.gameObjects.onAdd((go: sGameObject, key: number) => {
+    room.state.gameObjects.onAdd((go: sGameObject, key: string) => {
         switch(go.type) {
             case 'player': {
                 createPfPlayerShadow({
                     world: world,
-                    x: go.pos.x,
-                    y: go.pos.y,
+                    serverEid: go.serverEid,
+                    x: go.x,
+                    y: go.y,
                 });
         
                 createPfPlayer({
                     world: world,
-                    x: go.pos.x,
-                    y: go.pos.y,
+                    serverEid: go.serverEid,
+                    x: go.x,
+                    y: go.y,
                 });
 
                 break;
             }
             case 'rectangle': {
                 scene.add.rectangle(
-                    go.pos.x,
-                    go.pos.y,
+                    go.x,
+                    go.y,
                     (go as sRectangle).width,
                     (go as sRectangle).height,
-                    0xff6666)
+                    0x666666)
                         .setOrigin(0,0);
                 collisionSystem.createBox(
-                    {x: go.pos.x, y: go.pos.y},
+                    {x: go.x, y: go.y},
                     (go as sRectangle).width,
                     (go as sRectangle).height
                 )
+                break;
+            }
+            case 'enemy': {
+                createPfEnemy({
+                    world: world,
+                    serverEid: go.serverEid,
+                    x: go.x,
+                    y: go.y,
+                })
                 break;
             }
             default: break;
@@ -94,7 +104,7 @@ export const createServerMessageSystem = (
         onUpdate(world).forEach(eid => {
             // check for messages
             const messages = messagesByEid.get(eid);
-            if (!messages) return;
+            if (!messages || messages.length === 0) return;
 
             // go through messages
             const now = Date.now();
@@ -103,24 +113,39 @@ export const createServerMessageSystem = (
                 if (message.recv_ms <= now) {
                     messages.splice(i,1);
 
-                    // do updates
-                    Transform.x[eid] = message.payload.gameObject.position.x;
-                    Transform.y[eid] = message.payload.gameObject.position.y;
-                    
-                    if (ServerMessage.isServerReconciliation[eid]) {
-                        // do server reconciliation
-                        var j = 0;
-                        while (j < pending_inputs.length) {
-                            const input = pending_inputs[j];
-                            if (input.id <= message.payload.last_processed_input) {
-                                pending_inputs.splice(j,1);
-                            } else {
-                                applyInput(eid, input);
-                                resolveCollisions(eid);
-                                j++;
+                    const go = message.gameObjects.get(ServerMessage.serverEid[eid].toString()) as sGameObject;
+
+                    switch (go.type) {
+                        case 'player': {
+                            // update transform with authrative state
+                            Transform.x[eid] = go.x;
+                            Transform.y[eid] = go.y;
+
+                            // if server recon do recon
+                            if (ServerMessage.isServerReconciliation[eid]) {
+                                let j = 0;
+                                while (j < pending_inputs.length) {
+                                    const input = pending_inputs[j];
+                                    if (input.id <= (go as sPlayer).last_processed_input) {
+                                        pending_inputs.splice(j,1);
+                                    } else {
+                                        applyInput(eid, input);
+                                        resolveCollisions(eid);
+                                        j++;
+                                    }
+                                }
                             }
+                            break;
                         }
+                        case 'enemy': {
+                            Transform.x[eid] = go.x;
+                            Transform.y[eid] = go.y;
+                            saveBuffer(eid);
+                            break;
+                        }
+                        default: break;
                     }
+                    
                 }
             }
 

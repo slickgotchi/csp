@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bitecs": "github:NateTHeGreatt/bitECS#master",
     "colyseus": "^0.15.0",
     "cors": "^2.8.5",
     "detect-collisions": "^8.0.5",

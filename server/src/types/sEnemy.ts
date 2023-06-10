@@ -7,27 +7,22 @@ interface IProps {
     serverEid: number;
     x: number;
     y: number;
-    sessionId: string;
 }
 
+export let nextEnemyId = 1;
 
-export class sPlayer extends sGameObject {
+export class sEnemy extends sGameObject {
 
     collider?: Circle;
-
-    messages: IMessage[] = [];
-
-    @type('string')
-    sessionId: string = "";
-
-    @type('number')
-    last_processed_input = 0;
+    dx = 0;
+    dy = 0;
+    timer_ms = Math.random()*3000;
+    id = nextEnemyId++;
 
     constructor(props: IProps) {
         super();
-        this.type = 'player';
+        this.type = 'enemy';
         this.serverEid = props.serverEid;
-        this.sessionId = props.sessionId;
         this.x = props.x;
         this.y = props.y;
     }
