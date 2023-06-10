@@ -60,7 +60,9 @@ export const createServerMessageSystem = (
                 });
         
                 createPfPlayer({
+                    room: room,
                     world: world,
+                    sessionId: (go as sPlayer).sessionId,
                     serverEid: go.serverEid,
                     x: go.x,
                     y: go.y,
@@ -117,21 +119,28 @@ export const createServerMessageSystem = (
 
                     switch (go.type) {
                         case 'player': {
-                            // update transform with authrative state
-                            Transform.x[eid] = go.x;
-                            Transform.y[eid] = go.y;
+                            const playerGo = go as sPlayer;
+                            if (playerGo.sessionId !== room.sessionId) {
+                                Transform.x[eid] = go.x;
+                                Transform.y[eid] = go.y;
+                                saveBuffer(eid);
+                            } else {
+                                // update transform with authrative state
+                                Transform.x[eid] = go.x;
+                                Transform.y[eid] = go.y;
 
-                            // if server recon do recon
-                            if (ServerMessage.isServerReconciliation[eid]) {
-                                let j = 0;
-                                while (j < pending_inputs.length) {
-                                    const input = pending_inputs[j];
-                                    if (input.id <= (go as sPlayer).last_processed_input) {
-                                        pending_inputs.splice(j,1);
-                                    } else {
-                                        applyInput(eid, input);
-                                        resolveCollisions(eid);
-                                        j++;
+                                // if server recon do recon
+                                if (ServerMessage.isServerReconciliation[eid]) {
+                                    let j = 0;
+                                    while (j < pending_inputs.length) {
+                                        const input = pending_inputs[j];
+                                        if (input.id <= (go as sPlayer).last_processed_input) {
+                                            pending_inputs.splice(j,1);
+                                        } else {
+                                            applyInput(eid, input);
+                                            resolveCollisions(eid);
+                                            j++;
+                                        }
                                     }
                                 }
                             }

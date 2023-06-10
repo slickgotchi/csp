@@ -64,7 +64,7 @@ export default class GameRoom extends Room<GameState> {
         this.setSimulationInterval((dt) => this.updateMatch(dt));
     }
 
-    private UPDATE_RATE_MS = 200;
+    private UPDATE_RATE_MS = 100;
     private accum = 0;
 
     updateMatch(dt_ms: number) {
