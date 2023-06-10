@@ -22,8 +22,8 @@ export class sRectangle extends sGameObject {
     constructor(props: IProps) {
         super();
         this.type = "rectangle";
-        this.position.x = props.x;
-        this.position.y = props.y;
+        this.pos.x = props.x;
+        this.pos.y = props.y;
         this.width = props.width;
         this.height = props.height;
     }

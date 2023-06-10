@@ -1,20 +1,17 @@
 import { Client, Room } from 'colyseus';
 import GameState from './GameState';
-import { IInput, IMessage, InputType, PlayerState, messages, setupMessages } from '../messages/Messages';
+import { IInput, IMessage, InputType, PlayerState, setupMessages } from '../messages/Messages';
 import { sGameObject } from '../types/sGameObject';
 import { sRectangle } from '../types/sRectangle';
 
 import * as Collisions from 'detect-collisions';
 import { createObjects } from './CreateObjects';
-import { createColliders } from './CreateColliders';
 import { sPlayer } from '../types/sPlayer';
+import { createPlayer } from './CreatePlayer';
 
-let last_processed_input = 0;
+// let last_processed_input = 0;
 
 export default class GameRoom extends Room<GameState> {
-
-    private gameObject = new sGameObject();
-    private rectGo!: sRectangle;
 
     private collisionSystem!: Collisions.System;
 
@@ -23,11 +20,15 @@ export default class GameRoom extends Room<GameState> {
 
         this.setState(new GameState());
 
+        this.collisionSystem = new Collisions.System();
+
         this.maxClients = 1;
     }
 
     onJoin(client: Client) {
         console.log(`onJoin(): ${client.sessionId}`);
+
+        createPlayer(this, client.sessionId, this.collisionSystem);
 
         if (this.clients.length === this.maxClients) {
             this.lock();
@@ -51,14 +52,10 @@ export default class GameRoom extends Room<GameState> {
         console.log('createMatch()');
 
         // create objects
-        createObjects(this);
+        createObjects(this, this.collisionSystem);
 
         // messages
         setupMessages(this);
-
-        // create collision stuff
-        this.collisionSystem = new Collisions.System();
-        createColliders(this, this.collisionSystem);
 
         // start updating
         this.setSimulationInterval((dt) => this.updateMatch(dt));
@@ -76,24 +73,49 @@ export default class GameRoom extends Room<GameState> {
 
     processMessages() {
         const now = Date.now();
-        for (let i = 0; i < messages.length; i++) {
-            let message = messages[i];
-            if (message.recv_ms <= now) {
-                messages.splice(i,1);
 
-                // validate our message
-                message = validateMessage(message);
-
-                // apply input
-                const input: IInput = message.payload;
-                applyInput(this.gameObject, input);
-                last_processed_input = input.id;
-
-                if (input.key_release.l) {
-                    console.log('L released');
+        this.state.gameObjects.forEach(go => {
+            const playerGo = go as sPlayer;
+            if (playerGo.type === 'player') {
+                for (let i = 0; i < playerGo.messages.length; i++) {
+                    let message = playerGo.messages[i];
+                    if (message.recv_ms <= now) {
+                        playerGo.messages.splice(i,1);
+        
+                        // validate our message
+                        message = validateMessage(message);
+        
+                        // apply input
+                        const input: IInput = message.payload;
+                        applyInput(playerGo, input);
+                        playerGo.last_processed_input = input.id;
+        
+                        if (input.key_release.l) {
+                            console.log('L released');
+                        }
+                    }
                 }
             }
-        }
+        })
+
+        // for (let i = 0; i < messages.length; i++) {
+        //     let message = messages[i];
+        //     if (message.recv_ms <= now) {
+        //         messages.splice(i,1);
+
+        //         // validate our message
+        //         message = validateMessage(message);
+
+        //         // apply input
+        //         const input: IInput = message.payload;
+        //         applyInput(this.gameObject, input);
+        //         last_processed_input = input.id;
+
+        //         if (input.key_release.l) {
+        //             console.log('L released');
+        //         }
+        //     }
+        // }
     }
 
     resolveCollisions() {
@@ -104,7 +126,7 @@ export default class GameRoom extends Room<GameState> {
                 if (!playerGo.collider) return;
 
                 // 1. update collider positions as per processed server messages
-                playerGo.collider.setPosition(this.gameObject.position.x, this.gameObject.position.y);
+                playerGo.collider.setPosition(playerGo.pos.x, playerGo.pos.y);
 
                 // 2. check collisions
                 this.collisionSystem.checkOne(playerGo.collider, (response: Collisions.Response) => {
@@ -117,8 +139,8 @@ export default class GameRoom extends Room<GameState> {
                 })
 
                 // 3. update game object to new position
-                this.gameObject.position.x = playerGo.collider.x;
-                this.gameObject.position.y = playerGo.collider.y;
+                playerGo.pos.x = playerGo.collider.x;
+                playerGo.pos.y = playerGo.collider.y;
 
             }
         });
@@ -127,10 +149,11 @@ export default class GameRoom extends Room<GameState> {
     sendWorldState(dt_ms: number) {
         this.accum += dt_ms;
         while (this.accum >= this.UPDATE_RATE_MS) {
-            this.broadcast('server-update', {
-                gameObject: this.gameObject,
-                last_processed_input: last_processed_input
-            });
+            this.broadcast('server-update', this.state.gameObjects);
+            // {
+            //     gameObject: this.gameObject,
+            //     last_processed_input: last_processed_input
+            // });
             this.accum -= this.UPDATE_RATE_MS;
         }
     }
@@ -140,18 +163,22 @@ const applyInput = (gameObject: sGameObject, input: IInput) => {
     // apply input depending on state
     switch(input.type) {
         case InputType.Move: {
-            gameObject.position.x += 400 * input.move.dx * input.dt_ms * 0.001;
-            gameObject.position.y += 400 * input.move.dy * input.dt_ms * 0.001;
+            gameObject.pos.x += 400 * input.move.dx * input.dt_ms * 0.001;
+            gameObject.pos.y += 400 * input.move.dy * input.dt_ms * 0.001;
             break;
         }
         case InputType.Dash: {
-            gameObject.position.x += input.move.dx * 500;
-            gameObject.position.y += input.move.dy * 500;
+            gameObject.pos.x += input.move.dx * 500;
+            gameObject.pos.y += input.move.dy * 500;
             break;
         }
         case InputType.MeleeAttack: {
-            gameObject.position.x += input.move.dx * 100;
-            gameObject.position.y += input.move.dy * 100;
+            gameObject.pos.x += input.move.dx * 100;
+            gameObject.pos.y += input.move.dy * 100;
+            break;
+        }
+        case InputType.RangedAttack: {
+
             break;
         }
         default: break;

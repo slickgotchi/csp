@@ -1,5 +1,6 @@
 import { Client } from "colyseus";
 import GameRoom from "../rooms/Game";
+import { sPlayer } from "../types/sPlayer";
 
 
 export enum PlayerState {
@@ -37,15 +38,25 @@ export interface IMessage {
     recv_ms: number;
 }
 
-export const messages: IMessage[] = [];
+// export const messages: IMessage[] = [];
 
 export const setupMessages = (room: GameRoom) => {
     room.onMessage('client-input', (client: Client, input: IInput) => {
-        messages.push({
-            name: 'client-input',
-            payload: input,
-            recv_ms: Date.now()
-        });
+        // find matching player
+        room.state.gameObjects.forEach(go => {
+            if (go.type === 'player' && (go as sPlayer).sessionId === client.sessionId) {
+                (go as sPlayer).messages.push({
+                    name: 'client-input',
+                    payload: input,
+                    recv_ms: Date.now()
+                });
+            }
+        })
+        // messages.push({
+        //     name: 'client-input',
+        //     payload: input,
+        //     recv_ms: Date.now()
+        // });
     });
 
     room.onMessage('ping-server', (client: Client, client_time_ms: number) => {

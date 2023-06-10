@@ -15,10 +15,11 @@ import * as Collisions from 'detect-collisions';
 
 export interface IMessage {
     name: string;
-    payload: {
-        gameObject: any;
-        last_processed_input: number;
-    }
+    gameObjects: ArraySchema<sGameObject>,
+    // {
+    //     gameObject: any;
+    //     last_processed_input: number;
+    // }
     recv_ms: number;
 }
 
@@ -42,7 +43,7 @@ export const createServerMessageSystem = (
             if (messages) {
                 messages.push({
                     name: 'server-update',
-                    payload: payload,
+                    gameObjects: payload,
                     recv_ms: Date.now()
                 });
             }
@@ -54,28 +55,28 @@ export const createServerMessageSystem = (
             case 'player': {
                 createPfPlayerShadow({
                     world: world,
-                    x: 1000,
-                    y: 500,
+                    x: go.pos.x,
+                    y: go.pos.y,
                 });
         
                 createPfPlayer({
                     world: world,
-                    x: 1000,
-                    y: 500,
+                    x: go.pos.x,
+                    y: go.pos.y,
                 });
 
                 break;
             }
             case 'rectangle': {
                 scene.add.rectangle(
-                    go.position.x,
-                    go.position.y,
+                    go.pos.x,
+                    go.pos.y,
                     (go as sRectangle).width,
                     (go as sRectangle).height,
                     0xff6666)
                         .setOrigin(0,0);
                 collisionSystem.createBox(
-                    {x: go.position.x, y: go.position.y},
+                    {x: go.pos.x, y: go.pos.y},
                     (go as sRectangle).width,
                     (go as sRectangle).height
                 )

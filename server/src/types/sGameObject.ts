@@ -4,7 +4,7 @@ import { sVector3 } from "./sVector3";
 
 export class sGameObject extends Schema {
     @type(sVector3)
-    position: sVector3 = new sVector3();
+    pos: sVector3 = new sVector3();
 
     @type('number')
     angle: number = 0;
@@ -17,7 +17,7 @@ export class sGameObject extends Schema {
 
     constructor() {
         super();
-        this.position.x = 1000;
-        this.position.y = 500;
+        this.pos.x = 1000;
+        this.pos.y = 500;
     }
 }
