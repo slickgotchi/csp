@@ -28,7 +28,7 @@ export default class GameRoom extends Room<GameState> {
 
         this.world = createWorld();
 
-        this.maxClients = 1;
+        this.maxClients = 2;
     }
 
     onJoin(client: Client) {
