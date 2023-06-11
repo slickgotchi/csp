@@ -47,13 +47,13 @@ export class Game extends Phaser.Scene {
         this.room = await this.client.joinOrCreate<IGameState & Schema>('game');
 
         // add key text
-        this.add.circle(75, 175, 25, 0x00ff00);
-        this.add.text(125, 175, "Client Side Prediction Player", {fontSize: "36px"})
-            .setOrigin(0, 0.5);
+        // this.add.circle(75, 175, 25, 0x00ff00);
+        // this.add.text(125, 175, "Client Side Prediction Player", {fontSize: "36px"})
+        //     .setOrigin(0, 0.5);
 
-        this.add.circle(75, 250, 25, 0x0F8A0F);
-        this.add.text(125, 250, "Server Authoritative Player", {fontSize: "36px"})
-            .setOrigin(0,0.5);
+        // this.add.circle(75, 250, 25, 0x0F8A0F);
+        // this.add.text(125, 250, "Server Authoritative Player", {fontSize: "36px"})
+        //     .setOrigin(0,0.5);
 
         // SYSTEMS
         // 1. process server messages

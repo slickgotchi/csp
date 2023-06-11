@@ -16,8 +16,8 @@ export const createRectangles = (room: GameRoom, world: IWorld, system: Collisio
         room: room,
         world: world,
         system: system,
-        x: 100,
-        y: 500,
+        x: 350,
+        y: 600,
         width: 100,
         height: 300
     })
@@ -27,9 +27,9 @@ export const createRectangles = (room: GameRoom, world: IWorld, system: Collisio
         world: world,
         system: system,
         x: 1500,
-        y: 500,
-        width: 200,
-        height: 300
+        y: 200,
+        width: 300,
+        height: 200
     })
 
     createPfRectangle({
@@ -37,8 +37,53 @@ export const createRectangles = (room: GameRoom, world: IWorld, system: Collisio
         world: world,
         system: system,
         x: 200,
-        y: 900,
-        width: 1000,
+        y: 300,
+        width: 300,
         height: 200
-    })
+    });
+
+
+    // left wall
+    createPfRectangle({
+        room: room,
+        world: world,
+        system: system,
+        x: -50,
+        y: -50,
+        width: 100,
+        height: 1200
+    });
+
+    // right wall
+    createPfRectangle({
+        room: room,
+        world: world,
+        system: system,
+        x: 1870,
+        y: -50,
+        width: 100,
+        height: 1200
+    });
+
+    // top wall
+    createPfRectangle({
+        room: room,
+        world: world,
+        system: system,
+        x: -50,
+        y: -50,
+        width: 2000,
+        height: 100
+    });
+
+    // bottom wall
+    createPfRectangle({
+        room: room,
+        world: world,
+        system: system,
+        x: -50,
+        y: 1030,
+        width: 2000,
+        height: 100
+    });
 }

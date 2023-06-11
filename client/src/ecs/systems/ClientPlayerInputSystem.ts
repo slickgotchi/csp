@@ -44,17 +44,8 @@ export interface IInput {
     id: number,
 }
 
-// export const position_buffer: {
-//     x: number,
-//     y: number,
-//     timestamp: number,
-// }[] = [];
-
-
 export const pending_inputs: IInput[] = [];
-// export const pendingInputsByEid = new Map<number, IInput[]>();
 export let sequence_number = 0;
-
 const EMIT_INTERVAL_MS = 100;
 
 export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) => {
@@ -210,7 +201,6 @@ export const resolveCollisions = (eid: number) => {
     const collisionSystem = playerCollider.system;
     if (!collisionSystem) return;
 
-    // COLLISIONS
     // 1. set collider to player
     playerCollider.setPosition(
         Transform.x[eid],
@@ -218,8 +208,8 @@ export const resolveCollisions = (eid: number) => {
     );
 
     // 2. do collisions
-    collisionSystem.checkOne(playerCollider, (resp: Collisions.Response) => {
-        const { overlapV } = collisionSystem.response;
+    collisionSystem.checkOne(playerCollider, (response: Collisions.Response) => {
+        const { overlapV } = response;
         playerCollider.setPosition(
             playerCollider.x - overlapV.x,
             playerCollider.y - overlapV.y

@@ -18,11 +18,10 @@ import { saveBuffer } from "./InterpolateSystem";
 
 export interface IMessage {
     name: string;
-    gameObjects: MapSchema<sGameObject, string>,
+    payload: any;
     recv_ms: number;
 }
 
-// const messages: any[] = [];
 const messagesByEid = new Map<number, IMessage[]>();
 
 export const createServerMessageSystem = (
@@ -42,13 +41,14 @@ export const createServerMessageSystem = (
             if (messages) {
                 messages.push({
                     name: 'server-update',
-                    gameObjects: room.state.gameObjects,
+                    payload: null,
                     recv_ms: Date.now()
                 });
             }
-        })
+        });
     });
     
+    // THIS NEEDS TO BE CONVERTED INTO A PUSHED MESSAGE
     room.state.gameObjects.onAdd((go: sGameObject, key: string) => {
         switch(go.type) {
             case 'player': {
@@ -106,57 +106,33 @@ export const createServerMessageSystem = (
         });
 
         onUpdate(world).forEach(eid => {
-            // check for messages
+            // check for messages for this ServerMessage eid
             const messages = messagesByEid.get(eid);
             if (!messages || messages.length === 0) return;
 
-            // go through messages
+            // save current time and process each message up to "now"
             const now = Date.now();
             for (let i = 0; i < messages.length; i++) {
+                // save current message for convenience
                 const message = messages[i];
                 if (message.recv_ms <= now) {
+                    // remove this message
                     messages.splice(i,1);
 
-                    const go = message.gameObjects.get(ServerMessage.serverEid[eid].toString()) as sGameObject;
-
-                    switch (go.type) {
+                    // update depending on object type
+                    const serverEid = ServerMessage.serverEid[eid].toString();
+                    const go = room.state.gameObjects.get(serverEid);
+                    switch (go?.type) {
                         case 'player': {
-                            const playerGo = go as sPlayer;
-                            if (playerGo.sessionId !== room.sessionId) {
-                                Transform.x[eid] = go.x;
-                                Transform.y[eid] = go.y;
-                                saveBuffer(eid);
-                            } else {
-                                // update transform with authrative state
-                                Transform.x[eid] = go.x;
-                                Transform.y[eid] = go.y;
-
-                                // if server recon do recon
-                                if (ServerMessage.isServerReconciliation[eid]) {
-                                    let j = 0;
-                                    while (j < pending_inputs.length) {
-                                        const input = pending_inputs[j];
-                                        if (input.id <= (go as sPlayer).last_processed_input) {
-                                            pending_inputs.splice(j,1);
-                                        } else {
-                                            applyInput(eid, input);
-                                            resolveCollisions(eid);
-                                            j++;
-                                        }
-                                    }
-                                }
-                            }
+                            handlePlayerUpdate(room, go as sPlayer, eid);
                             break;
                         }
                         case 'enemy': {
-                            Transform.x[eid] = go.x;
-                            Transform.y[eid] = go.y;
-                            saveBuffer(eid);
+                            handleEnemyUpdate(go as sEnemy, eid);
                             break;
                         }
                         default: break;
                     }
-                    
                 }
             }
 
@@ -164,4 +140,38 @@ export const createServerMessageSystem = (
 
         return world;
     })
+}
+
+const handlePlayerUpdate = (room: Room, go: sPlayer, eid: number) => {
+    const playerGo = go as sPlayer;
+    if (playerGo.sessionId !== room.sessionId) {
+        Transform.x[eid] = go.x;
+        Transform.y[eid] = go.y;
+        saveBuffer(eid);
+    } else {
+        // update transform with authrative state
+        Transform.x[eid] = go.x;
+        Transform.y[eid] = go.y;
+
+        // if server recon do recon
+        if (ServerMessage.isServerReconciliation[eid]) {
+            let j = 0;
+            while (j < pending_inputs.length) {
+                const input = pending_inputs[j];
+                if (input.id <= (go as sPlayer).last_processed_input) {
+                    pending_inputs.splice(j,1);
+                } else {
+                    applyInput(eid, input);
+                    resolveCollisions(eid);
+                    j++;
+                }
+            }
+        }
+    }
+}
+
+const handleEnemyUpdate = (go: sEnemy, eid: number) => {
+    Transform.x[eid] = go.x;
+    Transform.y[eid] = go.y;
+    saveBuffer(eid);
 }

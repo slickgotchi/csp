@@ -2,8 +2,6 @@ import { IWorld } from "bitecs";
 import { Room } from "colyseus.js";
 
 
-
-
 export const createPingSystem = (room: Room, scene: Phaser.Scene) => {
 
     const ping_buffer: number[] = [];
@@ -28,7 +26,7 @@ export const createPingSystem = (room: Room, scene: Phaser.Scene) => {
 
     room.send('ping-server', Date.now());
 
-    const text = scene.add.text(50, 50, "Ping: ", {fontSize: "50px"});
+    const text = scene.add.text(60, 60, "Ping: ", {fontSize: "36px"});
 
     return ((world: IWorld) => {
 

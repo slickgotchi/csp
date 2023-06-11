@@ -12,9 +12,6 @@ import { IWorld, createWorld } from 'bitecs';
 import { createRectangles } from './CreateRectangles';
 import { createEnemies } from './CreateEnemies';
 
-// let last_processed_input = 0;
-const recvMsBuffersByClient = new Map<Client,number[]>();
-const BUFFER_SIZE = 50;
 
 export default class GameRoom extends Room<GameState> {
 
@@ -72,9 +69,6 @@ export default class GameRoom extends Room<GameState> {
         this.setSimulationInterval((dt) => this.updateMatch(dt));
     }
 
-    private UPDATE_RATE_MS = 100;
-    private accum = 0;
-
     updateMatch(dt_ms: number) {
         this.processMessages(dt_ms);
         this.resolveCollisions();
@@ -119,8 +113,7 @@ export default class GameRoom extends Room<GameState> {
                     enemyGo.x += enemyGo.dx * 50 * dt_ms * 0.001;
                     enemyGo.y += enemyGo.dy * 50 * dt_ms * 0.001;
 
-                    // update collider
-                    enemyGo.collider?.setPosition(enemyGo.x, enemyGo.y);
+                    
                     break;
                 }
                 default: break;
@@ -133,39 +126,69 @@ export default class GameRoom extends Room<GameState> {
     resolveCollisions() {
         // find player collider
         this.state.gameObjects.forEach(go => {
-            if (go.type === 'player') {
-                const playerGo = go as sPlayer;
-                if (!playerGo.collider) return;
+            switch (go.type) {
+                case 'player': {
+                    const playerGo = go as sPlayer;
+                    if (!playerGo.collider) break;
+    
+                    // 1. update collider positions as per processed server messages
+                    playerGo.collider.setPosition(playerGo.x, playerGo.y);
+    
+                    // 2. check collisions
+                    this.collisionSystem.checkOne(playerGo.collider, (response: Collisions.Response) => {
+                        if (!playerGo.collider) return;
+                        const { overlapV, b } = response;
+                        if (b.isStatic) {
+                            playerGo.collider.setPosition(
+                                playerGo.collider.x - overlapV.x,
+                                playerGo.collider.y - overlapV.y
+                            )
+                        }
+                    })
+    
+                    // 3. update game object to new position
+                    playerGo.x = playerGo.collider.x;
+                    playerGo.y = playerGo.collider.y;
+                    break;
+                }
+                case 'enemy': {
+                    const enemyGo = go as sEnemy;
+                    if (!enemyGo.collider) break;
 
-                // 1. update collider positions as per processed server messages
-                playerGo.collider.setPosition(playerGo.x, playerGo.y);
+                    // 1. update collider positions
+                    enemyGo.collider.setPosition(enemyGo.x, enemyGo.y);
 
-                // 2. check collisions
-                this.collisionSystem.checkOne(playerGo.collider, (response: Collisions.Response) => {
-                    if (!playerGo.collider) return;
-                    const { overlapV, b } = this.collisionSystem.response;
-                    console.log('touch: ', this.count++);
-                    if (b.isStatic) {
-                        playerGo.collider.setPosition(
-                            playerGo.collider.x - overlapV.x,
-                            playerGo.collider.y - overlapV.y
-                        )
-                    }
-                })
+                    // 2. check collisions
+                    this.collisionSystem.checkOne(enemyGo.collider, (response) => {
+                        if (!enemyGo.collider) return;
+                        const { overlapV, b } = response;
+                        if (b.isStatic) {
+                            enemyGo.collider.setPosition(
+                                enemyGo.collider.x - overlapV.x,
+                                enemyGo.collider.y - overlapV.y
+                            );
+                        }
+                    });
 
-                // 3. update game object to new position
-                playerGo.x = playerGo.collider.x;
-                playerGo.y = playerGo.collider.y;
+                    // 3. update game object to revised collider os
+                    enemyGo.x = enemyGo.collider.x;
+                    enemyGo.y = enemyGo.collider.y;
 
+                    break;
+                }
+                default: break;
             }
         });
     }
 
+    private EMIT_INTERVAL_MS = 100;
+    private accum = 0;
+
     sendWorldState(dt_ms: number) {
         this.accum += dt_ms;
-        while (this.accum >= this.UPDATE_RATE_MS) {
+        while (this.accum >= this.EMIT_INTERVAL_MS) {
             this.broadcast('server-update');
-            this.accum -= this.UPDATE_RATE_MS;
+            this.accum -= this.EMIT_INTERVAL_MS;
         }
     }
 }
@@ -196,8 +219,8 @@ const applyInput = (gameObject: sGameObject, input: IInput) => {
     }
 }
 
-// const recv_ms_buffer: number[] = [];
-
+const recvMsBuffersByClient = new Map<Client,number[]>();
+const BUFFER_SIZE = 50;
 
 const validateMessage = (message: IMessage) => {
     const recv_ms_buffer = recvMsBuffersByClient.get(message.client);
