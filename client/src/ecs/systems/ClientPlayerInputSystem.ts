@@ -5,7 +5,6 @@ import { Player } from "../componets/Player";
 import { Transform } from "../componets/Transform";
 
 import { Room } from 'colyseus.js';
-import { CSP } from "../../scenes/Game";
 
 import * as Collisions from 'detect-collisions';
 import { circleCollidersByEid } from "./CollisionsSystem";

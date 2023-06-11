@@ -1,6 +1,6 @@
 import { Client, Room } from 'colyseus';
 import GameState from './GameState';
-import { IInput, IMessage, InputType, PlayerState, setupMessages } from '../messages/Messages';
+import { IInput, IInputMessage, InputType, setupMessages } from '../messages/Messages';
 import { sGameObject } from '../types/sGameObject';
 
 import * as Collisions from 'detect-collisions';
@@ -8,15 +8,20 @@ import { sPlayer } from '../types/sPlayer';
 import { createPlayer } from './CreatePlayer';
 import { sEnemy } from '../types/sEnemy';
 import { ArcUtils } from '../utilities/ArcUtils';
-import { IWorld, createWorld } from 'bitecs';
+import { IWorld, addComponent, createWorld } from 'bitecs';
 import { createRectangles } from './CreateRectangles';
 import { createEnemies } from './CreateEnemies';
+import { GA_Move } from '../ecs/components/gas/gameplay-abilities/GA_Move';
+import { AT_Move } from '../ecs/components/gas/ability-tasks/AT_Move';
+import { getInputTypeAbilityRouteString } from './TryActivateAbility';
+import { System } from 'bitecs';
 
 
 export default class GameRoom extends Room<GameState> {
 
     private collisionSystem!: Collisions.System;
     private world!: IWorld;
+    private systems: System[] = [];
 
     onCreate() {
         console.log('onCreate()');
@@ -65,6 +70,12 @@ export default class GameRoom extends Room<GameState> {
         // messages
         setupMessages(this);
 
+        // systems
+        // 1. playerInputMessageSystem -  
+        // 2. collisionSeparateSystem
+        // 3. 
+        // this.systems.push(create)
+
         // start updating
         this.setSimulationInterval((dt) => this.updateMatch(dt));
     }
@@ -76,6 +87,7 @@ export default class GameRoom extends Room<GameState> {
     }
 
 
+
     processMessages(dt_ms: number) {
         const now = Date.now();
 
@@ -83,17 +95,17 @@ export default class GameRoom extends Room<GameState> {
             switch (go.type) {
                 case 'player': {
                     const playerGo = go as sPlayer;
-                    for (let i = 0; i < playerGo.messages.length; i++) {
-                        let message = playerGo.messages[i];
+                    for (let i = 0; i < playerGo.inputMessages.length; i++) {
+                        let message = playerGo.inputMessages[i];
                         if (message.recv_ms <= now) {
-                            playerGo.messages.splice(i,1);
+                            playerGo.inputMessages.splice(i,1);
             
                             // validate our message
-                            message = validateMessage(message);
+                            message = validateInputMessage(message);
             
                             // apply input
                             const input: IInput = message.payload;
-                            applyInput(playerGo, input);
+                            applyInput(this.world, go.serverEid, playerGo, input);
                             playerGo.last_processed_input = input.id;
                         }
                     }
@@ -193,7 +205,13 @@ export default class GameRoom extends Room<GameState> {
     }
 }
 
-const applyInput = (gameObject: sGameObject, input: IInput) => {
+const applyInput = (world: IWorld, eid: number, gameObject: sGameObject, input: IInput) => {
+    // if InputType.Move => 
+    // tryActivateAbility(GA_Move)
+    const str = getInputTypeAbilityRouteString(input.type);
+    const handler = (tryActivateGameplayAbilityRoutes as any)[str];
+    handler(world, eid, input);
+
     // apply input depending on state
     switch(input.type) {
         case InputType.Move: {
@@ -219,18 +237,29 @@ const applyInput = (gameObject: sGameObject, input: IInput) => {
     }
 }
 
+const tryActivateGA_Move = (world: IWorld, input: IInput, eid: number) => {
+    addComponent(world, AT_Move, eid);
+    AT_Move.dx[eid] += 400 * input.move.dx * input.dt_ms * 0.001;
+    AT_Move.dy[eid] += 400 * input.move.dy * input.dt_ms * 0.001;
+}
+
+const tryActivateGameplayAbilityRoutes = {
+    'ga-move': tryActivateGA_Move 
+}
+
+
 const recvMsBuffersByClient = new Map<Client,number[]>();
 const BUFFER_SIZE = 50;
 
-const validateMessage = (message: IMessage) => {
-    const recv_ms_buffer = recvMsBuffersByClient.get(message.client);
+const validateInputMessage = (inputMessage: IInputMessage) => {
+    const recv_ms_buffer = recvMsBuffersByClient.get(inputMessage.client);
     if (!recv_ms_buffer) {
-        recvMsBuffersByClient.set(message.client, []);
-        return message;
+        recvMsBuffersByClient.set(inputMessage.client, []);
+        return inputMessage;
     }
 
     // store receive times in buffer
-    recv_ms_buffer.push(message.recv_ms);
+    recv_ms_buffer.push(inputMessage.recv_ms);
     if (recv_ms_buffer.length > BUFFER_SIZE) {
         recv_ms_buffer.splice(0,1);
     }
@@ -238,10 +267,10 @@ const validateMessage = (message: IMessage) => {
     // if 10 entries we can calc average delta
     if (recv_ms_buffer.length >= 10) {
         const av_delta_ms = averageDelta(recv_ms_buffer);
-        message.payload.dt_ms = av_delta_ms;
-        return message;
+        inputMessage.payload.dt_ms = av_delta_ms;
+        return inputMessage;
     } else {
-        return message;
+        return inputMessage;
     }
 
 }

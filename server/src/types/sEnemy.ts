@@ -1,7 +1,5 @@
 import { Circle } from "detect-collisions";
 import { sGameObject } from "./sGameObject";
-import { type } from '@colyseus/schema';
-import { IMessage } from "../messages/Messages";
 
 interface IProps {
     serverEid: number;

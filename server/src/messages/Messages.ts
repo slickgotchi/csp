@@ -2,14 +2,6 @@ import { Client } from "colyseus";
 import GameRoom from "../rooms/Game";
 import { sPlayer } from "../types/sPlayer";
 
-
-export enum PlayerState {
-    Moving,
-    MeleeAttack,
-    RangedAttack,
-    Dash
-}
-
 export enum InputType {
     Idol,
     Move,
@@ -32,21 +24,19 @@ export interface IInput {
     id: number,
 }
 
-export interface IMessage {
+export interface IInputMessage {
     client: Client;
     name: string;
     payload: IInput;
     recv_ms: number;
 }
 
-// export const messages: IMessage[] = [];
-
 export const setupMessages = (room: GameRoom) => {
     room.onMessage('client-input', (client: Client, input: IInput) => {
         // find matching player
         room.state.gameObjects.forEach(go => {
             if (go.type === 'player' && (go as sPlayer).sessionId === client.sessionId) {
-                (go as sPlayer).messages.push({
+                (go as sPlayer).inputMessages.push({
                     name: 'client-input',
                     client: client,
                     payload: input,

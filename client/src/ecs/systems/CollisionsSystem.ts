@@ -2,6 +2,7 @@ import { IWorld, defineQuery, defineSystem, enterQuery } from 'bitecs';
 import * as Collisions from 'detect-collisions';
 import { CircleCollider } from '../componets/CircleCollider';
 import { BoxCollider } from '../componets/BoxCollider';
+import { Transform } from '../componets/Transform';
 
 export const circleCollidersByEid = new Map<number, Collisions.Circle>();
 
@@ -18,18 +19,18 @@ export const createCollisionsSystem = (collisionSystem: Collisions.System) => {
 
         onAddCircleCollider(world).forEach(eid => {
             circleCollidersByEid.set(eid, collisionSystem.createCircle(
-                {x: 0, y: 0},
+                {x: Transform.x[eid], y: Transform.y[eid]},
                 CircleCollider.radius[eid]
             ));
         });
 
-        // onAddBoxCollider(world).forEach(eid => {
-        //     boxCollidersByEid.set(eid, collisionSystem.createBox(
-        //         {x: 0, y: 0},
-        //         BoxCollider.width[eid],
-        //         BoxCollider.height[eid]
-        //     ))
-        // })
+        onAddBoxCollider(world).forEach(eid => {
+            boxCollidersByEid.set(eid, collisionSystem.createBox(
+                {x: Transform.x[eid], y: Transform.y[eid]},
+                BoxCollider.width[eid],
+                BoxCollider.height[eid]
+            ))
+        })
 
         return world;
     });

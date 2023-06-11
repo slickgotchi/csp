@@ -1,24 +1,16 @@
 import { IWorld, System, createWorld } from "bitecs";
 import * as Phaser from "phaser";
 import { createCircleSystem } from "../ecs/systems/CircleSystem";
-import { createPfPlayer } from "../ecs/prefabs/pfPlayer";
 import { createClientPlayerInputSystem } from "../ecs/systems/ClientPlayerInputSystem";
 import { Client, Room } from 'colyseus.js';
 import { Schema } from "@colyseus/schema";
 import { IGameState } from '../../../server/src/types/IGameState';
-import { createServerMessageSystem } from "../ecs/systems/ServerMessageSystem";
-import { createPfPlayerShadow } from "../ecs/prefabs/pfPlayerShadow";
+import { createServerMessageSystem } from "../ecs/systems/server-message/ServerMessageSystem";
 import { createInterpolateSystem } from "../ecs/systems/InterpolateSystem";
 import { createPingSystem } from "../ecs/systems/PingSystem";
 import * as Collisions from 'detect-collisions';
 import { createCollisionsSystem } from "../ecs/systems/CollisionsSystem";
-
-export const CSP = {
-    isClientSidePrediction: false,
-    isAuthoritativeServer: true,
-    isServerReconciliation: false,
-}
-
+import { createRectangleSystem } from "../ecs/systems/RectangleSystem";
 
 export class Game extends Phaser.Scene {
     private world!: IWorld;
@@ -57,9 +49,9 @@ export class Game extends Phaser.Scene {
 
         // SYSTEMS
         // 1. process server messages
-        this.systems.push(createServerMessageSystem(this.room, this.world, this, this.collisionSystem));
+        this.systems.push(createServerMessageSystem(this.room));
 
-        // 2. process client inputs
+        // 2. process client inputs and game logic
         this.systems.push(createClientPlayerInputSystem(this, this.room));
         this.systems.push(createCollisionsSystem(this.collisionSystem));
 
@@ -68,6 +60,9 @@ export class Game extends Phaser.Scene {
 
         // 4. render
         this.systems.push(createCircleSystem(this.world, this));
+        this.systems.push(createRectangleSystem(this.world, this));
+
+        // 5. utility
         this.systems.push(createPingSystem(this.room, this));
     }
 

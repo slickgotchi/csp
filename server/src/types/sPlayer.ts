@@ -1,7 +1,7 @@
 import { Circle } from "detect-collisions";
 import { sGameObject } from "./sGameObject";
 import { type } from '@colyseus/schema';
-import { IMessage } from "../messages/Messages";
+import { IInputMessage } from "../messages/Messages";
 
 interface IProps {
     serverEid: number;
@@ -15,7 +15,7 @@ export class sPlayer extends sGameObject {
 
     collider?: Circle;
 
-    messages: IMessage[] = [];
+    inputMessages: IInputMessage[] = [];
 
     @type('string')
     sessionId: string = "";
