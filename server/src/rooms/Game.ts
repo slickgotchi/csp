@@ -15,6 +15,13 @@ import { GA_Move } from '../ecs/components/gas/gameplay-abilities/GA_Move';
 import { AT_Move } from '../ecs/components/gas/ability-tasks/AT_Move';
 import { getInputTypeAbilityRouteString } from './TryActivateAbility';
 import { System } from 'bitecs';
+import { createSyncSystem } from '../ecs/systems/SyncSystem';
+import { createPlayerInputMessageSystem } from '../ecs/systems/PlayerInputMessageSystem';
+import { createSendWorldStateSystem } from '../ecs/systems/SendWorldStateSystem';
+import { createPf_ASC_Player } from '../ecs/prefabs/gas/ability-system-components/pfASC_Player';
+import { createAT_MoveSystem } from '../ecs/systems/gas/ability-tasks/AT_MoveSystem';
+import { createColliderSystem } from '../ecs/systems/collisions/ColliderSystem';
+import { createObstacles } from './CreateObstacles';
 
 
 export default class GameRoom extends Room<GameState> {
@@ -42,7 +49,18 @@ export default class GameRoom extends Room<GameState> {
     onJoin(client: Client) {
         console.log(`onJoin(): ${client.sessionId}`);
 
-        createPlayer(this, this.world, client.sessionId, this.collisionSystem);
+        // createPlayer(this, this.world, client.sessionId, this.collisionSystem);
+
+        const delta = this.clients.length === 1 ? 200 : -200;
+
+        createPf_ASC_Player({
+            room: this,
+            world: this.world,
+            system: this.collisionSystem,
+            sessionId: client.sessionId,
+            x: 1920/2 + delta,
+            y: 1080/2
+        })
 
         recvMsBuffersByClient.set(client, []);
 
@@ -64,26 +82,39 @@ export default class GameRoom extends Room<GameState> {
         console.log('createMatch()');
 
         // create objects
-        createRectangles(this, this.world, this.collisionSystem);
-        createEnemies(this, this.world, this.collisionSystem);
+        // createRectangles(this, this.world, this.collisionSystem);
+        // createEnemies(this, this.world, this.collisionSystem);
+        createObstacles(this, this.world, this.collisionSystem);
 
         // messages
         setupMessages(this);
 
         // systems
-        // 1. playerInputMessageSystem -  
-        // 2. collisionSeparateSystem
-        // 3. 
-        // this.systems.push(create)
+        // 1. playerInputMessageSystem
+        this.systems.push(createPlayerInputMessageSystem(this));
+
+        // 1a. Ability Task systems
+        this.systems.push(createAT_MoveSystem());
+
+        // 2. collisions
+        this.systems.push(createColliderSystem(this, this.world, this.collisionSystem));
+
+        // 3. sync ECS to gameObjects system and send world state
+        this.systems.push(createSyncSystem(this));
+        this.systems.push(createSendWorldStateSystem(this));
 
         // start updating
         this.setSimulationInterval((dt) => this.updateMatch(dt));
     }
 
     updateMatch(dt_ms: number) {
-        this.processMessages(dt_ms);
-        this.resolveCollisions();
-        this.sendWorldState(dt_ms);
+        // this.processMessages(dt_ms);
+        // this.resolveCollisions();
+        // this.sendWorldState(dt_ms);
+
+        this.systems.forEach(system => {
+            system(this.world);
+        });
     }
 
 
@@ -196,13 +227,13 @@ export default class GameRoom extends Room<GameState> {
     private EMIT_INTERVAL_MS = 100;
     private accum = 0;
 
-    sendWorldState(dt_ms: number) {
-        this.accum += dt_ms;
-        while (this.accum >= this.EMIT_INTERVAL_MS) {
-            this.broadcast('server-update');
-            this.accum -= this.EMIT_INTERVAL_MS;
-        }
-    }
+    // sendWorldState(dt_ms: number) {
+    //     this.accum += dt_ms;
+    //     while (this.accum >= this.EMIT_INTERVAL_MS) {
+    //         this.broadcast('server-update');
+    //         this.accum -= this.EMIT_INTERVAL_MS;
+    //     }
+    // }
 }
 
 const applyInput = (world: IWorld, eid: number, gameObject: sGameObject, input: IInput) => {

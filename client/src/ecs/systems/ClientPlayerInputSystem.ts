@@ -154,6 +154,8 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
             if (ClientPlayerInput.isClientSidePrediction[eid]) {
                 // do client side prediction
                 applyInput(eid, input);
+
+                // THESE TWO FUNCTIONS COULD BE MOVED OUT OF HERE
                 resolveCollisions(eid);
                 saveBuffer(eid);
             }

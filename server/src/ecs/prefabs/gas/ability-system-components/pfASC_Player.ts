@@ -5,6 +5,8 @@ import { sPlayer } from "../../../../types/sPlayer";
 import { Sync } from "../../../components/Sync";
 import { Transform } from "../../../components/Transform";
 import { GA_Move } from "../../../components/gas/gameplay-abilities/GA_Move";
+import { ASC_Player } from "../../../components/gas/ability-system-components/ASC_Player";
+import { Collider, ColliderShape } from "../../../components/collisions/Collider";
 
 
 interface IProps {
@@ -33,16 +35,19 @@ export const createPf_ASC_Player = (props: IProps) => {
     });
     props.room.state.gameObjects.set(eid.toString(), playerGo);
 
-    // add collider
-    playerGo.collider = props.system.createCircle(
-        {x: props.x, y: props.y },
-        50
-    );
+    // add asc player component
+    addComponent(props.world, ASC_Player, eid);
 
     // transform
     addComponent(props.world, Transform, eid);
     Transform.x[eid] = props.x;
     Transform.y[eid] = props.y;
+
+    // collider
+    addComponent(props.world, Collider, eid);
+    Collider.shape[eid] = ColliderShape.Circle;
+    Collider.radius[eid] = 50;
+    Collider.isAutoStaticSeparate[eid] = 1;
 
     // add gameplay abilities
     addComponent(props.world, GA_Move, eid);
