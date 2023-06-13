@@ -7,10 +7,11 @@ import { IWorld, addComponent, addEntity } from "bitecs";
 import { Sync } from "../ecs/components/Sync";
 import { createPfEnemy } from "../ecs/prefabs/pfEnemy";
 import GameRoom from "./Game";
+import { createPfASC_Enemy } from "../ecs/prefabs/gas/ability-system-components/pfASC_Enemy";
 
 export const createEnemies = (room: GameRoom, world: IWorld, system: Collisions.System) => {
     for (let i = 0; i < 10; i++) {
-        createPfEnemy({
+        createPfASC_Enemy({
             room: room,
             world: world,
             system: system,

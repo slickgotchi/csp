@@ -1,41 +1,33 @@
 import { IWorld, addComponent, addEntity } from "bitecs";
-import { Room } from "colyseus";
 import * as Collisions from 'detect-collisions';
-import { sPlayer } from "../../../../types/sPlayer";
-import { Sync } from "../../../components/Sync";
+import GameRoom from "../../../../rooms/Game";
+import { sEnemy } from "../../../../types/sEnemy";
+import { ASC_Enemy } from "../../../components/gas/ability-system-components/ASC_Enemy";
 import { Transform } from "../../../components/Transform";
-import { ASC_Player } from "../../../components/gas/ability-system-components/ASC_Player";
 import { Collider, ColliderShape } from "../../../components/collisions/Collider";
-
-
-interface IProps {
-
-}
-
+import { Sync } from "../../../components/Sync";
 
 interface IProps {
-    room: Room;
+    room: GameRoom;
     world: IWorld;
     system: Collisions.System;
-    sessionId: string;
     x: number;
     y: number;
 }
 
-export const createPf_ASC_Player = (props: IProps) => {
+export const createPfASC_Enemy = (props: IProps) => {
     const eid = addEntity(props.world);
 
     // create the game object
-    const playerGo = new sPlayer({
+    const enemyGo = new sEnemy({
         serverEid: eid,
-        sessionId: props.sessionId,
         x: props.x,
         y: props.y,
     });
-    props.room.state.gameObjects.set(eid.toString(), playerGo);
+    props.room.state.gameObjects.set(eid.toString(), enemyGo);
 
-    // add asc player component
-    addComponent(props.world, ASC_Player, eid);
+    // add asc enemy component
+    addComponent(props.world, ASC_Enemy, eid);
 
     // transform
     addComponent(props.world, Transform, eid);
@@ -45,7 +37,7 @@ export const createPf_ASC_Player = (props: IProps) => {
     // collider
     addComponent(props.world, Collider, eid);
     Collider.shape[eid] = ColliderShape.Circle;
-    Collider.radius[eid] = 50;
+    Collider.radius[eid] = 40;
     Collider.isAutoStaticSeparate[eid] = 1;
 
     // add sync component

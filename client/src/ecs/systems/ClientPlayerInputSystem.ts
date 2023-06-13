@@ -30,7 +30,7 @@ export enum InputType {
 }
 
 export interface IInput {
-    type: InputType,
+    tryActivateGA: string,
     move: {
         dx: number,
         dy: number,
@@ -107,36 +107,36 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
         // update (NOTE: there should only ever be one client input eid)
         onUpdate(world).forEach(eid => {
             // determine input type
-            let inputType = InputType.Idol;
+            let targetGA = "GA_Idol";
             if (!waiting) {
                 if (w_key?.isDown || a_key?.isDown || s_key?.isDown || d_key?.isDown) {
-                    inputType = InputType.Move;
+                    targetGA = "GA_Movement";
                 }
                 if (l_release) {
-                    inputType = InputType.Dash;
+                    targetGA = "GA_Dash";
                     waiting = true;
                     setTimeout(() => {waiting = false}, 100);
                     playDashAnim(scene, dir.x, dir.y, eid, 100);
                 }
                 if (j_release) {
-                    inputType = InputType.MeleeAttack;
+                    targetGA = "GA_MeleeAttack";
                     waiting = true;
                     setTimeout(() => {waiting = false}, 200);
                     playMeleeAttackAnim(scene, dir.x, dir.y, eid, 200);
                 } 
                 if (k_release) {
-                    inputType = InputType.RangedAttack;
+                    targetGA = "GA_RangedAttack";
                     waiting = true;
                     setTimeout(() => {waiting = false}, 200);
                     playRangedAttackAnim(scene, dir.x, dir.y, eid, 200);
                 }
             } else {
-                inputType = InputType.Waiting;
+                targetGA = "GA_Wait";
             }
 
             // create an input
             const input: IInput = {
-                type: inputType,
+                tryActivateGA: targetGA,
                 move: {
                     dx: dir.x,
                     dy: dir.y,
@@ -176,18 +176,18 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
 // core input function
 export const applyInput = (eid: number, input: IInput) => {
     // apply input depending on state
-    switch(input.type) {
-        case InputType.Move: {
+    switch(input.tryActivateGA) {
+        case "GA_Movement": {
             Transform.x[eid] += 400 * input.move.dx * input.dt_ms * 0.001;
             Transform.y[eid] += 400 * input.move.dy * input.dt_ms * 0.001;
             break;
         }
-        case InputType.Dash: {
+        case "GA_Dash": {
             Transform.x[eid] += input.move.dx * 500;
             Transform.y[eid] += input.move.dy * 500;
             break;
         }
-        case InputType.MeleeAttack: {
+        case "GA_MeleeAttack": {
             Transform.x[eid] += input.move.dx * 100;
             Transform.y[eid] += input.move.dy * 100;
             break;

@@ -4,6 +4,8 @@
 # GAS 
 
 ## ASC - Ability System Component
+- for client player ASC's handles all the input messages
+- handles state
 
 ## GA - Gameplay Ability
 Defines:
@@ -34,11 +36,13 @@ Examples include:
 - AT_ResolveStaticCollisions: checks for collisions against static objects and adjusts position to be not colliding
 
 ## GE - Gameplay Effect
+- these modifiy AA's either instantly or over time
+- these add status effect tags (sleep, confusion, blind etc.), usually for a duration
 
 ## AA - Actor Attribute
 
 ## GM - Gameplay Message
-
+- these are passed around by GE, GA, AT and maybe ASC's?
 
 
 
@@ -67,3 +71,17 @@ everything a player object might do server side
 - getEntitiesInAttackCircle (Ability Task) which leads to...
 - destroyEntity (Ability Task) which leads to...
 - sendMessageAboutDestroyedEntity (Ability Task)
+
+
+
+## Example flow
+
+### GA_ClientInputMovement
+1. AT_Move
+2. AT_SeparateFromStaticColliders
+
+### GA_MeleeAttack
+1. AT_Move (dx,dy,duration)
+2. AT_SeparateFromStaticColliders
+3. AT_CreateDamageHitArea (duration, shape, )
+4. 
