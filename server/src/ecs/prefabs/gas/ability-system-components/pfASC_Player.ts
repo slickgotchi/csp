@@ -6,6 +6,8 @@ import { Sync } from "../../../components/Sync";
 import { Transform } from "../../../components/Transform";
 import { ASC_Player } from "../../../components/gas/ability-system-components/ASC_Player";
 import { Collider, ColliderShape } from "../../../components/collisions/Collider";
+import { GA_Movement } from "../../../components/gas/gameplay-abilities/GA_Movement";
+import { GA_Dash } from "../../../components/gas/gameplay-abilities/GA_Dash";
 
 
 interface IProps {
@@ -50,6 +52,10 @@ export const createPf_ASC_Player = (props: IProps) => {
 
     // add sync component
     addComponent(props.world, Sync, eid);
+
+    // gameplay abilities
+    addComponent(props.world, GA_Movement, eid);
+    addComponent(props.world, GA_Dash, eid);
 
     return eid;
 }

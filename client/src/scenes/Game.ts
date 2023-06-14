@@ -9,8 +9,8 @@ import { createServerMessageSystem } from "../ecs/systems/server-message/ServerM
 import { createInterpolateSystem } from "../ecs/systems/InterpolateSystem";
 import { createPingSystem } from "../ecs/systems/PingSystem";
 import * as Collisions from 'detect-collisions';
-import { createCollisionsSystem } from "../ecs/systems/CollisionsSystem";
 import { createRectangleSystem } from "../ecs/systems/RectangleSystem";
+import { createColliderSystem } from "../ecs/systems/collisions/ColliderSystem";
 
 export class Game extends Phaser.Scene {
     private world!: IWorld;
@@ -49,11 +49,11 @@ export class Game extends Phaser.Scene {
 
         // SYSTEMS
         // 1. process server messages
-        this.systems.push(createServerMessageSystem(this.room));
+        this.systems.push(createServerMessageSystem(this.room, this));
 
         // 2. process client inputs and game logic
         this.systems.push(createClientPlayerInputSystem(this, this.room));
-        this.systems.push(createCollisionsSystem(this.collisionSystem));
+        this.systems.push(createColliderSystem(this.world, this.collisionSystem));
 
         // 3. interpolation
         this.systems.push(createInterpolateSystem());

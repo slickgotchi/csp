@@ -10,6 +10,7 @@ import { ClientPlayerInput } from "../componets/ClientPlayerInput";
 import { Room } from "colyseus.js";
 import { IGameState } from "../../../../server/src/types/IGameState";
 import { Schema } from '@colyseus/schema';
+import { Collider, ColliderShape } from "../componets/collisions/Collider";
 
 
 interface iProps {
@@ -32,7 +33,6 @@ export const createPfPlayer = (props: iProps) => {
 
     if (props.room.sessionId === props.sessionId) {
         addComponent(props.world, ClientPlayerInput, eid);
-        ClientPlayerInput.isClientSidePrediction[eid] = 1;
 
         addComponent(props.world, ServerMessage, eid);
         ServerMessage.isServerReconciliation[eid] = 1;
@@ -55,6 +55,11 @@ export const createPfPlayer = (props: iProps) => {
     addComponent(props.world, Color, eid);
     Color.val[eid] = 0x66ff66;
 
-    addComponent(props.world, CircleCollider, eid);
-    CircleCollider.radius[eid] = 50;
+    addComponent(props.world, Collider, eid);
+    Collider.shape[eid] = ColliderShape.Circle;
+    Collider.radius[eid] = 50;
+    Collider.isAutoStaticSeparate[eid] = 1;
+
+    // addComponent(props.world, CircleCollider, eid);
+    // CircleCollider.radius[eid] = 50;
 }

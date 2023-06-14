@@ -7,10 +7,11 @@ import { Transform } from "../componets/Transform";
 import { Room } from 'colyseus.js';
 
 import * as Collisions from 'detect-collisions';
-import { circleCollidersByEid } from "./CollisionsSystem";
+import { circleCollidersByEid } from "./collisions/ColliderSystem";
 import { Interpolate } from "../componets/Interpolate";
 import { ClientPlayerInput } from "../componets/ClientPlayerInput";
 import { positionBufferByEid, saveBuffer } from "./InterpolateSystem";
+import { trySeparateCircleColliderFromStatic } from "./collisions/ColliderSystem";
 
 export enum PlayerState {
     Idol,
@@ -106,7 +107,7 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
 
         // update (NOTE: there should only ever be one client input eid)
         onUpdate(world).forEach(eid => {
-            // determine input type
+            // determine input type and play once off anims and sounds depending on input
             let targetGA = "GA_Idol";
             if (!waiting) {
                 if (w_key?.isDown || a_key?.isDown || s_key?.isDown || d_key?.isDown) {
@@ -116,7 +117,12 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
                     targetGA = "GA_Dash";
                     waiting = true;
                     setTimeout(() => {waiting = false}, 100);
-                    playDashAnim(scene, dir.x, dir.y, eid, 100);
+                    playDashAnim(
+                        scene, 
+                        {x: Transform.x[eid], y: Transform.y[eid]},
+                        {x: Transform.x[eid]+dir.x*500, y: Transform.y[eid]+dir.y*500}, 
+                        eid, 
+                        100);
                 }
                 if (j_release) {
                     targetGA = "GA_MeleeAttack";
@@ -149,16 +155,13 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
                 id: sequence_number++
             }
 
-            room.send("client-input", input);
-            
-            if (ClientPlayerInput.isClientSidePrediction[eid]) {
-                // do client side prediction
-                applyInput(eid, input);
+            // move player, check for collisions and save final position in buffer
+            applyInput(eid, input);
+            trySeparateCircleColliderFromStatic(circleCollidersByEid.get(eid), eid);
+            saveBuffer(eid);
 
-                // THESE TWO FUNCTIONS COULD BE MOVED OUT OF HERE
-                resolveCollisions(eid);
-                saveBuffer(eid);
-            }
+            // update server with latest input
+            room.send("client-input", input);
             
             // add to pending inputs
             pending_inputs.push(input);
@@ -196,47 +199,22 @@ export const applyInput = (eid: number, input: IInput) => {
     }
 }
 
-export const resolveCollisions = (eid: number) => {
-    const playerCollider = circleCollidersByEid.get(eid);
-    if (!playerCollider) return;
-    const collisionSystem = playerCollider.system;
-    if (!collisionSystem) return;
-
-    // 1. set collider to player
-    playerCollider.setPosition(
-        Transform.x[eid],
-        Transform.y[eid]
-    );
-
-    // 2. do collisions
-    collisionSystem.checkOne(playerCollider, (response: Collisions.Response) => {
-        const { overlapV } = response;
-        playerCollider.setPosition(
-            playerCollider.x - overlapV.x,
-            playerCollider.y - overlapV.y
-        )
-    });
-
-    // 3. set player to new collider
-    Transform.x[eid] = playerCollider.x;
-    Transform.y[eid] = playerCollider.y;
-}
-
-
-
-const playDashAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, duration_ms: number) => {
+export const playDashAnim = (scene: Phaser.Scene, start: {x:number,y:number}, finish: {x:number,y:number}, eid: number, duration_ms: number) => {
+// export const playDashAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, duration_ms: number) => {
     const line = scene.add.line(
         0,
         0,
-        Transform.x[eid], // start x
-        Transform.y[eid], // start y
-        Transform.x[eid] + dx*500, // end x
-        Transform.y[eid] + dy*500, // end y
+        start.x,
+        start.y,
+        finish.x,
+        finish.y,
         0x66ff66
     )
         .setOrigin(0,0)
         .setDepth(-1)
         .setAlpha(0)
+
+    console.log(line);
 
     scene.add.tween({
         targets: line,

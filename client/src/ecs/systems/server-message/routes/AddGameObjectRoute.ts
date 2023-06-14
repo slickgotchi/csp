@@ -12,7 +12,7 @@ import { sRectangle } from "../../../../../../server/src/types/sRectangle";
 
 
 
-export const addGameObjectRoute = (message: IMessage, room: Room, world: IWorld) => {
+export const addGameObjectRoute = (message: IMessage, room: Room, world: IWorld, scene: Phaser.Scene) => {
     const goType = message.payload.type;
     const handler = (createPfRoutes as any)[goType];
     handler(room, world, message.payload);

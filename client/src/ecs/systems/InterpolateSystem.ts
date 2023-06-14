@@ -1,8 +1,9 @@
-import { IWorld, defineQuery, defineSystem, enterQuery } from "bitecs"
+import { IWorld, defineQuery, defineSystem, enterQuery, hasComponent } from "bitecs"
 import { Interpolate } from "../componets/Interpolate";
 import { Transform } from "../componets/Transform";
 import { Timer } from "../../utilities/Timer";
 import { ArcUtils } from "../../utilities/ArcUtils";
+import { Enemy } from "../componets/Enemy";
 // import { position_buffer } from "./ClientPlayerInputSystem";
 
 interface IPosition {
@@ -47,6 +48,9 @@ export const createInterpolateSystem = () => {
         onUpdate(world).forEach(eid => {
             // update interp
             Interpolate.dt_ms[eid] += timer.dt_ms;
+
+            // if (hasComponent(world, Enemy, eid))
+            // saveBuffer(eid);
 
             const position_buffer = positionBufferByEid.get(eid);
             if (position_buffer) {

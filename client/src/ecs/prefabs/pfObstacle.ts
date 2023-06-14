@@ -8,6 +8,7 @@ import { Enemy } from "../componets/Enemy";
 import { ServerMessage } from "../componets/ServerMessage";
 import { Rectangle } from "../componets/Rectangle";
 import { BoxCollider } from "../componets/BoxCollider";
+import { Collider, ColliderShape } from "../componets/collisions/Collider";
 
 
 interface iProps {
@@ -35,9 +36,15 @@ export const createPfObstacle = (props: iProps) => {
     Rectangle.width[eid] = props.width;
     Rectangle.height[eid] = props.height;
 
-    addComponent(props.world, BoxCollider, eid);
-    BoxCollider.width[eid] = props.width;
-    BoxCollider.height[eid] = props.height;
+    // addComponent(props.world, BoxCollider, eid);
+    // BoxCollider.width[eid] = props.width;
+    // BoxCollider.height[eid] = props.height;
+
+    addComponent(props.world, Collider, eid);
+    Collider.shape[eid] = ColliderShape.Box;
+    Collider.width[eid] = props.width;
+    Collider.height[eid] = props.height;
+    Collider.isStatic[eid] = 1;
     
     addComponent(props.world, Color, eid);
     Color.val[eid] = props.color;

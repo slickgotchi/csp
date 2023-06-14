@@ -1,13 +1,13 @@
-import { IWorld, defineQuery, defineSystem, enterQuery, exitQuery } from "bitecs";
-import GameRoom from "../../../rooms/Game";
+import { IWorld, defineQuery, defineSystem, enterQuery, exitQuery, hasComponent } from "bitecs";
 import * as Collisions from 'detect-collisions';
-import { Collider, ColliderShape } from "../../components/collisions/Collider";
-import { Transform } from "../../components/Transform";
+import { Collider, ColliderShape } from "../../componets/collisions/Collider";
+import { Transform } from "../../componets/Transform";
+import { ClientPlayerInput } from "../../componets/ClientPlayerInput";
 
-export const collidersByEid = new Map<number, Collisions.Circle | Collisions.Box>();
+export const circleCollidersByEid = new Map<number, Collisions.Circle>();
+export const boxCollidersByEid = new Map<number, Collisions.Box>();
 
-
-export const createColliderSystem = (room: GameRoom, world: IWorld, system: Collisions.System) => {
+export const createColliderSystem = (world: IWorld, system: Collisions.System) => {
     const onUpdate = defineQuery([Collider]);
     const onAdd = enterQuery(onUpdate);
     const onRemove = exitQuery(onUpdate);
@@ -25,7 +25,7 @@ export const createColliderSystem = (room: GameRoom, world: IWorld, system: Coll
                     );
                     circ.isStatic = Collider.isStatic[eid] === 1;
                     circ.isTrigger = Collider.isTrigger[eid] === 1;
-                    collidersByEid.set(eid, circ);
+                    circleCollidersByEid.set(eid, circ);
                     break;
                 }
                 case ColliderShape.Box: {
@@ -36,7 +36,7 @@ export const createColliderSystem = (room: GameRoom, world: IWorld, system: Coll
                     );
                     box.isStatic = Collider.isStatic[eid] === 1;
                     box.isTrigger = Collider.isTrigger[eid] === 1;
-                    collidersByEid.set(eid, box);
+                    boxCollidersByEid.set(eid, box);
                     break;
                 }
                 default: break;
@@ -46,23 +46,26 @@ export const createColliderSystem = (room: GameRoom, world: IWorld, system: Coll
         onUpdate(world).forEach(eid => {
             switch (Collider.shape[eid]) {
                 case ColliderShape.Circle: {
-                    const circ = collidersByEid.get(eid);
-                    if (circ) {
-                        circ.setPosition(Transform.x[eid], Transform.y[eid]);
-
-                        if (Collider.isAutoStaticSeparate[eid]) {
-                            separateFromStaticColliders(eid, circ);
-                        }
+                    if (Collider.isAutoStaticSeparate[eid] && !hasComponent(world, ClientPlayerInput, eid)) {
+                        const circ = circleCollidersByEid.get(eid);
+                        trySeparateCircleColliderFromStatic(circ, eid);
                     }
                     break;
                 }
                 case ColliderShape.Box: {
-                    const box = collidersByEid.get(eid);
+                    const box = boxCollidersByEid.get(eid);
                     if (box) {
                         box.setPosition(Transform.x[eid], Transform.y[eid]);
 
                         if (Collider.isAutoStaticSeparate[eid]) {
-                            separateFromStaticColliders(eid, box);
+                            system.checkOne(box, (response: Collisions.Response) => {
+                                const { overlapV, b } = response;
+                                if (b.isStatic) {
+                                    box.setPosition(box.x - overlapV.x, box.y - overlapV.y);
+                                    Transform.x[eid] = box.x;
+                                    Transform.y[eid] = box.y;
+                                }
+                            });
                         }
                     }
                     break;
@@ -76,19 +79,20 @@ export const createColliderSystem = (room: GameRoom, world: IWorld, system: Coll
     });
 }
 
-export const separateFromStaticColliders = (eid: number, body: Collisions.Circle | Collisions.Box | undefined) => {
-    if (!body) return;
-    const system = body.system;
+export const trySeparateCircleColliderFromStatic = (circle: Collisions.Circle | undefined, eid: number) => {
+    if (!circle) return;
+    const system = circle.system;
     if (!system) return;
 
-    body.setPosition(Transform.x[eid], Transform.y[eid]);
-    system.checkOne(body, (response: Collisions.Response) => {
+    circle.setPosition(Transform.x[eid], Transform.y[eid]);
+
+    system.checkOne(circle, (response: Collisions.Response) => {
         const { overlapV, b } = response;
         if (b.isStatic) {
-            body.setPosition(body.x - overlapV.x, body.y - overlapV.y);
-            Transform.x[eid] = body.x;
-            Transform.y[eid] = body.y;
+            circle.setPosition(circle.x - overlapV.x, circle.y - overlapV.y);
+            Transform.x[eid] = circle.x;
+            Transform.y[eid] = circle.y;
         }
-    })
-
+    });
+    
 }

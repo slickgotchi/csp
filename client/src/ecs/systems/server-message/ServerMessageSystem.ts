@@ -3,6 +3,8 @@ import { Room } from "colyseus.js";
 import { sGameObject } from "../../../../../server/src/types/sGameObject";
 import { serverMessageRoutes } from "./routes";
 
+import { Message } from '../../../../../server/src/types/Messages';
+
 export interface IMessage {
     name: string;
     payload: any;
@@ -11,7 +13,7 @@ export interface IMessage {
 
 export const messages: IMessage[] = [];
 
-export const createServerMessageSystem = (room: Room) => {
+export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
 
     // SERVER MESSAGE RECEIVED PROCESSING
     room.onMessage('server-update', () => {
@@ -30,6 +32,14 @@ export const createServerMessageSystem = (room: Room) => {
         });
     });
 
+    room.onMessage(Message.PlayerDash, payload => {
+        messages.push({
+            name: 'player-dash',
+            payload: payload,
+            recv_ms: Date.now()
+        })
+    })
+
     // SERVER MESSAGE PROCESSING
     return defineSystem((world: IWorld) => {
         const now = Date.now();
@@ -39,7 +49,7 @@ export const createServerMessageSystem = (room: Room) => {
             if (message.recv_ms <= now) {
                 // grab and run handler for that message
                 const handler = (serverMessageRoutes as any)[message.name];
-                handler(message, room, world);
+                handler(message, room, world, scene);
 
                 // remove the message
                 messages.splice(i,1);

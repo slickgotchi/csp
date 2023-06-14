@@ -6,11 +6,13 @@ import { sPlayer } from "../../../../../../server/src/types/sPlayer";
 import { sEnemy } from "../../../../../../server/src/types/sEnemy";
 import { Transform } from "../../../componets/Transform";
 import { saveBuffer } from "../../InterpolateSystem";
-import { applyInput, pending_inputs, resolveCollisions } from "../../ClientPlayerInputSystem";
+import { applyInput, pending_inputs } from "../../ClientPlayerInputSystem";
+import { trySeparateCircleColliderFromStatic } from "../../collisions/ColliderSystem";
+import { circleCollidersByEid } from "../../collisions/ColliderSystem";
 
 const onUpdate = defineQuery([ServerMessage]);
 
-export const serverUpdateRoute = (message: IMessage, room: Room, world: IWorld) => {
+export const serverUpdateRoute = (message: IMessage, room: Room, world: IWorld, scene: Phaser.Scene) => {
     onUpdate(world).forEach(eid => {
         const serverEid = ServerMessage.serverEid[eid].toString();
         const go = room.state.gameObjects.get(serverEid);
@@ -49,7 +51,7 @@ const handlePlayerUpdate = (room: Room, go: sPlayer, eid: number) => {
                     pending_inputs.splice(j,1);
                 } else {
                     applyInput(eid, input);
-                    resolveCollisions(eid);
+                    trySeparateCircleColliderFromStatic(circleCollidersByEid.get(eid), eid);
                     j++;
                 }
             }

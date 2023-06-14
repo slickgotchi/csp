@@ -17,6 +17,8 @@ import { IInput, IInputMessage } from "../../../../types/Input";
 import { sPlayer } from "../../../../types/sPlayer";
 import { sGameObject } from "../../../../types/sGameObject";
 import { Transform } from "../../../components/Transform";
+import { GA_Dash } from "../../../components/gas/gameplay-abilities/GA_Dash";
+import { tryActivateGA_Dash } from "../gameplay-abilities/GA_DashSystem";
 
 export const createASC_PlayerSystem = (room: GameRoom) => {
 
@@ -80,9 +82,8 @@ const tryActivateGA_Move = (world: IWorld, eid: number, input: IInput) => {
     Transform.y[eid] += 400 * input.move.dy * input.dt_ms * 0.001;
 }
 
-const tryActivateGA_Dash = (world: IWorld, eid: number, input: IInput) => {
-    Transform.x[eid] += input.move.dx * 500;
-    Transform.y[eid] += input.move.dy * 500;
+const tryActivateGA_DashRoute = (world: IWorld, eid: number, input: IInput) => {
+    tryActivateGA_Dash(eid, input.move.dx, input.move.dy, 500);
 }
 
 const tryActivateGA_MeleeAttack = (world: IWorld, eid: number, input: IInput) => {
@@ -101,7 +102,7 @@ const tryActivateGA_Wait = (world: IWorld, eid: number, input: IInput) => {
 export const tryActivateGA_Routes = {
     "GA_Idol": tryActivateGA_Idol,
     'GA_Movement': tryActivateGA_Move,
-    "GA_Dash": tryActivateGA_Dash,
+    "GA_Dash": tryActivateGA_DashRoute,
     "GA_MeleeAttack": tryActivateGA_MeleeAttack,
     "GA_RangedAttack": tryActivateGA_RangedAttack,
     "GA_Wait": tryActivateGA_Wait,
