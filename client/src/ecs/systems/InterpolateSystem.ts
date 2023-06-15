@@ -85,6 +85,10 @@ export const createInterpolateSystem = () => {
                     const lerp = (interpTime_ms - position_buffer[a].serverTime_ms) / (position_buffer[b].serverTime_ms - position_buffer[a].serverTime_ms);
                     Interpolate.x[eid] = ArcUtils.Scalar.lerp(position_buffer[a].x, position_buffer[b].x, lerp);
                     Interpolate.y[eid] = ArcUtils.Scalar.lerp(position_buffer[a].y, position_buffer[b].y, lerp);
+
+                    if (hasComponent(world, Player, eid) && !hasComponent(world, ClientPlayerInput, eid)) {
+                        // console.log(lerp, interpTime_ms);
+                    }
                     
                 }
 

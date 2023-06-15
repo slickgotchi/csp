@@ -14,21 +14,30 @@ export const createAT_MoveSystem = () => {
         timer.tick();
 
         onUpdate(world).forEach(eid => {
-            AT_Move.timer_ms[eid] += timer.dt_ms;
+            AT_Move.duration_ms[eid] -= timer.dt_ms;
 
-            if (AT_Move.duration_ms[eid] <= 0) {
-                Transform.x[eid] += AT_Move.dx[eid];
-                Transform.y[eid] += AT_Move.dy[eid];
-                removeComponent(world, AT_Move, eid);
+            if (AT_Move.duration_ms[eid] > 0) {
+                Transform.x[eid] += AT_Move.vx[eid] * timer.dt_ms * 0.001;
+                Transform.y[eid] += AT_Move.vy[eid] * timer.dt_ms * 0.001;
             } else {
-                if (AT_Move.timer_ms[eid] <= AT_Move.duration_ms[eid]) {
-                    const interp = timer.dt_ms / AT_Move.duration_ms[eid];
-                    Transform.x[eid] += AT_Move.dx[eid] * interp;
-                    Transform.y[eid] += AT_Move.dy[eid] * interp;
-                } else {
-                    removeComponent(world, AT_Move, eid);
-                }
+                removeComponent(world, AT_Move, eid);
             }
+
+            // AT_Move.timer_ms[eid] += timer.dt_ms;
+
+            // if (AT_Move.timer_ms[eid] > AT_Move.duration_ms[eid]) {
+            //     Transform.x[eid] += AT_Move.dx[eid];
+            //     Transform.y[eid] += AT_Move.dy[eid];
+            //     removeComponent(world, AT_Move, eid);
+            // } else {
+            //     if (AT_Move.timer_ms[eid] <= AT_Move.duration_ms[eid]) {
+            //         const interp = timer.dt_ms / AT_Move.duration_ms[eid];
+            //         Transform.x[eid] += AT_Move.dx[eid] * interp;
+            //         Transform.y[eid] += AT_Move.dy[eid] * interp;
+            //     } else {
+            //         removeComponent(world, AT_Move, eid);
+            //     }
+            // }
         });
 
         return world;

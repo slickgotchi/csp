@@ -29,8 +29,8 @@ export const createASC_EnemySystem = (room: GameRoom) => {
 
                 enemyGo.timer_ms = Math.random()*3000 + 1000;
             }
-            Transform.x[eid] += enemyGo.dx * 50 * timer.dt_ms * 0.001;
-            Transform.y[eid] += enemyGo.dy * 50 * timer.dt_ms * 0.001;
+            Transform.x[eid] += enemyGo.dx * 150 * timer.dt_ms * 0.001;
+            Transform.y[eid] += enemyGo.dy * 150 * timer.dt_ms * 0.001;
         });
 
         return world;
