@@ -158,7 +158,7 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
             // move player, check for collisions and save final position in buffer
             applyInput(eid, input);
             trySeparateCircleColliderFromStatic(circleCollidersByEid.get(eid), eid);
-            saveBuffer(eid);
+            saveBuffer(room, eid);
 
             // update server with latest input
             room.send("client-input", input);
@@ -213,8 +213,6 @@ export const playDashAnim = (scene: Phaser.Scene, start: {x:number,y:number}, fi
         .setOrigin(0,0)
         .setDepth(-1)
         .setAlpha(0)
-
-    console.log(line);
 
     scene.add.tween({
         targets: line,

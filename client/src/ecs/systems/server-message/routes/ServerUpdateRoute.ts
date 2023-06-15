@@ -22,7 +22,7 @@ export const serverUpdateRoute = (message: IMessage, room: Room, world: IWorld, 
                 break;
             }
             case 'enemy': {
-                handleEnemyUpdate(go as sEnemy, eid);
+                handleEnemyUpdate(room, go as sEnemy, eid);
                 break;
             }
             default: break;
@@ -36,7 +36,7 @@ const handlePlayerUpdate = (room: Room, go: sPlayer, eid: number) => {
     if (playerGo.sessionId !== room.sessionId) {
         Transform.x[eid] = go.x;
         Transform.y[eid] = go.y;
-        saveBuffer(eid);
+        saveBuffer(room, eid);
     } else {
         // update transform with authrative state
         Transform.x[eid] = go.x;
@@ -59,8 +59,8 @@ const handlePlayerUpdate = (room: Room, go: sPlayer, eid: number) => {
     }
 }
 
-const handleEnemyUpdate = (go: sEnemy, eid: number) => {
+const handleEnemyUpdate = (room: Room, go: sEnemy, eid: number) => {
     Transform.x[eid] = go.x;
     Transform.y[eid] = go.y;
-    saveBuffer(eid);
+    saveBuffer(room, eid);
 }

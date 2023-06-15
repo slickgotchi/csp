@@ -47,7 +47,7 @@ export const createASC_PlayerSystem = (room: GameRoom) => {
                 for (let i = 0; i < playerGo.inputMessages.length; i++) {
                     let message = playerGo.inputMessages[i];
                     if (message.recv_ms <= now) {
-                        // remove input message from queue
+                        // remove input mesaasage from queue
                         playerGo.inputMessages.splice(i,1);
         
                         // validate our message

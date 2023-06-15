@@ -105,6 +105,9 @@ export default class GameRoom extends Room<GameState> {
     }
 
     updateMatch(dt_ms: number) {
+        // update server time
+        this.state.serverTime_ms += dt_ms;
+
         // run systems
         this.systems.forEach(system => {
             system(this.world);

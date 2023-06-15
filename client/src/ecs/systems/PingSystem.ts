@@ -1,11 +1,11 @@
 import { IWorld } from "bitecs";
 import { Room } from "colyseus.js";
 
+export let ping = 0;
 
 export const createPingSystem = (room: Room, scene: Phaser.Scene) => {
 
     const ping_buffer: number[] = [];
-    let ping = 0;
     
     room.onMessage('server-ping', client_time_ms => {
         const now = Date.now();

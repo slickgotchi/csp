@@ -3,4 +3,5 @@ import { sGameObject } from "./sGameObject";
 
 export interface IGameState {
     gameObjects: MapSchema<sGameObject>;
+    serverTime_ms: number;
 }
