@@ -41,6 +41,7 @@ export const createCircleSystem = (world: IWorld, scene: Phaser.Scene) => {
                         Transform.y[eid]
                     )
                 }
+                circle.fillColor = Color.val[eid];
             }
         })
 

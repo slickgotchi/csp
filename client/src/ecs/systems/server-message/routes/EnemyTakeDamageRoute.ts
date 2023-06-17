@@ -1,34 +1,25 @@
 import { Room } from "colyseus.js";
 import { IMessage } from "../ServerMessageSystem";
 import { IWorld, defineQuery, hasComponent } from "bitecs";
-import { Player } from "../../../componets/Player";
-import { ServerMessage } from "../../../componets/ServerMessage";
-import { ClientPlayerInput } from "../../../componets/ClientPlayerInput";
-import { playDashAnim, playMeleeAttackAnim } from "../../ClientPlayerInputSystem";
-import { ping } from "../../PingSystem";
 import { Enemy } from "../../../componets/Enemy";
+import { ServerMessage } from "../../../componets/ServerMessage";
+import { Color } from "../../../componets/Color";
 
 const onUpdate = defineQuery([Enemy]);
 
 export const enemyTakeDamageRoute = (message: IMessage, room: Room, world: IWorld, scene: Phaser.Scene) => {
-
-    createDamagePopup(scene, message.payload.damage, message.payload.x, message.payload.y);
-
-
-    // onUpdate(world).forEach(eid => {
-    //     if (!hasComponent(world, ClientPlayerInput, eid)) {
-    //         if (ServerMessage.serverEid[eid] === message.payload.serverEid) {
-    //             setTimeout(() => {
-    //                 playMeleeAttackAnim(
-    //                     scene, 
-    //                     message.payload.start, 
-    //                     message.payload.dir, 
-    //                     200);
-
-    //             },ping/2 + 100 + 100)
-    //         }
-    //     }
-    // })
+    onUpdate(world).forEach(eid => {
+        if (ServerMessage.serverEid[eid] === message.payload.serverEid) {
+            Color.val[eid] = 0xffffff;
+            setTimeout(() => { Color.val[eid] = 0xff6666 }, 100)
+            setTimeout(() => { Color.val[eid] = 0xffffff }, 200)
+            setTimeout(() => { Color.val[eid] = 0xff6666 }, 300)
+        }
+    })
+    
+    setTimeout(() => {
+        createDamagePopup(scene, message.payload.damage, message.payload.x, message.payload.y);
+    }, 0);
 }
 
 const createDamagePopup = (scene: Phaser.Scene, damage: number, x: number, y: number) => {

@@ -18,7 +18,7 @@ export const playerRangedAttackRoute = (message: IMessage, room: Room, world: IW
                         scene, 
                         message.payload.start, 
                         message.payload.dir, 
-                        200);
+                    );
 
                 },ping/2 + 100 + 100)
             }

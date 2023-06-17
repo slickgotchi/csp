@@ -1,4 +1,5 @@
 # To Do List
+- Move game abilities, GAS, ASC etc. over to the client code as well
 - Tidy ServerMessage messages to allow for different message receipts
 - Make dash and attack anims show on other players screen
 - Develop system that handles server events e.g. NPC attacks

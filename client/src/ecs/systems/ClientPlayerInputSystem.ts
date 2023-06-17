@@ -7,11 +7,10 @@ import { Transform } from "../componets/Transform";
 import { Room } from 'colyseus.js';
 
 import * as Collisions from 'detect-collisions';
-import { circleCollidersByEid } from "./collisions/ColliderSystem";
 import { Interpolate } from "../componets/Interpolate";
 import { ClientPlayerInput } from "../componets/ClientPlayerInput";
 import { positionBufferByEid, saveBuffer } from "./InterpolateSystem";
-import { trySeparateCircleColliderFromStatic } from "./collisions/ColliderSystem";
+import { collidersByEid, separateFromStaticColliders } from "./collisions/ColliderSystem";
 
 export enum PlayerState {
     Idol,
@@ -155,7 +154,7 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
 
             // apply input, check collisions, save buffer pos
             applyInput(eid, input);
-            trySeparateCircleColliderFromStatic(circleCollidersByEid.get(eid), eid);
+            separateFromStaticColliders(eid, collidersByEid.get(eid));
             saveBuffer(room, eid);
 
             // store final position
@@ -200,6 +199,9 @@ export const applyInput = (eid: number, input: IInput) => {
         case "GA_MeleeAttack": {
             Transform.x[eid] += input.move.dx * 100;
             Transform.y[eid] += input.move.dy * 100;
+
+            
+
             break;
         }
         default: break;
@@ -209,22 +211,22 @@ export const applyInput = (eid: number, input: IInput) => {
 export const playAnim = (scene: Phaser.Scene, targetGA: string, start: {x:number,y:number}, finish: {x:number,y:number}, dir: {x:number,y:number} ) => {
     switch (targetGA) {
         case "GA_Dash": {
-            playDashAnim( scene, start, finish, 100 );
+            playDashAnim( scene, start, finish);
             break;
         }
         case "GA_MeleeAttack": {
-            playMeleeAttackAnim(scene, start, dir, 500);
+            playMeleeAttackAnim(scene, start, dir);
             break;
         }
         case "GA_RangedAttack": {
-            playRangedAttackAnim(scene, start, dir, 200);
+            playRangedAttackAnim(scene, start, dir);
             break;
         }
         default: break;
     }
 }
 
-export const playDashAnim = (scene: Phaser.Scene, start: {x:number,y:number}, finish: {x:number,y:number}, duration_ms: number) => {
+export const playDashAnim = (scene: Phaser.Scene, start: {x:number,y:number}, finish: {x:number,y:number}) => {
 // export const playDashAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, duration_ms: number) => {
     const line = scene.add.line(
         0,
@@ -242,7 +244,7 @@ export const playDashAnim = (scene: Phaser.Scene, start: {x:number,y:number}, fi
     scene.add.tween({
         targets: line,
         alpha: 1,
-        duration: duration_ms,
+        duration: 125,
         yoyo: true,
         onComplete: () => {
             line.destroy();
@@ -250,7 +252,7 @@ export const playDashAnim = (scene: Phaser.Scene, start: {x:number,y:number}, fi
     });
 }
 
-export const playMeleeAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}, duration_ms: number) => {
+export const playMeleeAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}) => {
     // create circle
     const circ = scene.add.circle(
         start.x + dir.x*200,
@@ -264,14 +266,15 @@ export const playMeleeAttackAnim = (scene: Phaser.Scene, start: {x:number,y:numb
     scene.add.tween({
         targets: circ,
         alpha: 0,
-        duration: duration_ms,
+        duration: 500,
+        ease: 'Quad.easeIn',
         onComplete: () => {
             circ.destroy();
         }
     })
 }   
 
-export const playRangedAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}, duration_ms: number) => {
+export const playRangedAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}) => {
     // create circle
     const circ = scene.add.circle(
         start.x + dir.x * 85,
@@ -286,7 +289,7 @@ export const playRangedAttackAnim = (scene: Phaser.Scene, start: {x:number,y:num
         targets: circ,
         x: start.x + dir.x*1000,
         y: start.y + dir.y*1000,
-        duration: duration_ms,
+        duration: 250,
         onComplete: () => {
             circ.destroy();
         }

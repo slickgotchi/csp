@@ -7,8 +7,7 @@ import { sEnemy } from "../../../../../../server/src/types/sEnemy";
 import { Transform } from "../../../componets/Transform";
 import { saveBuffer } from "../../InterpolateSystem";
 import { applyInput, pending_inputs } from "../../ClientPlayerInputSystem";
-import { trySeparateCircleColliderFromStatic } from "../../collisions/ColliderSystem";
-import { circleCollidersByEid } from "../../collisions/ColliderSystem";
+import { collidersByEid, separateFromStaticColliders } from "../../collisions/ColliderSystem";
 
 const onUpdate = defineQuery([ServerMessage]);
 
@@ -51,7 +50,7 @@ const handlePlayerUpdate = (room: Room, go: sPlayer, eid: number) => {
                     pending_inputs.splice(j,1);
                 } else {
                     applyInput(eid, input);
-                    trySeparateCircleColliderFromStatic(circleCollidersByEid.get(eid), eid);
+                    separateFromStaticColliders(eid, collidersByEid.get(eid));
                     j++;
                 }
             }

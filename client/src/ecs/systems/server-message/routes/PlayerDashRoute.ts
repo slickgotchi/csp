@@ -14,7 +14,11 @@ export const playerDashRoute = (message: IMessage, room: Room, world: IWorld, sc
         if (!hasComponent(world, ClientPlayerInput, eid)) {
             if (ServerMessage.serverEid[eid] === message.payload.serverEid) {
                 setTimeout(() => {
-                    playDashAnim(scene, message.payload.start, message.payload.finish, 100);
+                    playDashAnim(
+                        scene, 
+                        message.payload.start, 
+                        message.payload.finish
+                    );
 
                 },ping/2 + 100 + 100)
             }

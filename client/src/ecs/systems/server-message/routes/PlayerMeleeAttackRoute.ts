@@ -18,7 +18,7 @@ export const playerMeleeAttackRoute = (message: IMessage, room: Room, world: IWo
                         scene, 
                         message.payload.start, 
                         message.payload.dir, 
-                        200);
+                    );
 
                 },ping/2 + 100 + 100)
             }
