@@ -12,9 +12,6 @@ export const createColliderSystem = (room: GameRoom, world: IWorld, system: Coll
     const onAdd = enterQuery(onUpdate);
     const onRemove = exitQuery(onUpdate);
 
-    // const circlesByEid = new Map<number, Collisions.Circle>();
-    // const boxesByEid = new Map<number, Collisions.Box>();
-
     return defineSystem((world: IWorld) => {
         onAdd(world).forEach(eid => {
             switch (Collider.shape[eid]) {

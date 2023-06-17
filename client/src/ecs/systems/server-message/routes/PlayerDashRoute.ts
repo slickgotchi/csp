@@ -5,6 +5,7 @@ import { Player } from "../../../componets/Player";
 import { ServerMessage } from "../../../componets/ServerMessage";
 import { ClientPlayerInput } from "../../../componets/ClientPlayerInput";
 import { playDashAnim } from "../../ClientPlayerInputSystem";
+import { ping } from "../../PingSystem";
 
 const onUpdate = defineQuery([Player]);
 
@@ -15,7 +16,7 @@ export const playerDashRoute = (message: IMessage, room: Room, world: IWorld, sc
                 setTimeout(() => {
                     playDashAnim(scene, message.payload.start, message.payload.finish, eid, 100);
 
-                },100)
+                },ping/2 + 100)
             }
         }
     })

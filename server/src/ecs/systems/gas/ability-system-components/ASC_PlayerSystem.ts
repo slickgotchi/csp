@@ -12,14 +12,14 @@ https://docs.unrealengine.com/4.26/en-US/InteractiveExperiences/GameplayAbilityS
 import { IWorld, defineQuery, defineSystem } from "bitecs"
 import GameRoom from "../../../../rooms/Game";
 import { ASC_Player } from "../../../components/gas/ability-system-components/ASC_Player";
-import { Client } from "colyseus";
+import { Client, Room } from "colyseus";
 import { IInput, IInputMessage } from "../../../../types/Input";
 import { sPlayer } from "../../../../types/sPlayer";
 import { sGameObject } from "../../../../types/sGameObject";
 import { Transform } from "../../../components/Transform";
 import { GA_Dash } from "../../../components/gas/gameplay-abilities/GA_Dash";
 import { tryActivateGA_Dash } from "../gameplay-abilities/GA_DashSystem";
-import { tryActivateGA_Move } from "../gameplay-abilities/GA_MovementSystem";
+import { tryActivateGA_Move } from "../gameplay-abilities/GA_MoveSystem";
 
 export const createASC_PlayerSystem = (room: GameRoom) => {
 
@@ -55,7 +55,7 @@ export const createASC_PlayerSystem = (room: GameRoom) => {
                         message = validateInputMessage(message);
         
                         // apply input
-                        applyInput(world, playerGo.serverEid, playerGo, message.input);
+                        applyInput(room, world, playerGo.serverEid, playerGo, message.input);
                     }
                 }
             }   
@@ -66,39 +66,58 @@ export const createASC_PlayerSystem = (room: GameRoom) => {
 }
 
 // use router to find correct ability to activate
-const applyInput = (world: IWorld, eid: number, gameObject: sGameObject, input: IInput) => {
+const applyInput = (room: Room, world: IWorld, eid: number, gameObject: sGameObject, input: IInput) => {
     const handler = (tryActivateGA_Routes as any)[input.tryActivateGA];
-    handler(world, eid, input);
+    handler(room, world, eid, input);
 
     (gameObject as sPlayer).last_processed_input = input.id;
 }
 
 // abilities
-const tryActivateGA_Idol = (world: IWorld, eid: number, input: IInput) => {
+const tryActivateGA_Idol = (room: Room, world: IWorld, eid: number, input: IInput) => {
     
 }
 
-const tryActivateGA_MoveRoute = (world: IWorld, eid: number, input: IInput) => {
-    // Transform.x[eid] += 400 * input.move.dx * input.dt_ms * 0.001;
-    // Transform.y[eid] += 400 * input.move.dy * input.dt_ms * 0.001;
+const tryActivateGA_MoveRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
+    Transform.x[eid] += 400 * input.move.dx * input.dt_ms * 0.001;
+    Transform.y[eid] += 400 * input.move.dy * input.dt_ms * 0.001;
+    // separateFromStaticColliders(eid, collidersByEid.get(eid));
+    // room.broadcast(Message.UpdatePlayerPosition, {
+    //     serverEid: eid,
+    //     x: Transform.x[eid],
+    //     y: Transform.y[eid]
+    // })
+    // const go = room.state.gameObjects.get(eid.toString()) as sGameObject;
+    // if (go) {
+    //     go.x = Transform.x[eid];
+    //     go.y = Transform.y[eid];
+    // }
+
+    tryActivateGA_Move(
+        eid,
+        400*input.move.dx*input.dt_ms*0.001,
+        400*input.move.dy*input.dt_ms*0.001
+    )
+
+
     // tryActivateGA_Move(world, eid, 400*input.move.dx*0.1, 400*input.move.dy*0.1, 100);
-    tryActivateGA_Move(world, eid, 400*input.move.dx, 400*input.move.dy, 100);
+    // tryActivateGA_Move(world, eid, 400*input.move.dx, 400*input.move.dy, 100);
 }
 
-const tryActivateGA_DashRoute = (world: IWorld, eid: number, input: IInput) => {
+const tryActivateGA_DashRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
     tryActivateGA_Dash(eid, input.move.dx, input.move.dy, 500);
 }
 
-const tryActivateGA_MeleeAttack = (world: IWorld, eid: number, input: IInput) => {
+const tryActivateGA_MeleeAttack = (room: Room, world: IWorld, eid: number, input: IInput) => {
     Transform.x[eid] += input.move.dx * 100;
     Transform.y[eid] += input.move.dy * 100;
 }
 
-const tryActivateGA_RangedAttack = (world: IWorld, eid: number, input: IInput) => {
+const tryActivateGA_RangedAttack = (room: Room, world: IWorld, eid: number, input: IInput) => {
     
 }
 
-const tryActivateGA_Wait = (world: IWorld, eid: number, input: IInput) => {
+const tryActivateGA_Wait = (room: Room, world: IWorld, eid: number, input: IInput) => {
     
 }
 

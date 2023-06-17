@@ -25,7 +25,7 @@ const gameServer = new Server({
 
 gameServer.define('game', GameRoom);
 
-gameServer.simulateLatency(500);
+gameServer.simulateLatency(250);
 
 gameServer.listen(port);
 

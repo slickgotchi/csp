@@ -5,5 +5,6 @@ const getID = () => {
 }
 
 export const Message = {
-    PlayerDash: getID()
+    PlayerDash: getID(),
+    UpdatePlayerPosition: getID(),
 }

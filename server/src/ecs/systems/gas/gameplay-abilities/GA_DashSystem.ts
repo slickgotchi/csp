@@ -1,11 +1,6 @@
 import { IWorld, addComponent, defineQuery, defineSystem } from "bitecs"
 import GameRoom from "../../../../rooms/Game";
-import { Client } from "colyseus";
-import { sPlayer } from "../../../../types/sPlayer";
-import { sGameObject } from "../../../../types/sGameObject";
 import { Transform } from "../../../components/Transform";
-import { IInput } from "../../../../types/Input";
-import { GA_Movement } from "../../../components/gas/gameplay-abilities/GA_Movement";
 import { GA_Dash } from "../../../components/gas/gameplay-abilities/GA_Dash";
 import { collidersByEid, separateFromStaticColliders } from "../../collisions/ColliderSystem";
 import { Message } from "../../../../types/Messages";

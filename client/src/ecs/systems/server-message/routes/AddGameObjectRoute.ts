@@ -19,14 +19,14 @@ export const addGameObjectRoute = (message: IMessage, room: Room, world: IWorld,
 }
 
 const createPfPlayerRoute = (room: Room, world: IWorld, go: sGameObject) => {
-    if (room.sessionId === (go as sPlayer).sessionId) {
-        createPfPlayerShadow({
-            world: world,
-            serverEid: go.serverEid,
-            x: go.x,
-            y: go.y,
-        });
-    }
+    // if (room.sessionId === (go as sPlayer).sessionId) {
+    //     createPfPlayerShadow({
+    //         world: world,
+    //         serverEid: go.serverEid,
+    //         x: go.x,
+    //         y: go.y,
+    //     });
+    // }
 
     createPfPlayer({
         room: room,

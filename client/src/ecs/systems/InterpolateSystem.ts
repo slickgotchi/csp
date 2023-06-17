@@ -62,59 +62,13 @@ export const createInterpolateSystem = () => {
             // update interp
             Interpolate.dt_ms[eid] += timer.dt_ms;
 
-            const position_buffer = positionBufferByEid.get(eid);
-            if (position_buffer) {
-
-                let meanClientServerDelta_ms = 0;
-                position_buffer.forEach(pb => {
-                    meanClientServerDelta_ms += pb.clientTime_ms - pb.serverTime_ms;
-                });
-                meanClientServerDelta_ms /= position_buffer.length > 0 ? position_buffer.length : 1;
-                const updateInterval_ms = 100;
-                const lag_ms = ping / 2;
-
-                const interpTime_ms = clientTime_ms - meanClientServerDelta_ms - updateInterval_ms - lag_ms;
-
-                // find snapshots either side interp time
-                let b = position_buffer.findIndex(pb => {
-                    return pb.serverTime_ms > interpTime_ms;
-                });
-                let a = b - 1;
-
-                if (a >= 0) {
-                    const lerp = (interpTime_ms - position_buffer[a].serverTime_ms) / (position_buffer[b].serverTime_ms - position_buffer[a].serverTime_ms);
-                    Interpolate.x[eid] = ArcUtils.Scalar.lerp(position_buffer[a].x, position_buffer[b].x, lerp);
-                    Interpolate.y[eid] = ArcUtils.Scalar.lerp(position_buffer[a].y, position_buffer[b].y, lerp);
-
-                    if (hasComponent(world, Player, eid) && !hasComponent(world, ClientPlayerInput, eid)) {
-                        // console.log(lerp, interpTime_ms);
-                    }
-                    
-                }
-
-
-                // let length = position_buffer.length;
-                // let a = length-2;
-                // let b = length-1;
-
-                // if (length > 1) {
-                //     const delta_ms = position_buffer[b].clientTime_ms - position_buffer[a].clientTime_ms;
-                //     // let interp = Interpolate.dt_ms[eid] / delta_ms;
-                //     let interp = Interpolate.dt_ms[eid] / 100;
-
-                //     if (hasComponent(world, Player, eid) && !hasComponent(world, ClientPlayerInput, eid)) {
-                //         // console.log(delta_ms);
-                //     }
-
-                //     interp = interp > 1 ? 1 : interp < 0 ? 0 : interp;
-
-                //     Interpolate.x[eid] = ArcUtils.Scalar.lerp(position_buffer[a].x, position_buffer[b].x, interp);
-                //     Interpolate.y[eid] = ArcUtils.Scalar.lerp(position_buffer[a].y, position_buffer[b].y, interp);
-                
-                //     while (position_buffer.length > 2) {
-                //         position_buffer.shift();
-                //     }
-                // }
+            // check if we are the player
+            if (hasComponent(world, ClientPlayerInput, eid)) {
+                // do client side prediction simple interpolation
+                cspInterpolation(eid, positionBufferByEid.get(eid));
+            } else {
+                // do more complex interpolation
+                generalInterpolation(eid, positionBufferByEid.get(eid));
             }
         })
 
@@ -122,3 +76,50 @@ export const createInterpolateSystem = () => {
     })
 }
 
+const generalInterpolation = (eid: number, position_buffer: IPosition[] | undefined) => {
+    if (!position_buffer) return;
+    
+    let meanClientServerDelta_ms = 0;
+    position_buffer.forEach(pb => {
+        meanClientServerDelta_ms += pb.clientTime_ms - pb.serverTime_ms;
+    });
+    meanClientServerDelta_ms /= position_buffer.length > 0 ? position_buffer.length : 1;
+    const updateInterval_ms = 100;
+    const lag_ms = ping / 2;
+
+    const interpTime_ms = clientTime_ms - meanClientServerDelta_ms - updateInterval_ms - lag_ms;
+
+    // find snapshots either side interp time
+    let b = position_buffer.findIndex(pb => {
+        return pb.serverTime_ms > interpTime_ms;
+    });
+    let a = b - 1;
+
+    if (a >= 0) {
+        const lerp = (interpTime_ms - position_buffer[a].serverTime_ms) / (position_buffer[b].serverTime_ms - position_buffer[a].serverTime_ms);
+        Interpolate.x[eid] = ArcUtils.Scalar.lerp(position_buffer[a].x, position_buffer[b].x, lerp);
+        Interpolate.y[eid] = ArcUtils.Scalar.lerp(position_buffer[a].y, position_buffer[b].y, lerp);
+    }
+}
+
+const cspInterpolation = (eid: number, position_buffer: IPosition[] | undefined) => {
+    if (!position_buffer) return;
+    
+    let length = position_buffer.length;
+    let a = length-2;
+    let b = length-1;
+
+    if (length > 1) {
+        const delta_ms = position_buffer[b].clientTime_ms - position_buffer[a].clientTime_ms;
+        let interp = Interpolate.dt_ms[eid] / delta_ms;
+
+        interp = interp > 1 ? 1 : interp < 0 ? 0 : interp;
+
+        Interpolate.x[eid] = ArcUtils.Scalar.lerp(position_buffer[a].x, position_buffer[b].x, interp);
+        Interpolate.y[eid] = ArcUtils.Scalar.lerp(position_buffer[a].y, position_buffer[b].y, interp);
+    
+        while (position_buffer.length > 2) {
+            position_buffer.shift();
+        }
+    }
+}

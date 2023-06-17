@@ -38,7 +38,7 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
             payload: payload,
             recv_ms: Date.now()
         })
-    })
+    });
 
     // SERVER MESSAGE PROCESSING
     return defineSystem((world: IWorld) => {
