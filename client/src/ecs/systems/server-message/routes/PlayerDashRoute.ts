@@ -16,7 +16,7 @@ export const playerDashRoute = (message: IMessage, room: Room, world: IWorld, sc
                 setTimeout(() => {
                     playDashAnim(scene, message.payload.start, message.payload.finish, eid, 100);
 
-                },ping/2 + 100)
+                },ping/2 + 100 + 100)
             }
         }
     })

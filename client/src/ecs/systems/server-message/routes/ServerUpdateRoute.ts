@@ -34,8 +34,8 @@ export const serverUpdateRoute = (message: IMessage, room: Room, world: IWorld, 
 const handlePlayerUpdate = (room: Room, go: sPlayer, eid: number) => {
     const playerGo = go as sPlayer;
     if (playerGo.sessionId !== room.sessionId) {
-        Transform.x[eid] = go.x;
-        Transform.y[eid] = go.y;
+        Transform.x[eid] = go.interpX;
+        Transform.y[eid] = go.interpY;
         saveBuffer(room, eid);
     } else {
         // update transform with authrative state
