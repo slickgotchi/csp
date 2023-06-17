@@ -128,7 +128,7 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
                     targetGA = "GA_MeleeAttack";
                     waiting = true;
                     setTimeout(() => {waiting = false}, 200);
-                    playMeleeAttackAnim(scene, dir.x, dir.y, eid, 200);
+                    playMeleeAttackAnim(scene, {x:Transform.x[eid], y:Transform.y[eid]}, {x:dir.x, y:dir.y}, eid, 200);
                 } 
                 if (k_release) {
                     targetGA = "GA_RangedAttack";
@@ -225,11 +225,11 @@ export const playDashAnim = (scene: Phaser.Scene, start: {x:number,y:number}, fi
     });
 }
 
-const playMeleeAttackAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, duration_ms: number) => {
+export const playMeleeAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}, eid: number, duration_ms: number) => {
     // create circle
     const circ = scene.add.circle(
-        Transform.x[eid] + dx*200,
-        Transform.y[eid] + dy*200,
+        start.x + dir.x*200,
+        start.y + dir.y*200,
         150,
         0xffffff
     );
@@ -246,7 +246,7 @@ const playMeleeAttackAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: n
     })
 }   
 
-const playRangedAttackAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, duration_ms: number) => {
+export const playRangedAttackAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, duration_ms: number) => {
     // create circle
     const circ = scene.add.circle(
         Transform.x[eid] + dx*85,

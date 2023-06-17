@@ -32,13 +32,21 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
         });
     });
 
-    room.onMessage(Message.PlayerDash, payload => {
+    room.onMessage(Message.Player.Dash, payload => {
         messages.push({
             name: 'player-dash',
             payload: payload,
             recv_ms: Date.now()
         })
     });
+
+    room.onMessage(Message.Player.MeleeAttack, payload => {
+        messages.push({
+            name: 'player-melee-attack',
+            payload: payload,
+            recv_ms: Date.now()
+        })
+    })
 
     // SERVER MESSAGE PROCESSING
     return defineSystem((world: IWorld) => {

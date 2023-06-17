@@ -86,6 +86,5 @@ export const separateFromStaticColliders = (eid: number, body: Collisions.Circle
             Transform.x[eid] = body.x;
             Transform.y[eid] = body.y;
         }
-    })
-
+    });
 }

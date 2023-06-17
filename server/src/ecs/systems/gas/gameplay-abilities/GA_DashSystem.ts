@@ -35,7 +35,7 @@ export const createGA_DashSystem = (room: GameRoom) => {
                 }
 
                 // tell room about our dash
-                room.broadcast(Message.PlayerDash, {
+                room.broadcast(Message.Player.Dash, {
                     serverEid: eid,
                     start: start,
                     finish: finish

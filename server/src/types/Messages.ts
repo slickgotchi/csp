@@ -1,10 +1,12 @@
 let id = 1;
 
-const getID = () => {
+const getId = () => {
     return id++;
 }
 
 export const Message = {
-    PlayerDash: getID(),
-    UpdatePlayerPosition: getID(),
+    Player: {
+        Dash: getId(),
+        MeleeAttack: getId()
+    }
 }

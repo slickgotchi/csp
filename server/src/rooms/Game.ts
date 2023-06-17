@@ -15,6 +15,8 @@ import { createASC_PlayerSystem, recvMsBuffersByClient } from '../ecs/systems/ga
 import { createASC_EnemySystem } from '../ecs/systems/gas/ability-system-components/ASC_EnemySystem';
 import { createEnemies } from './CreateEnemies';
 import { createGA_DashSystem } from '../ecs/systems/gas/gameplay-abilities/GA_DashSystem';
+import { createGA_MoveSystem } from '../ecs/systems/gas/gameplay-abilities/GA_MoveSystem';
+import { createGA_MeleeAttackSystem } from '../ecs/systems/gas/gameplay-abilities/GA_MeleeAttackSystem';
 
 
 export default class GameRoom extends Room<GameState> {
@@ -86,7 +88,9 @@ export default class GameRoom extends Room<GameState> {
         // this.systems.push(createPlayerInputMessageSystem(this));
 
         // 1b. GA Systems => these run when activated by ASC system
+        this.systems.push(createGA_MoveSystem(this));
         this.systems.push(createGA_DashSystem(this));
+        this.systems.push(createGA_MeleeAttackSystem(this));
 
         // 1c. AT systems => these run when activated by GA system
         this.systems.push(createAT_MoveSystem());

@@ -20,6 +20,7 @@ import { Transform } from "../../../components/Transform";
 import { GA_Dash } from "../../../components/gas/gameplay-abilities/GA_Dash";
 import { tryActivateGA_Dash } from "../gameplay-abilities/GA_DashSystem";
 import { tryActivateGA_Move } from "../gameplay-abilities/GA_MoveSystem";
+import { tryActivateGA_MeleeAttack } from "../gameplay-abilities/GA_MeleeAttackSystem";
 
 export const createASC_PlayerSystem = (room: GameRoom) => {
 
@@ -74,60 +75,43 @@ const applyInput = (room: Room, world: IWorld, eid: number, gameObject: sGameObj
 }
 
 // abilities
-const tryActivateGA_Idol = (room: Room, world: IWorld, eid: number, input: IInput) => {
+const tryActivateGA_IdolRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
     
 }
 
 const tryActivateGA_MoveRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
-    Transform.x[eid] += 400 * input.move.dx * input.dt_ms * 0.001;
-    Transform.y[eid] += 400 * input.move.dy * input.dt_ms * 0.001;
-    // separateFromStaticColliders(eid, collidersByEid.get(eid));
-    // room.broadcast(Message.UpdatePlayerPosition, {
-    //     serverEid: eid,
-    //     x: Transform.x[eid],
-    //     y: Transform.y[eid]
-    // })
-    // const go = room.state.gameObjects.get(eid.toString()) as sGameObject;
-    // if (go) {
-    //     go.x = Transform.x[eid];
-    //     go.y = Transform.y[eid];
-    // }
-
     tryActivateGA_Move(
         eid,
         400*input.move.dx*input.dt_ms*0.001,
         400*input.move.dy*input.dt_ms*0.001
     )
-
-
-    // tryActivateGA_Move(world, eid, 400*input.move.dx*0.1, 400*input.move.dy*0.1, 100);
-    // tryActivateGA_Move(world, eid, 400*input.move.dx, 400*input.move.dy, 100);
 }
 
 const tryActivateGA_DashRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
     tryActivateGA_Dash(eid, input.move.dx, input.move.dy, 500);
 }
 
-const tryActivateGA_MeleeAttack = (room: Room, world: IWorld, eid: number, input: IInput) => {
-    Transform.x[eid] += input.move.dx * 100;
-    Transform.y[eid] += input.move.dy * 100;
+const tryActivateGA_MeleeAttackRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
+    // Transform.x[eid] += input.move.dx * 100;
+    // Transform.y[eid] += input.move.dy * 100;
+    tryActivateGA_MeleeAttack(eid, input.move.dx, input.move.dy);
 }
 
-const tryActivateGA_RangedAttack = (room: Room, world: IWorld, eid: number, input: IInput) => {
+const tryActivateGA_RangedAttackRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
     
 }
 
-const tryActivateGA_Wait = (room: Room, world: IWorld, eid: number, input: IInput) => {
+const tryActivateGA_WaitRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
     
 }
 
 export const tryActivateGA_Routes = {
-    "GA_Idol": tryActivateGA_Idol,
+    "GA_Idol": tryActivateGA_IdolRoute,
     'GA_Movement': tryActivateGA_MoveRoute,
     "GA_Dash": tryActivateGA_DashRoute,
-    "GA_MeleeAttack": tryActivateGA_MeleeAttack,
-    "GA_RangedAttack": tryActivateGA_RangedAttack,
-    "GA_Wait": tryActivateGA_Wait,
+    "GA_MeleeAttack": tryActivateGA_MeleeAttackRoute,
+    "GA_RangedAttack": tryActivateGA_RangedAttackRoute,
+    "GA_Wait": tryActivateGA_WaitRoute,
 }
 
 export const recvMsBuffersByClient = new Map<Client,number[]>();

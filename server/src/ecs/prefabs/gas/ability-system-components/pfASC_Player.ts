@@ -8,6 +8,7 @@ import { ASC_Player } from "../../../components/gas/ability-system-components/AS
 import { Collider, ColliderShape } from "../../../components/collisions/Collider";
 import { GA_Dash } from "../../../components/gas/gameplay-abilities/GA_Dash";
 import { GA_Move } from "../../../components/gas/gameplay-abilities/GA_Move";
+import { GA_MeleeAttack } from "../../../components/gas/gameplay-abilities/GA_MeleeAttack";
 
 
 interface IProps {
@@ -56,6 +57,7 @@ export const createPf_ASC_Player = (props: IProps) => {
     // gameplay abilities
     addComponent(props.world, GA_Move, eid);
     addComponent(props.world, GA_Dash, eid);
+    addComponent(props.world, GA_MeleeAttack, eid);
 
     return eid;
 }
