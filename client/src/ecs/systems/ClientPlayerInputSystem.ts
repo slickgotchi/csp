@@ -107,7 +107,7 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
 
         // update (NOTE: there should only ever be one client input eid)
         onUpdate(world).forEach(eid => {
-            // determine input type and play once off anims and sounds depending on input
+            // determine target GA based on input config
             let targetGA = "GA_Idol";
             if (!waiting) {
                 if (w_key?.isDown || a_key?.isDown || s_key?.isDown || d_key?.isDown) {
@@ -117,27 +117,25 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
                     targetGA = "GA_Dash";
                     waiting = true;
                     setTimeout(() => {waiting = false}, 100);
-                    playDashAnim(
-                        scene, 
-                        {x: Transform.x[eid], y: Transform.y[eid]},
-                        {x: Transform.x[eid]+dir.x*500, y: Transform.y[eid]+dir.y*500}, 
-                        eid, 
-                        100);
                 }
                 if (j_release) {
                     targetGA = "GA_MeleeAttack";
                     waiting = true;
                     setTimeout(() => {waiting = false}, 200);
-                    playMeleeAttackAnim(scene, {x:Transform.x[eid], y:Transform.y[eid]}, {x:dir.x, y:dir.y}, eid, 200);
                 } 
                 if (k_release) {
                     targetGA = "GA_RangedAttack";
                     waiting = true;
                     setTimeout(() => {waiting = false}, 200);
-                    playRangedAttackAnim(scene, dir.x, dir.y, eid, 200);
                 }
             } else {
                 targetGA = "GA_Wait";
+            }
+
+            // save position before starting input
+            const start = {
+                x: Transform.x[eid],
+                y: Transform.y[eid]
             }
 
             // create an input
@@ -155,10 +153,19 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
                 id: sequence_number++
             }
 
-            // move player, check for collisions and save final position in buffer
+            // apply input, check collisions, save buffer pos
             applyInput(eid, input);
             trySeparateCircleColliderFromStatic(circleCollidersByEid.get(eid), eid);
             saveBuffer(room, eid);
+
+            // store final position
+            const finish = {
+                x: Transform.x[eid],
+                y: Transform.y[eid]
+            }
+
+            // play anims
+            playAnim(scene, targetGA, start, finish, dir);
 
             // update server with latest input
             room.send("client-input", input);
@@ -199,7 +206,25 @@ export const applyInput = (eid: number, input: IInput) => {
     }
 }
 
-export const playDashAnim = (scene: Phaser.Scene, start: {x:number,y:number}, finish: {x:number,y:number}, eid: number, duration_ms: number) => {
+export const playAnim = (scene: Phaser.Scene, targetGA: string, start: {x:number,y:number}, finish: {x:number,y:number}, dir: {x:number,y:number} ) => {
+    switch (targetGA) {
+        case "GA_Dash": {
+            playDashAnim( scene, start, finish, 100 );
+            break;
+        }
+        case "GA_MeleeAttack": {
+            playMeleeAttackAnim(scene, start, dir, 500);
+            break;
+        }
+        case "GA_RangedAttack": {
+            playRangedAttackAnim(scene, start, dir, 200);
+            break;
+        }
+        default: break;
+    }
+}
+
+export const playDashAnim = (scene: Phaser.Scene, start: {x:number,y:number}, finish: {x:number,y:number}, duration_ms: number) => {
 // export const playDashAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, duration_ms: number) => {
     const line = scene.add.line(
         0,
@@ -225,7 +250,7 @@ export const playDashAnim = (scene: Phaser.Scene, start: {x:number,y:number}, fi
     });
 }
 
-export const playMeleeAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}, eid: number, duration_ms: number) => {
+export const playMeleeAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}, duration_ms: number) => {
     // create circle
     const circ = scene.add.circle(
         start.x + dir.x*200,
@@ -246,11 +271,11 @@ export const playMeleeAttackAnim = (scene: Phaser.Scene, start: {x:number,y:numb
     })
 }   
 
-export const playRangedAttackAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, duration_ms: number) => {
+export const playRangedAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}, duration_ms: number) => {
     // create circle
     const circ = scene.add.circle(
-        Transform.x[eid] + dx*85,
-        Transform.y[eid] + dy*85,
+        start.x + dir.x * 85,
+        start.y + dir.y * 85,
         35,
         0xffffff
     );
@@ -259,8 +284,8 @@ export const playRangedAttackAnim = (scene: Phaser.Scene, dx: number, dy: number
     // tween
     scene.add.tween({
         targets: circ,
-        x: Transform.x[eid] + dx*1000,
-        y: Transform.y[eid] + dy*1000,
+        x: start.x + dir.x*1000,
+        y: start.y + dir.y*1000,
         duration: duration_ms,
         onComplete: () => {
             circ.destroy();

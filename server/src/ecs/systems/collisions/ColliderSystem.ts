@@ -4,7 +4,16 @@ import * as Collisions from 'detect-collisions';
 import { Collider, ColliderShape } from "../../components/collisions/Collider";
 import { Transform } from "../../components/Transform";
 
-export const collidersByEid = new Map<number, Collisions.Circle | Collisions.Box>();
+export class ArcCircleCollider extends Collisions.Circle {
+    serverEid: number = 0;
+}
+
+export class ArcBoxCollider extends Collisions.Box {
+    serverEid: number = 0;
+}
+
+
+export const collidersByEid = new Map<number, ArcCircleCollider | ArcBoxCollider>();
 
 
 export const createColliderSystem = (room: GameRoom, world: IWorld, system: Collisions.System) => {
@@ -19,9 +28,10 @@ export const createColliderSystem = (room: GameRoom, world: IWorld, system: Coll
                     const circ = system.createCircle(
                         {x: Transform.x[eid], y: Transform.y[eid]},
                         Collider.radius[eid]
-                    );
+                    ) as ArcCircleCollider;
                     circ.isStatic = Collider.isStatic[eid] === 1;
                     circ.isTrigger = Collider.isTrigger[eid] === 1;
+                    circ.serverEid = eid;
                     collidersByEid.set(eid, circ);
                     break;
                 }
@@ -30,9 +40,10 @@ export const createColliderSystem = (room: GameRoom, world: IWorld, system: Coll
                         {x: Transform.x[eid], y: Transform.y[eid]},
                         Collider.width[eid],
                         Collider.height[eid]
-                    );
+                    ) as ArcBoxCollider;
                     box.isStatic = Collider.isStatic[eid] === 1;
                     box.isTrigger = Collider.isTrigger[eid] === 1;
+                    box.serverEid = eid;
                     collidersByEid.set(eid, box);
                     break;
                 }

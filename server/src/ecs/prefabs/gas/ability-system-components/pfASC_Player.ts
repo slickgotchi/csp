@@ -9,6 +9,7 @@ import { Collider, ColliderShape } from "../../../components/collisions/Collider
 import { GA_Dash } from "../../../components/gas/gameplay-abilities/GA_Dash";
 import { GA_Move } from "../../../components/gas/gameplay-abilities/GA_Move";
 import { GA_MeleeAttack } from "../../../components/gas/gameplay-abilities/GA_MeleeAttack";
+import { GA_RangedAttack } from "../../../components/gas/gameplay-abilities/GA_RangedAttack";
 
 
 interface IProps {
@@ -58,6 +59,7 @@ export const createPf_ASC_Player = (props: IProps) => {
     addComponent(props.world, GA_Move, eid);
     addComponent(props.world, GA_Dash, eid);
     addComponent(props.world, GA_MeleeAttack, eid);
+    addComponent(props.world, GA_RangedAttack, eid);
 
     return eid;
 }

@@ -21,6 +21,7 @@ import { GA_Dash } from "../../../components/gas/gameplay-abilities/GA_Dash";
 import { tryActivateGA_Dash } from "../gameplay-abilities/GA_DashSystem";
 import { tryActivateGA_Move } from "../gameplay-abilities/GA_MoveSystem";
 import { tryActivateGA_MeleeAttack } from "../gameplay-abilities/GA_MeleeAttackSystem";
+import { tryActivateGA_RangedAttack } from "../gameplay-abilities/GA_RangedAttackSystem";
 
 export const createASC_PlayerSystem = (room: GameRoom) => {
 
@@ -88,17 +89,15 @@ const tryActivateGA_MoveRoute = (room: Room, world: IWorld, eid: number, input: 
 }
 
 const tryActivateGA_DashRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
-    tryActivateGA_Dash(eid, input.move.dx, input.move.dy, 500);
+    tryActivateGA_Dash(eid, input.move.dx, input.move.dy);
 }
 
 const tryActivateGA_MeleeAttackRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
-    // Transform.x[eid] += input.move.dx * 100;
-    // Transform.y[eid] += input.move.dy * 100;
     tryActivateGA_MeleeAttack(eid, input.move.dx, input.move.dy);
 }
 
 const tryActivateGA_RangedAttackRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
-    
+    tryActivateGA_RangedAttack(eid, input.move.dx, input.move.dy);
 }
 
 const tryActivateGA_WaitRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {

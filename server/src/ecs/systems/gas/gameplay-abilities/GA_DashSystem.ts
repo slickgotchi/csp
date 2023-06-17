@@ -50,11 +50,11 @@ export const createGA_DashSystem = (room: GameRoom) => {
     })
 }
 
-export const tryActivateGA_Dash = (eid: number, dx: number, dy: number, distance: number) => {
+export const tryActivateGA_Dash = (eid: number, dx: number, dy: number) => {
     GA_Dash.tryActivate[eid] = 1;
     GA_Dash.dx[eid] = dx;
     GA_Dash.dy[eid] = dy;
-    GA_Dash.distance[eid] = distance;
+    GA_Dash.distance[eid] = 500;
 }
 
 

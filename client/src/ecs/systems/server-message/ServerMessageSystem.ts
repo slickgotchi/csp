@@ -46,7 +46,24 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
             payload: payload,
             recv_ms: Date.now()
         })
-    })
+    });
+
+    room.onMessage(Message.Player.RangedAttack, payload => {
+        messages.push({
+            name: 'player-ranged-attack',
+            payload: payload,
+            recv_ms: Date.now()
+        })
+    });
+
+    room.onMessage(Message.Enemy.TakeDamage, payload => {
+        messages.push({
+            name: 'enemy-take-damage',
+            payload: payload,
+            recv_ms: Date.now()
+        })
+    });
+
 
     // SERVER MESSAGE PROCESSING
     return defineSystem((world: IWorld) => {

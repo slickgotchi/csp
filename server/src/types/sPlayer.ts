@@ -13,7 +13,7 @@ interface IProps {
 
 export class sPlayer extends sGameObject {
 
-    collider?: Circle;
+    // collider?: Circle;
 
     inputMessages: IInputMessage[] = [];
 

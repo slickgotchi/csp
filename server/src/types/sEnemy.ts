@@ -11,7 +11,7 @@ export let nextEnemyId = 1;
 
 export class sEnemy extends sGameObject {
 
-    collider?: Circle;
+    // collider?: Circle;
     dx = 0;
     dy = 0;
     timer_ms = Math.random()*3000;
