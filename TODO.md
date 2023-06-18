@@ -1,5 +1,7 @@
 # To Do List
 - allow rollback so client player always gets a hit (but ensure it is possible to set a limit of say 500ms)
+- work out bizaare error when body.setPosition is not called we get stuck on static objects in separateFromStaticColliders
+- work out why direction change does not return a valid Eid but only the first time it goes in that direction?
 - do damage color flash until damage number is received from server
 - ensure damage does not show up before attacks for other players
 - Move game abilities, GAS, ASC etc. over to the client code as well

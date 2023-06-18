@@ -19,16 +19,20 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
 
     const hitCollidersByEid = new Map<number, Collisions.Box>();
 
+    const WIDTH = 500;
+    const HEIGHT = 70;
+
     // update code
     return defineSystem((world: IWorld) => {
 
         onAdd(world).forEach(eid => {
             const box = collisions.createBox(
                 {x:0,y:0},
-                1000,
-                100 // not made width slightly bigger than projectile for some leaniency
+                WIDTH,
+                HEIGHT // not made width slightly bigger than projectile for some leaniency
             );
             box.isCentered = true;
+            box.isStatic = false;
             hitCollidersByEid.set(eid, box);
         })
 
@@ -56,7 +60,8 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
                 const playerGo = room.state.gameObjects.get(eid.toString()) as sPlayer;
                 if (hitCollider && playerGo) {
                     // position hit collider with one end at player pos and angle aligned with dir
-                    hitCollider.setPosition(start.x+dir.x*500, start.y+dir.y*500);
+                    // hitCollider.setPosition(start.x+dir.x*500, start.y+dir.y*500);
+                    hitCollider.setPosition(start.x + dir.x*WIDTH/2, start.y + dir.y*WIDTH/2);
                     hitCollider.setAngle(Collisions.deg2rad(ArcUtils.Angle.fromVector2(dir)));
 
                     // roll back colliders
@@ -73,8 +78,8 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
                     collisions.checkOne(hitCollider, response => {
                         const { b } = response;
                         const goEid = (b as ArcCircleCollider).serverEid;
+                        console.log(counter++, goEid);
                         if (hasComponent(world, ASC_Enemy, goEid)) {
-                            console.log('hit: ', counter++);
                             room.broadcast(Message.Enemy.TakeDamage, {
                                 serverEid: goEid,
                                 x: Transform.x[goEid],
