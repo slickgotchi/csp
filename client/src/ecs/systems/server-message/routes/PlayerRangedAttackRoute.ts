@@ -25,7 +25,7 @@ export const playerRangedAttackRoute = (message: IMessage, room: Room, world: IW
                 },ping/2 + 100 + 100)
 
             }
-            showCollider(scene, message.payload.hitCollider);
+            // showCollider(scene, message.payload.hitCollider);
         }
     })
 }

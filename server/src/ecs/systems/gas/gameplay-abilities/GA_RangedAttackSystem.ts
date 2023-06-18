@@ -60,7 +60,15 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
                     hitCollider.setAngle(Collisions.deg2rad(ArcUtils.Angle.fromVector2(dir)));
 
                     // roll back colliders
-                    rollbackColliders(room, world, playerGo.meanPing_ms/2);
+                    rollbackColliders(room, world, playerGo.meanPing_ms/2+250+100);
+
+                    room.broadcast('hit-box', {
+                        x: hitCollider.x,
+                        y: hitCollider.y,
+                        width: hitCollider.width,
+                        height: hitCollider.height,
+                        rot: hitCollider.angle
+                    })
                     
                     collisions.checkOne(hitCollider, response => {
                         const { b } = response;

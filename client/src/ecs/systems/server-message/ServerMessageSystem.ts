@@ -78,6 +78,22 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
         })
     })
 
+    room.onMessage('hit-box', hitCollider => {
+        const rect = scene.add.rectangle(
+            hitCollider.x,
+            hitCollider.y,
+            hitCollider.width,
+            hitCollider.height,
+            0xffffff
+        )
+        rect.setAlpha(0.5);
+        rect.setRotation(hitCollider.rot);
+    
+        setTimeout(() => {
+            rect.destroy()
+        }, 2000)
+    })
+
 
     // SERVER MESSAGE PROCESSING
     return defineSystem((world: IWorld) => {
