@@ -49,7 +49,7 @@ export const createGA_MeleeAttackSystem = (room: GameRoom, collisions: Collision
                     y: GA_MeleeAttack.dy[eid]
                 }
                 
-                // check collisions with enemies and players
+                // create hit collider and check for collisions
                 const hitCollider = hitCollidersByEid.get(eid);
                 if (hitCollider) {
                     hitCollider.setPosition(
@@ -65,7 +65,7 @@ export const createGA_MeleeAttackSystem = (room: GameRoom, collisions: Collision
                                 serverEid: goEid,
                                 x: Transform.x[goEid],
                                 y: Transform.y[goEid],
-                                damage: 100,
+                                damage: ((Math.random()-0.5)*5 + 29).toFixed(),
                             })
                         }
                         if (hasComponent(world, ASC_Player, goEid) && goEid !== eid) {

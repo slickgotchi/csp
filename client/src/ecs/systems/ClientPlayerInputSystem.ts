@@ -115,17 +115,17 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
                 if (l_release) {
                     targetGA = "GA_Dash";
                     waiting = true;
-                    setTimeout(() => {waiting = false}, 100);
+                    setTimeout(() => {waiting = false}, 250);
                 }
                 if (j_release) {
                     targetGA = "GA_MeleeAttack";
                     waiting = true;
-                    setTimeout(() => {waiting = false}, 200);
+                    setTimeout(() => {waiting = false}, 250);
                 } 
                 if (k_release) {
                     targetGA = "GA_RangedAttack";
                     waiting = true;
-                    setTimeout(() => {waiting = false}, 200);
+                    setTimeout(() => {waiting = false}, 250);
                 }
             } else {
                 targetGA = "GA_Wait";
@@ -199,9 +199,6 @@ export const applyInput = (eid: number, input: IInput) => {
         case "GA_MeleeAttack": {
             Transform.x[eid] += input.move.dx * 100;
             Transform.y[eid] += input.move.dy * 100;
-
-            
-
             break;
         }
         default: break;

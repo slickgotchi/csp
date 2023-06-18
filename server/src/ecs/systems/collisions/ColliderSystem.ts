@@ -4,12 +4,20 @@ import * as Collisions from 'detect-collisions';
 import { Collider, ColliderShape } from "../../components/collisions/Collider";
 import { Transform } from "../../components/Transform";
 
+interface IPosition {
+    x: number;
+    y: number;
+    serverTime_ms: number;
+}
+
 export class ArcCircleCollider extends Collisions.Circle {
     serverEid: number = 0;
+    positionBuffer: IPosition[] = [];
 }
 
 export class ArcBoxCollider extends Collisions.Box {
     serverEid: number = 0;
+    positionBuffer: IPosition[] = [];
 }
 
 
@@ -32,6 +40,7 @@ export const createColliderSystem = (room: GameRoom, world: IWorld, system: Coll
                     circ.isStatic = Collider.isStatic[eid] === 1;
                     circ.isTrigger = Collider.isTrigger[eid] === 1;
                     circ.serverEid = eid;
+                    circ.positionBuffer = [];
                     collidersByEid.set(eid, circ);
                     break;
                 }
@@ -44,6 +53,7 @@ export const createColliderSystem = (room: GameRoom, world: IWorld, system: Coll
                     box.isStatic = Collider.isStatic[eid] === 1;
                     box.isTrigger = Collider.isTrigger[eid] === 1;
                     box.serverEid = eid;
+                    box.positionBuffer = [];
                     collidersByEid.set(eid, box);
                     break;
                 }
@@ -52,30 +62,25 @@ export const createColliderSystem = (room: GameRoom, world: IWorld, system: Coll
         });
 
         onUpdate(world).forEach(eid => {
-            switch (Collider.shape[eid]) {
-                case ColliderShape.Circle: {
-                    const circ = collidersByEid.get(eid);
-                    if (circ) {
-                        circ.setPosition(Transform.x[eid], Transform.y[eid]);
+            const collider = collidersByEid.get(eid);
+            if (collider && collider.positionBuffer) {
+                // update position
+                collider.setPosition(Transform.x[eid], Transform.y[eid]);
 
-                        if (Collider.isAutoStaticSeparate[eid]) {
-                            separateFromStaticColliders(eid, circ);
-                        }
-                    }
-                    break;
+                // separate if required
+                if (Collider.isAutoStaticSeparate[eid]) {
+                    separateFromStaticColliders(eid, collider);
                 }
-                case ColliderShape.Box: {
-                    const box = collidersByEid.get(eid);
-                    if (box) {
-                        box.setPosition(Transform.x[eid], Transform.y[eid]);
 
-                        if (Collider.isAutoStaticSeparate[eid]) {
-                            separateFromStaticColliders(eid, box);
-                        }
-                    }
-                    break;
+                // update position buffer
+                collider.positionBuffer.push({
+                    x: collider.x,
+                    y: collider.y,
+                    serverTime_ms: room.state.serverTime_ms
+                });
+                if (collider.positionBuffer.length > 100) {
+                    collider.positionBuffer.shift();
                 }
-                default: break;
             }
             
         })

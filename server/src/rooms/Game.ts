@@ -92,7 +92,7 @@ export default class GameRoom extends Room<GameState> {
         this.systems.push(createGA_MoveSystem(this));
         this.systems.push(createGA_DashSystem(this));
         this.systems.push(createGA_MeleeAttackSystem(this, this.collisionSystem));
-        this.systems.push(createGA_RangedAttackSystem(this));
+        this.systems.push(createGA_RangedAttackSystem(this, this.collisionSystem));
 
         // 1c. AT systems => these run when activated by GA system
         this.systems.push(createAT_MoveSystem());

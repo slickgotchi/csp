@@ -14,6 +14,7 @@ interface IProps {
 export class sPlayer extends sGameObject {
 
     // collider?: Circle;
+    meanPing_ms: number = 500;
 
     inputMessages: IInputMessage[] = [];
 

@@ -64,6 +64,20 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
         })
     });
 
+    room.onMessage('positions', positions => {
+        positions.forEach((pos: any) => {
+            const circ = scene.add.circle(
+                pos.x,
+                pos.y,
+                40,
+                0x444444,
+            )
+            setTimeout(() => {
+                circ.destroy()
+            }, 2000)
+        })
+    })
+
 
     // SERVER MESSAGE PROCESSING
     return defineSystem((world: IWorld) => {
