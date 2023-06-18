@@ -61,19 +61,12 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
                 if (hitCollider && playerGo) {
                     // position hit collider with one end at player pos and angle aligned with dir
                     // hitCollider.setPosition(start.x+dir.x*500, start.y+dir.y*500);
-                    hitCollider.setPosition(start.x + dir.x*WIDTH/2, start.y + dir.y*WIDTH/2);
-                    hitCollider.setAngle(Collisions.deg2rad(ArcUtils.Angle.fromVector2(dir)));
-
+                    
                     // roll back colliders
                     rollbackColliders(room, world, playerGo.meanPing_ms/2+250+100);
-
-                    room.broadcast('hit-box', {
-                        x: hitCollider.x,
-                        y: hitCollider.y,
-                        width: hitCollider.width,
-                        height: hitCollider.height,
-                        rot: hitCollider.angle
-                    })
+                    
+                    hitCollider.setPosition(start.x + dir.x*WIDTH/2, start.y + dir.y*WIDTH/2);
+                    hitCollider.setAngle(Collisions.deg2rad(ArcUtils.Angle.fromVector2(dir)));
                     
                     collisions.checkOne(hitCollider, response => {
                         const { b } = response;
@@ -95,6 +88,16 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
                                 damage: 100,
                             })
                         }
+
+                        
+                    })
+                    
+                    room.broadcast('hit-box', {
+                        x: hitCollider.x,
+                        y: hitCollider.y,
+                        width: hitCollider.width,
+                        height: hitCollider.height,
+                        rot: hitCollider.angle
                     })
 
                     // unroll colliders
