@@ -7,15 +7,19 @@ import { Color } from "../../../componets/Color";
 
 const onUpdate = defineQuery([Enemy]);
 
+export const tintFlash = (eid: number) => {
+    Color.val[eid] = 0xffffff;
+    setTimeout(() => { Color.val[eid] = 0xff6666 }, 150)
+    setTimeout(() => { Color.val[eid] = 0xffffff }, 300)
+    setTimeout(() => { Color.val[eid] = 0xff6666 }, 450)
+}
+
 export const enemyTakeDamageRoute = (message: IMessage, room: Room, world: IWorld, scene: Phaser.Scene) => {
-    onUpdate(world).forEach(eid => {
-        if (ServerMessage.serverEid[eid] === message.payload.serverEid) {
-            Color.val[eid] = 0xffffff;
-            setTimeout(() => { Color.val[eid] = 0xff6666 }, 100)
-            setTimeout(() => { Color.val[eid] = 0xffffff }, 200)
-            setTimeout(() => { Color.val[eid] = 0xff6666 }, 300)
-        }
-    })
+    // onUpdate(world).forEach(eid => {
+    //     if (ServerMessage.serverEid[eid] === message.payload.serverEid) {
+    //         tintFlash(eid);
+    //     }
+    // })
     
     setTimeout(() => {
         createDamagePopup(scene, message.payload.damage, message.payload.x, message.payload.y);

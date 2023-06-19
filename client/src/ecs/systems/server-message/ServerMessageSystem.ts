@@ -94,6 +94,22 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
         }, 2000)
     })
 
+    room.onMessage('bbox', bbox => {
+        const rect = scene.add.rectangle(
+            bbox.minX,
+            bbox.minY,
+            bbox.maxX - bbox.minX,
+            bbox.maxY - bbox.minY,
+            0x6666ff
+        )
+        rect.setAlpha(0.3);
+        rect.setOrigin(0,0);
+    
+        setTimeout(() => {
+            rect.destroy()
+        }, 2000)
+    })
+
 
     // SERVER MESSAGE PROCESSING
     return defineSystem((world: IWorld) => {

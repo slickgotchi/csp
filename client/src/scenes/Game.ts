@@ -38,21 +38,12 @@ export class Game extends Phaser.Scene {
         this.client = new Client('ws://localhost:8345');
         this.room = await this.client.joinOrCreate<IGameState & Schema>('game');
 
-        // add key text
-        // this.add.circle(75, 175, 25, 0x00ff00);
-        // this.add.text(125, 175, "Client Side Prediction Player", {fontSize: "36px"})
-        //     .setOrigin(0, 0.5);
-
-        // this.add.circle(75, 250, 25, 0x0F8A0F);
-        // this.add.text(125, 250, "Server Authoritative Player", {fontSize: "36px"})
-        //     .setOrigin(0,0.5);
-
         // SYSTEMS
         // 1. process server messages
         this.systems.push(createServerMessageSystem(this.room, this));
 
         // 2. process client inputs and game logic
-        this.systems.push(createClientPlayerInputSystem(this, this.room));
+        this.systems.push(createClientPlayerInputSystem(this, this.room, this.collisionSystem));
         this.systems.push(createColliderSystem(this.world, this.collisionSystem));
 
         // 3. interpolation

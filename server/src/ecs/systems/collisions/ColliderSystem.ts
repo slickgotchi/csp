@@ -20,9 +20,7 @@ export class ArcBoxCollider extends Collisions.Box {
     positionBuffer: IPosition[] = [];
 }
 
-
 export const collidersByEid = new Map<number, ArcCircleCollider | ArcBoxCollider>();
-
 
 export const createColliderSystem = (room: GameRoom, world: IWorld, system: Collisions.System) => {
     const onUpdate = defineQuery([Collider]);

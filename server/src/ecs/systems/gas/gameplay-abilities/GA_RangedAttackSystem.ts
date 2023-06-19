@@ -19,7 +19,7 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
 
     const hitCollidersByEid = new Map<number, Collisions.Box>();
 
-    const WIDTH = 500;
+    const WIDTH = 1000;
     const HEIGHT = 70;
 
     // update code
@@ -29,11 +29,11 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
             const box = collisions.createBox(
                 {x:0,y:0},
                 WIDTH,
-                HEIGHT // not made width slightly bigger than projectile for some leaniency
+                HEIGHT
             );
             box.isCentered = true;
             box.isStatic = false;
-            hitCollidersByEid.set(eid, box);
+            hitCollidersByEid.set(eid, box); 
         })
 
         onUpdate(world).forEach(eid => {
@@ -48,8 +48,6 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
                     y: Transform.y[eid]
                 }
 
-                // separateFromStaticColliders(eid, collidersByEid.get(eid));
-
                 const dir = {
                     x: GA_RangedAttack.dx[eid],
                     y: GA_RangedAttack.dy[eid]
@@ -59,25 +57,30 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
                 const hitCollider = hitCollidersByEid.get(eid);
                 const playerGo = room.state.gameObjects.get(eid.toString()) as sPlayer;
                 if (hitCollider && playerGo) {
-                    // position hit collider with one end at player pos and angle aligned with dir
-                    // hitCollider.setPosition(start.x+dir.x*500, start.y+dir.y*500);
-                    
                     // roll back colliders
-                    rollbackColliders(room, world, playerGo.meanPing_ms/2+250+100);
+                    rollbackColliders(room, world, playerGo.meanPing_ms/2+300);
                     
+                    // adjust hit collider pos/angle
                     hitCollider.setPosition(start.x + dir.x*WIDTH/2, start.y + dir.y*WIDTH/2);
                     hitCollider.setAngle(Collisions.deg2rad(ArcUtils.Angle.fromVector2(dir)));
-                    
+                    collisions.insert(hitCollider); // need this to update bbox for hit collider
+
+                    // smol func to make some random damage
+                    const calcDamage = () => {
+                        return ((Math.random()-0.5)*5 + 24).toFixed();
+                    }
+
+                    // check collisions
                     collisions.checkOne(hitCollider, response => {
                         const { b } = response;
                         const goEid = (b as ArcCircleCollider).serverEid;
-                        console.log(counter++, goEid);
+
                         if (hasComponent(world, ASC_Enemy, goEid)) {
                             room.broadcast(Message.Enemy.TakeDamage, {
                                 serverEid: goEid,
                                 x: Transform.x[goEid],
                                 y: Transform.y[goEid],
-                                damage: ((Math.random()-0.5)*5 + 24).toFixed(),
+                                damage: calcDamage(),
                             })
                         }
                         if (hasComponent(world, ASC_Player, goEid) && goEid !== eid) {
@@ -85,24 +88,14 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
                                 serverEid: goEid,
                                 x: Transform.x[goEid],
                                 y: Transform.y[goEid],
-                                damage: 100,
+                                damage: calcDamage(),
                             })
                         }
-
-                        
-                    })
-                    
-                    room.broadcast('hit-box', {
-                        x: hitCollider.x,
-                        y: hitCollider.y,
-                        width: hitCollider.width,
-                        height: hitCollider.height,
-                        rot: hitCollider.angle
                     })
 
                     // unroll colliders
                     unrollColliders(room, world);
-                }
+                } 
 
                 // broadcast
                 room.broadcast(Message.Player.RangedAttack, {
@@ -150,13 +143,11 @@ const rollbackColliders = (room: GameRoom, world: IWorld, time_ms: number) => {
             while (i < collider.positionBuffer.length) {
                 if (collider.positionBuffer[i].serverTime_ms > targetTime_ms) {
                     break;
+                } else {
+                    i++;
                 }
-                i++;
             }
-            // console.log(room.state.serverTime_ms - collider.positionBuffer[i].serverTime_ms);
-            // console.log(eid, 'before: ', collider.x.toFixed(), collider.y.toFixed());
             collider.setPosition(collider.positionBuffer[i].x, collider.positionBuffer[i].y);
-            // console.log(eid, 'after: ', collider.x.toFixed(), collider.y.toFixed());
             positions.push({
                 x: collider.x,
                 y: collider.y
@@ -164,21 +155,18 @@ const rollbackColliders = (room: GameRoom, world: IWorld, time_ms: number) => {
         }
     });
 
-    room.broadcast('positions', positions);
+    // room.broadcast('positions', positions);
 }
 
 const unrollColliders = (room: GameRoom, world: IWorld) => {
-    // console.log('unrollColliders()');
     onEnemies(world).forEach(eid => {
         const collider = collidersByEid.get(eid);
         if (collider) {
             const last_i = collider.positionBuffer.length - 1;
-            // console.log(eid, 'before: ', collider.x.toFixed(), collider.y.toFixed());
             collider.setPosition(
                 collider.positionBuffer[last_i].x, 
                 collider.positionBuffer[last_i].y
             );
-            // console.log(eid, 'after: ', collider.x.toFixed(), collider.y.toFixed());
         }
     })
 }

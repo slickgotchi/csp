@@ -1,4 +1,4 @@
-import { IWorld, defineQuery, defineSystem, enterQuery, exitQuery } from "bitecs"
+import { IWorld, defineQuery, defineSystem, enterQuery, exitQuery, hasComponent } from "bitecs"
 import { ArcUtils } from "../../utilities/ArcUtils";
 import { Timer } from "../../utilities/Timer";
 import { Player } from "../componets/Player";
@@ -10,7 +10,9 @@ import * as Collisions from 'detect-collisions';
 import { Interpolate } from "../componets/Interpolate";
 import { ClientPlayerInput } from "../componets/ClientPlayerInput";
 import { positionBufferByEid, saveBuffer } from "./InterpolateSystem";
-import { collidersByEid, separateFromStaticColliders } from "./collisions/ColliderSystem";
+import { ArcCircleCollider, collidersByEid, separateFromStaticColliders } from "./collisions/ColliderSystem";
+import { tintFlash } from "./server-message/routes/EnemyTakeDamageRoute";
+import { Enemy } from "../componets/Enemy";
 
 export enum PlayerState {
     Idol,
@@ -47,7 +49,7 @@ export const pending_inputs: IInput[] = [];
 export let sequence_number = 0;
 const EMIT_INTERVAL_MS = 100;
 
-export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) => {
+export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, collisions: Collisions.System) => {
 
     const onUpdate = defineQuery([ClientPlayerInput, Player, Transform]);
     const onAdd = enterQuery(onUpdate);
@@ -164,7 +166,7 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room) =
             }
 
             // play anims
-            playAnim(scene, targetGA, start, finish, dir);
+            playAnim(scene, world, collisions, targetGA, start, finish, dir);
 
             // update server with latest input
             room.send("client-input", input);
@@ -205,10 +207,10 @@ export const applyInput = (eid: number, input: IInput) => {
     }
 }
 
-export const playAnim = (scene: Phaser.Scene, targetGA: string, start: {x:number,y:number}, finish: {x:number,y:number}, dir: {x:number,y:number} ) => {
+export const playAnim = (scene: Phaser.Scene, world: IWorld, collisions: Collisions.System, targetGA: string, start: {x:number,y:number}, finish: {x:number,y:number}, dir: {x:number,y:number} ) => {
     switch (targetGA) {
         case "GA_Dash": {
-            playDashAnim( scene, start, finish);
+            playDashAnim(scene, start, finish);
             break;
         }
         case "GA_MeleeAttack": {
@@ -217,6 +219,7 @@ export const playAnim = (scene: Phaser.Scene, targetGA: string, start: {x:number
         }
         case "GA_RangedAttack": {
             playRangedAttackAnim(scene, start, dir);
+            checkEnemyCollisions(world, collisions, start, dir);
             break;
         }
         default: break;
@@ -291,4 +294,34 @@ export const playRangedAttackAnim = (scene: Phaser.Scene, start: {x:number,y:num
             circ.destroy();
         }
     });
+}
+
+const checkEnemyCollisions = (world: IWorld, collisions: Collisions.System, start: {x:number,y:number}, dir: {x:number,y:number}) => {
+    const WIDTH = 1000;
+    const HEIGHT = 70;
+    
+    const hitCollider = collisions.createBox(
+        {x:0,y:0},
+        WIDTH,
+        HEIGHT, {
+            isCentered: true
+        }
+    )
+
+    // adjust hit collider pos/angle
+    hitCollider.setPosition(start.x + dir.x*WIDTH/2, start.y + dir.y*WIDTH/2);
+    hitCollider.setAngle(Collisions.deg2rad(ArcUtils.Angle.fromVector2(dir)));
+    collisions.insert(hitCollider); // need this to update bbox for hit collider
+
+    // check collisions
+    collisions.checkOne(hitCollider, response => {
+        const { b } = response;
+        const goEid = (b as ArcCircleCollider).eid;
+
+        if (hasComponent(world, Enemy, goEid)) {
+            setTimeout(() => {
+                tintFlash(goEid);
+            }, 100)
+        }
+    })
 }

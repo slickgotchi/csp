@@ -6,6 +6,7 @@ import { Interpolate } from "../componets/Interpolate";
 import { CircleCollider } from "../componets/CircleCollider";
 import { Enemy } from "../componets/Enemy";
 import { ServerMessage } from "../componets/ServerMessage";
+import { Collider, ColliderShape } from "../componets/collisions/Collider";
 
 
 interface iProps {
@@ -32,6 +33,10 @@ export const createPfEnemy = (props: iProps) => {
 
     addComponent(props.world, Circle, eid);
     Circle.radius[eid] = 40;
+
+    addComponent(props.world, Collider, eid);
+    Collider.shape[eid] = ColliderShape.Circle;
+    Collider.radius[eid] = 40;
     
     addComponent(props.world, Color, eid);
     Color.val[eid] = 0xff6666;
