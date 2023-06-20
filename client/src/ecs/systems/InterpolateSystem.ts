@@ -38,6 +38,15 @@ export const saveBuffer = (room: Room, eid: number) => {
 
 export const positionBufferByEid = new Map<number, IPosition[]>();
 
+export const setLastPositionBufferByEid = (eid: number, x: number, y: number) => {
+    const pb = positionBufferByEid.get(eid);
+    if (pb) {
+        const i = pb.length - 1;
+        pb[i].x = x;
+        pb[i].y = y;
+    }
+}
+
 export const createInterpolateSystem = () => {
 
     const onUpdate = defineQuery([Interpolate]);

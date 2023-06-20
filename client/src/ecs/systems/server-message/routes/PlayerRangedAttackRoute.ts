@@ -11,6 +11,8 @@ import { Enemy } from "../../../componets/Enemy";
 import { createDamagePopup, tintFlash } from "./EnemyTakeDamageRoute";
 import { Transform } from "../../../componets/Transform";
 import { Interpolate } from "../../../componets/Interpolate";
+import { setLastPositionBufferByEid } from "../../InterpolateSystem";
+import { ArcUtils } from "../../../../utilities/ArcUtils";
 
 const onPlayers = defineQuery([Player]);
 const onEnemies = defineQuery([Enemy]);
@@ -47,12 +49,31 @@ export const playerRangedAttackRoute = (message: IMessage, room: Room, world: IW
     if (playerEid) {
         // ignore players with ClientPlayerInput as they do the anim separately
         if (!hasComponent(world, ClientPlayerInput, playerEid)) {
+
+            // recalc path slightly so shot looks like it comes from player
+            const start = {
+                x: Interpolate.x[playerEid],
+                y: Interpolate.y[playerEid]
+            }
+
+            const end = {
+                x: message.payload.start.x + message.payload.dir.x * 1000,
+                y: message.payload.start.y + message.payload.dir.y * 1000
+            }
+
+            let dir = {
+                x: end.x - start.x,
+                y: end.y - start.y
+            }
+
+            dir = ArcUtils.Vector2.normalise(dir);
+            console.log(dir);
             
             // play ranged attack
             playRangedAttackAnim(
                 scene, 
-                message.payload.start, 
-                message.payload.dir, 
+                start,
+                dir
             );
 
             // go through hit enemies
