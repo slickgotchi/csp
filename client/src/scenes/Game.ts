@@ -1,4 +1,4 @@
-import { IWorld, System, createWorld } from "bitecs";
+import { IWorld, System, addEntity, createWorld } from "bitecs";
 import * as Phaser from "phaser";
 import { createCircleSystem } from "../ecs/systems/CircleSystem";
 import { createClientPlayerInputSystem } from "../ecs/systems/ClientPlayerInputSystem";
@@ -32,6 +32,7 @@ export class Game extends Phaser.Scene {
     async create() {
         // create bitecs world
         this.world = createWorld();
+        addEntity(this.world);  // to set the permanent 0 entity eid
         this.collisionSystem = new Collisions.System();
 
         // create server connection

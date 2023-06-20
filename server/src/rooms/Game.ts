@@ -1,7 +1,7 @@
 import { Client, Room } from 'colyseus';
 import GameState from './GameState';
 import * as Collisions from 'detect-collisions';
-import { IWorld, addComponent, createWorld } from 'bitecs';
+import { IWorld, addComponent, addEntity, createWorld } from 'bitecs';
 import { AT_Move } from '../ecs/components/gas/ability-tasks/AT_Move';
 import { System } from 'bitecs';
 import { createSyncSystem } from '../ecs/systems/SyncSystem';

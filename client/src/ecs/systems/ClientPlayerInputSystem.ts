@@ -166,7 +166,7 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, c
             }
 
             // play anims
-            playAnim(scene, world, collisions, targetGA, start, finish, dir);
+            playAnim(scene, world, collisions, eid, targetGA, start, finish, dir);
 
             // update server with latest input
             room.send("client-input", input);
@@ -207,7 +207,7 @@ export const applyInput = (eid: number, input: IInput) => {
     }
 }
 
-export const playAnim = (scene: Phaser.Scene, world: IWorld, collisions: Collisions.System, targetGA: string, start: {x:number,y:number}, finish: {x:number,y:number}, dir: {x:number,y:number} ) => {
+export const playAnim = (scene: Phaser.Scene, world: IWorld, collisions: Collisions.System, eid: number, targetGA: string, start: {x:number,y:number}, finish: {x:number,y:number}, dir: {x:number,y:number} ) => {
     switch (targetGA) {
         case "GA_Dash": {
             playDashAnim(scene, start, finish);

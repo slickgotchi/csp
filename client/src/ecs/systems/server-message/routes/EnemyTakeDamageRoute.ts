@@ -26,7 +26,7 @@ export const enemyTakeDamageRoute = (message: IMessage, room: Room, world: IWorl
     }, 0);
 }
 
-const createDamagePopup = (scene: Phaser.Scene, damage: number, x: number, y: number) => {
+export const createDamagePopup = (scene: Phaser.Scene, damage: number, x: number, y: number) => {
     const damageText = scene.add.text(
         x,
         y-30,

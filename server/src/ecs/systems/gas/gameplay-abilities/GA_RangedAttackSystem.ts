@@ -70,46 +70,57 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
                         return ((Math.random()-0.5)*5 + 24).toFixed();
                     }
 
+                    const hitEnemies: any[] = [];
+
                     // check collisions
                     collisions.checkOne(hitCollider, response => {
                         const { b } = response;
                         const goEid = (b as ArcCircleCollider).serverEid;
 
                         if (hasComponent(world, ASC_Enemy, goEid)) {
-                            room.broadcast(Message.Enemy.TakeDamage, {
+                            // room.broadcast(Message.Enemy.TakeDamage, {
+                            //     serverEid: goEid,
+                            //     x: Transform.x[goEid],
+                            //     y: Transform.y[goEid],
+                            //     damage: calcDamage(),
+                            // })
+                            hitEnemies.push({
                                 serverEid: goEid,
-                                x: Transform.x[goEid],
-                                y: Transform.y[goEid],
+                                // x: Transform.x[goEid],
+                                // y: Transform.y[goEid],
                                 damage: calcDamage(),
-                            })
+                            });
                         }
-                        if (hasComponent(world, ASC_Player, goEid) && goEid !== eid) {
-                            room.broadcast(Message.Player.TakeDamage, {
-                                serverEid: goEid,
-                                x: Transform.x[goEid],
-                                y: Transform.y[goEid],
-                                damage: calcDamage(),
-                            })
-                        }
+                        // if (hasComponent(world, ASC_Player, goEid) && goEid !== eid) {
+                        //     room.broadcast(Message.Player.TakeDamage, {
+                        //         serverEid: goEid,
+                        //         x: Transform.x[goEid],
+                        //         y: Transform.y[goEid],
+                        //         damage: calcDamage(),
+                        //     })
+                        // }
                     })
 
                     // unroll colliders
                     unrollColliders(room, world);
+
+                    // broadcast
+                    room.broadcast(Message.Player.RangedAttack, {
+                        serverEid: eid,
+                        start: start,
+                        dir: dir,
+                        hitCollider: {
+                            x: hitCollider?.x,
+                            y: hitCollider?.y,
+                            width: hitCollider?.width,
+                            height: hitCollider?.height,
+                            angle: hitCollider?.angle
+                        },
+                        hitEnemies: hitEnemies
+                    })
+                    console.log(hitEnemies);
                 } 
 
-                // broadcast
-                room.broadcast(Message.Player.RangedAttack, {
-                    serverEid: eid,
-                    start: start,
-                    dir: dir,
-                    hitCollider: {
-                        x: hitCollider?.x,
-                        y: hitCollider?.y,
-                        width: hitCollider?.width,
-                        height: hitCollider?.height,
-                        angle: hitCollider?.angle
-                    }
-                })
 
                 // turn off activate tag
                 GA_RangedAttack.tryActivate[eid] = 0;
