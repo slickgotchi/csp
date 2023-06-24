@@ -24,16 +24,16 @@ export const createSendWorldStateSystem = (room: GameRoom) => {
             accum -= EMIT_INTERVAL_MS;
 
             // update interpolation for player objects
-            onUpdatePlayer(world).forEach(eid => {
-                const go = room.state.gameObjects.get(eid.toString());
-                if (go) {
-                    go.prevX = go.currX;
-                    go.prevY = go.currY;
-                    go.currX = go.x;
-                    go.currY = go.y;
-                    go.accum_ms = 0;
-                }
-            });
+            // onUpdatePlayer(world).forEach(eid => {
+            //     const go = room.state.gameObjects.get(eid.toString());
+            //     if (go) {
+            //         go.prevX = go.currX;
+            //         go.prevY = go.currY;
+            //         go.currX = go.x;
+            //         go.currY = go.y;
+            //         go.accum_ms = 0;
+            //     }
+            // });
         }
 
 

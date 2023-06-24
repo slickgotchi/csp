@@ -4,51 +4,27 @@ import { IWorld, defineQuery, hasComponent } from "bitecs";
 import { Player } from "../../../componets/Player";
 import { ServerMessage } from "../../../componets/ServerMessage";
 import { ClientPlayerInput } from "../../../componets/ClientPlayerInput";
-import { playDashAnim, playMeleeAttackAnim, playRangedAttackAnim } from "../../ClientPlayerInputSystem";
 import { ping } from "../../PingSystem";
 import * as Collisions from 'detect-collisions';
 import { Enemy } from "../../../componets/Enemy";
 import { createDamagePopup, tintFlash } from "./EnemyTakeDamageRoute";
 import { Transform } from "../../../componets/Transform";
 import { Interpolate } from "../../../componets/Interpolate";
-import { setLastPositionBufferByEid } from "../../InterpolateSystem";
+import { saveBuffer, setLastPositionBufferByEid } from "../../InterpolateSystem";
 import { ArcUtils } from "../../../../utilities/ArcUtils";
+import { playRangedAttackAnim } from "../../gas/gameplay-abilities/GA_RangedAttack";
+import { getEidFromServerEid } from ".";
 
-const onPlayers = defineQuery([Player]);
-const onEnemies = defineQuery([Enemy]);
 
-const getEidFromServerEid = (world: IWorld, serverEid: number) => {
-    // check players
-    const players = onPlayers(world);
-    for (let i = 0; i < players.length; i++) {
-        console.log(ServerMessage.serverEid[players[i]], serverEid);
-        if (ServerMessage.serverEid[players[i]] === serverEid) {
-            return players[i];
-        }
-    }
 
-    // check enemies
-    const enemies = onEnemies(world);
-    for (let i = 0; i < enemies.length; i++) {
-        if (ServerMessage.serverEid[enemies[i]] === serverEid) {
-            return enemies[i];
-        }
-    }
-
-    // no match, return undefined
-    return undefined;
-}
-
-const makeObject = (scene: Phaser.Scene) => {
-    const rect = scene.add.rectangle(500,500, 300, 300, 0xffffff);
-    setTimeout(() => {rect.destroy()}, 1000);
-}
 
 export const playerRangedAttackRoute = (message: IMessage, room: Room, world: IWorld, scene: Phaser.Scene) => {
     const playerEid = getEidFromServerEid(world, message.payload.serverEid);
     if (playerEid) {
         // ignore players with ClientPlayerInput as they do the anim separately
         if (!hasComponent(world, ClientPlayerInput, playerEid)) {
+
+            // try activate ranged attack
 
             // recalc path slightly so shot looks like it comes from player
             const start = {
@@ -67,11 +43,12 @@ export const playerRangedAttackRoute = (message: IMessage, room: Room, world: IW
             }
 
             dir = ArcUtils.Vector2.normalise(dir);
-            console.log(dir);
             
             // play ranged attack
             playRangedAttackAnim(
                 scene, 
+                world,
+                playerEid,
                 start,
                 dir
             );

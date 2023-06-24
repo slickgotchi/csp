@@ -6,6 +6,7 @@ const getId = () => {
 
 export const Message = {
     Player: {
+        Move: getId(),
         Dash: getId(),
         MeleeAttack: getId(),
         RangedAttack: getId(),

@@ -8,6 +8,7 @@ import { Transform } from "../../../componets/Transform";
 import { saveBuffer } from "../../InterpolateSystem";
 import { applyInput, pending_inputs } from "../../ClientPlayerInputSystem";
 import { collidersByEid, separateFromStaticColliders } from "../../collisions/ColliderSystem";
+import { GA_RangedAttack } from "../../../componets/gas/gameplay-abillities/GA_RangedAttack";
 
 const onUpdate = defineQuery([ServerMessage]);
 
@@ -17,7 +18,7 @@ export const serverUpdateRoute = (message: IMessage, room: Room, world: IWorld, 
         const go = room.state.gameObjects.get(serverEid);
         switch (go?.type) {
             case 'player': {
-                handlePlayerUpdate(room, go as sPlayer, eid);
+                // handlePlayerUpdate(room, go as sPlayer, eid);
                 break;
             }
             case 'enemy': {
@@ -33,8 +34,11 @@ export const serverUpdateRoute = (message: IMessage, room: Room, world: IWorld, 
 const handlePlayerUpdate = (room: Room, go: sPlayer, eid: number) => {
     const playerGo = go as sPlayer;
     if (playerGo.sessionId !== room.sessionId) {
-        Transform.x[eid] = go.interpX;
-        Transform.y[eid] = go.interpY;
+        // check blockers
+        if (GA_RangedAttack.activated[eid]) return;
+
+        Transform.x[eid] = go.smoothX;
+        Transform.y[eid] = go.smoothY;
         saveBuffer(room, eid);
     } else {
         // update transform with authrative state

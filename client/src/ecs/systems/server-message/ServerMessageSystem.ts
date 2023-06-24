@@ -32,6 +32,14 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
         });
     });
 
+    room.onMessage(Message.Player.Move, payload => {
+        messages.push({
+            name: 'player-move',
+            payload: payload,
+            recv_ms: Date.now()
+        })
+    });
+
     room.onMessage(Message.Player.Dash, payload => {
         messages.push({
             name: 'player-dash',

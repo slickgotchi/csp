@@ -13,6 +13,7 @@ import { positionBufferByEid, saveBuffer } from "./InterpolateSystem";
 import { ArcCircleCollider, collidersByEid, separateFromStaticColliders } from "./collisions/ColliderSystem";
 import { tintFlash } from "./server-message/routes/EnemyTakeDamageRoute";
 import { Enemy } from "../componets/Enemy";
+import { playRangedAttackAnim } from "./gas/gameplay-abilities/GA_RangedAttack";
 
 export enum PlayerState {
     Idol,
@@ -117,20 +118,18 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, c
                 if (l_release) {
                     targetGA = "GA_Dash";
                     waiting = true;
-                    setTimeout(() => {waiting = false}, 250);
+                    setTimeout(() => {waiting = false}, 200);
                 }
                 if (j_release) {
                     targetGA = "GA_MeleeAttack";
                     waiting = true;
-                    setTimeout(() => {waiting = false}, 250);
+                    setTimeout(() => {waiting = false}, 200);
                 } 
                 if (k_release) {
                     targetGA = "GA_RangedAttack";
                     waiting = true;
-                    setTimeout(() => {waiting = false}, 250);
+                    setTimeout(() => {waiting = false}, 200);
                 }
-            } else {
-                targetGA = "GA_Wait";
             }
 
             // save position before starting input
@@ -218,7 +217,7 @@ export const playAnim = (scene: Phaser.Scene, world: IWorld, collisions: Collisi
             break;
         }
         case "GA_RangedAttack": {
-            playRangedAttackAnim(scene, start, dir);
+            playRangedAttackAnim(scene, world, eid, start, dir);
             checkEnemyCollisions(world, collisions, start, dir);
             break;
         }
@@ -274,27 +273,27 @@ export const playMeleeAttackAnim = (scene: Phaser.Scene, start: {x:number,y:numb
     })
 }   
 
-export const playRangedAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}) => {
-    // create circle
-    const circ = scene.add.circle(
-        start.x + dir.x * 85,
-        start.y + dir.y * 85,
-        35,
-        0xffffff
-    );
-    circ.setAlpha(0.75);
+// export const playRangedAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}) => {
+//     // create circle
+//     const circ = scene.add.circle(
+//         start.x + dir.x * 85,
+//         start.y + dir.y * 85,
+//         35,
+//         0xffffff
+//     );
+//     circ.setAlpha(0.75);
     
-    // tween
-    scene.add.tween({
-        targets: circ,
-        x: start.x + dir.x*1000,
-        y: start.y + dir.y*1000,
-        duration: 250,
-        onComplete: () => {
-            circ.destroy();
-        }
-    });
-}
+//     // tween
+//     scene.add.tween({
+//         targets: circ,
+//         x: start.x + dir.x*1000,
+//         y: start.y + dir.y*1000,
+//         duration: 250,
+//         onComplete: () => {
+//             circ.destroy();
+//         }
+//     });
+// }
 
 const checkEnemyCollisions = (world: IWorld, collisions: Collisions.System, start: {x:number,y:number}, dir: {x:number,y:number}) => {
     const WIDTH = 1000;

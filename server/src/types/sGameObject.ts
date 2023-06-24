@@ -30,6 +30,8 @@ export class sGameObject extends Schema {
 
     @type('number')
     interpY: number = 0;
+
+    
     
     accum_ms: number = 0;
 

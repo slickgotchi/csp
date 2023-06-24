@@ -73,7 +73,7 @@ export const createInterpolateSystem = () => {
 
             // check if we are the player
             if (hasComponent(world, ClientPlayerInput, eid)) {
-                // do client side prediction simple interpolation
+                // do client side prediction simple interpolationa
                 cspInterpolation(eid, positionBufferByEid.get(eid));
             } else {
                 // do more complex interpolation

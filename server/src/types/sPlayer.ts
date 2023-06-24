@@ -24,6 +24,12 @@ export class sPlayer extends sGameObject {
     @type('number')
     last_processed_input = 0;
 
+    @type('number')
+    smoothX: number = 0;
+
+    @type('number')
+    smoothY: number = 0;
+
     constructor(props: IProps) {
         super();
         this.type = 'player';

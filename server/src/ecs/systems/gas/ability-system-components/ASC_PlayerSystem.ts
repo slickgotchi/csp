@@ -73,11 +73,12 @@ const applyInput = (room: Room, world: IWorld, eid: number, gameObject: sGameObj
     handler(room, world, eid, input);
 
     (gameObject as sPlayer).last_processed_input = input.id;
+    (gameObject as sPlayer).accum_ms = 0;
 }
 
 // abilities
 const tryActivateGA_IdolRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
-    
+    tryActivateGA_Move(eid, 0, 0);
 }
 
 const tryActivateGA_MoveRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
@@ -101,7 +102,7 @@ const tryActivateGA_RangedAttackRoute = (room: Room, world: IWorld, eid: number,
 }
 
 const tryActivateGA_WaitRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
-    
+    console.log('wait');
 }
 
 export const tryActivateGA_Routes = {

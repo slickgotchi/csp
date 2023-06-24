@@ -37,7 +37,7 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
         })
 
         onUpdate(world).forEach(eid => {
-            if (GA_RangedAttack.tryActivate[eid]) {
+            if (GA_RangedAttack.activated[eid]) {
                 // 1. check no blocker abilities
 
                 // 2. check ap & cooldown requirements met
@@ -78,16 +78,8 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
                         const goEid = (b as ArcCircleCollider).serverEid;
 
                         if (hasComponent(world, ASC_Enemy, goEid)) {
-                            // room.broadcast(Message.Enemy.TakeDamage, {
-                            //     serverEid: goEid,
-                            //     x: Transform.x[goEid],
-                            //     y: Transform.y[goEid],
-                            //     damage: calcDamage(),
-                            // })
                             hitEnemies.push({
                                 serverEid: goEid,
-                                // x: Transform.x[goEid],
-                                // y: Transform.y[goEid],
                                 damage: calcDamage(),
                             });
                         }
@@ -118,12 +110,16 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
                         },
                         hitEnemies: hitEnemies
                     })
-                    console.log(hitEnemies);
                 } 
 
 
                 // turn off activate tag
-                GA_RangedAttack.tryActivate[eid] = 0;
+                GA_RangedAttack.activated[eid] = 0;
+
+                // set timeout on running tag
+                setTimeout(() => {
+                    GA_RangedAttack.running[eid] = 0;
+                }, 200)
             }
         })
 
@@ -132,7 +128,8 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
 }
 
 export const tryActivateGA_RangedAttack = (eid: number, dx: number, dy: number) => {
-    GA_RangedAttack.tryActivate[eid] = 1;
+    GA_RangedAttack.activated[eid] = 1;
+    GA_RangedAttack.running[eid] = 1;
     GA_RangedAttack.dx[eid] = dx;
     GA_RangedAttack.dy[eid] = dy;
 }

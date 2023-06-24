@@ -11,6 +11,7 @@ import { Room } from "colyseus.js";
 import { IGameState } from "../../../../server/src/types/IGameState";
 import { Schema } from '@colyseus/schema';
 import { Collider, ColliderShape } from "../componets/collisions/Collider";
+import { GA_RangedAttack } from "../componets/gas/gameplay-abillities/GA_RangedAttack";
 
 
 interface iProps {
@@ -26,7 +27,7 @@ interface iProps {
 export const createPfPlayer = (props: iProps) => {
     const eid = addEntity(props.world);
 
-    addComponent(props.world, 'player', eid);
+    // addComponent(props.world, 'player', eid);
 
     addComponent(props.world, Player, eid);
     Player.speed[eid] = 400;
@@ -59,6 +60,9 @@ export const createPfPlayer = (props: iProps) => {
     Collider.shape[eid] = ColliderShape.Circle;
     Collider.radius[eid] = 50;
     Collider.isAutoStaticSeparate[eid] = 1;
+
+    // abilities
+    addComponent(props.world, GA_RangedAttack, eid);
 
     // addComponent(props.world, CircleCollider, eid);
     // CircleCollider.radius[eid] = 50;
