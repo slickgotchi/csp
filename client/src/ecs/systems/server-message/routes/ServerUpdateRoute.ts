@@ -6,9 +6,6 @@ import { sPlayer } from "../../../../../../server/src/types/sPlayer";
 import { sEnemy } from "../../../../../../server/src/types/sEnemy";
 import { Transform } from "../../../componets/Transform";
 import { saveBuffer } from "../../InterpolateSystem";
-import { applyInput, pending_inputs } from "../../ClientPlayerInputSystem";
-import { collidersByEid, separateFromStaticColliders } from "../../collisions/ColliderSystem";
-import { GA_RangedAttack } from "../../../componets/gas/gameplay-abillities/GA_RangedAttack";
 
 const onUpdate = defineQuery([ServerMessage]);
 
@@ -31,36 +28,33 @@ export const serverUpdateRoute = (message: IMessage, room: Room, world: IWorld, 
 }
 
 
-const handlePlayerUpdate = (room: Room, go: sPlayer, eid: number) => {
-    const playerGo = go as sPlayer;
-    if (playerGo.sessionId !== room.sessionId) {
-        // check blockers
-        if (GA_RangedAttack.activated[eid]) return;
+// const handlePlayerUpdate = (room: Room, go: sPlayer, eid: number) => {
+//     const playerGo = go as sPlayer;
+//     if (playerGo.sessionId !== room.sessionId) {
+//         Transform.x[eid] = go.smoothX;
+//         Transform.y[eid] = go.smoothY;
+//         saveBuffer(room, eid);
+//     } else {
+//         // update transform with authrative state
+//         Transform.x[eid] = go.x;
+//         Transform.y[eid] = go.y;
 
-        Transform.x[eid] = go.smoothX;
-        Transform.y[eid] = go.smoothY;
-        saveBuffer(room, eid);
-    } else {
-        // update transform with authrative state
-        Transform.x[eid] = go.x;
-        Transform.y[eid] = go.y;
-
-        // if server recon do recon
-        if (ServerMessage.isServerReconciliation[eid]) {
-            let j = 0;
-            while (j < pending_inputs.length) {
-                const input = pending_inputs[j];
-                if (input.id <= (go as sPlayer).last_processed_input) {
-                    pending_inputs.splice(j,1);
-                } else {
-                    applyInput(eid, input);
-                    separateFromStaticColliders(eid, collidersByEid.get(eid));
-                    j++;
-                }
-            }
-        }
-    }
-}
+//         // if server recon do recon
+//         if (ServerMessage.isServerReconciliation[eid]) {
+//             let j = 0;
+//             while (j < pending_inputs.length) {
+//                 const input = pending_inputs[j];
+//                 if (input.id <= (go as sPlayer).last_processed_input) {
+//                     pending_inputs.splice(j,1);
+//                 } else {
+//                     applyInput(eid, input);
+//                     separateFromStaticColliders(eid, collidersByEid.get(eid));
+//                     j++;
+//                 }
+//             }
+//         }
+//     }
+// }
 
 const handleEnemyUpdate = (room: Room, go: sEnemy, eid: number) => {
     Transform.x[eid] = go.x;

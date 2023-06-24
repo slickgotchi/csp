@@ -13,7 +13,8 @@ import { positionBufferByEid, saveBuffer } from "./InterpolateSystem";
 import { ArcCircleCollider, collidersByEid, separateFromStaticColliders } from "./collisions/ColliderSystem";
 import { tintFlash } from "./server-message/routes/EnemyTakeDamageRoute";
 import { Enemy } from "../componets/Enemy";
-import { playRangedAttackAnim } from "./gas/gameplay-abilities/GA_RangedAttack";
+import { playRangedAttackAnim, tryActivateGA_RangedAttack } from "./gas/gameplay-abilities/GA_RangedAttackSystem";
+import { tryActivateGA_MeleeAttack } from "./gas/gameplay-abilities/GA_MeleeAttackSystem";
 
 export enum PlayerState {
     Idol,
@@ -111,26 +112,26 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, c
         onUpdate(world).forEach(eid => {
             // determine target GA based on input config
             let targetGA = "GA_Idol";
-            if (!waiting) {
+            // if (!waiting) {
                 if (w_key?.isDown || a_key?.isDown || s_key?.isDown || d_key?.isDown) {
                     targetGA = "GA_Movement";
                 }
                 if (l_release) {
                     targetGA = "GA_Dash";
-                    waiting = true;
-                    setTimeout(() => {waiting = false}, 200);
+                    // waiting = true;
+                    // setTimeout(() => {waiting = false}, 200);
                 }
                 if (j_release) {
                     targetGA = "GA_MeleeAttack";
-                    waiting = true;
-                    setTimeout(() => {waiting = false}, 200);
+                    // waiting = true;
+                    // setTimeout(() => {waiting = false}, 200);
                 } 
                 if (k_release) {
                     targetGA = "GA_RangedAttack";
-                    waiting = true;
-                    setTimeout(() => {waiting = false}, 200);
+                    // waiting = true;
+                    // setTimeout(() => {waiting = false}, 200);
                 }
-            }
+            // }
 
             // save position before starting input
             const start = {
@@ -153,10 +154,16 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, c
                 id: sequence_number++
             }
 
-            // apply input, check collisions, save buffer pos
-            applyInput(eid, input);
-            separateFromStaticColliders(eid, collidersByEid.get(eid));
-            saveBuffer(room, eid);
+            // apply movement input, check collisions, save buffer pos
+            // applyInput(eid, input);
+            // separateFromStaticColliders(eid, collidersByEid.get(eid));
+            // saveBuffer(room, eid);
+
+            logMoveInput(
+                room, 
+                eid, 
+                input
+            )
 
             // store final position
             const finish = {
@@ -164,8 +171,8 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, c
                 y: Transform.y[eid]
             }
 
-            // play anims
-            playAnim(scene, world, collisions, eid, targetGA, start, finish, dir);
+            // try activate gameplay ability
+            tryActivateGA(scene, world, collisions, eid, targetGA, start, finish, dir);
 
             // update server with latest input
             room.send("client-input", input);
@@ -183,42 +190,80 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, c
     });
 }
 
-// core input function
-export const applyInput = (eid: number, input: IInput) => {
-    // apply input depending on state
-    switch(input.tryActivateGA) {
-        case "GA_Movement": {
-            Transform.x[eid] += 400 * input.move.dx * input.dt_ms * 0.001;
-            Transform.y[eid] += 400 * input.move.dy * input.dt_ms * 0.001;
-            break;
-        }
-        case "GA_Dash": {
-            Transform.x[eid] += input.move.dx * 500;
-            Transform.y[eid] += input.move.dy * 500;
-            break;
-        }
-        case "GA_MeleeAttack": {
-            Transform.x[eid] += input.move.dx * 100;
-            Transform.y[eid] += input.move.dy * 100;
-            break;
-        }
-        default: break;
-    }
+export const logMoveInput = (room: Room, eid: number, input: IInput) => {
+    applyMoveInput(eid, input);
+    separateFromStaticColliders(eid, collidersByEid.get(eid));
+    saveBuffer(room, eid);
 }
 
-export const playAnim = (scene: Phaser.Scene, world: IWorld, collisions: Collisions.System, eid: number, targetGA: string, start: {x:number,y:number}, finish: {x:number,y:number}, dir: {x:number,y:number} ) => {
+export const applyMoveInput = (eid: number, input: IInput) => {
+    let vel = 0;
+    if (input.tryActivateGA === "GA_Movement") vel = 400;
+
+    Transform.x[eid] += vel * input.move.dx * input.dt_ms * 0.001;
+    Transform.y[eid] += vel * input.move.dy * input.dt_ms * 0.001;
+}
+
+export const createMoveInput = (targetGA: string, dir: {x:number, y:number}) => {
+    // create an input
+    const input: IInput = {
+        tryActivateGA: targetGA,
+        move: {
+            dx: dir.x,
+            dy: dir.y,
+        },
+        key_release: {
+            l: false,
+            j: false,
+        },
+        dt_ms: 100,
+        id: sequence_number++
+    }
+
+    return input;
+}
+
+// core input function
+// export const applyInput = (eid: number, input: IInput) => {
+
+//     // apply input depending on state
+//     switch(input.tryActivateGA) {
+//         case "GA_Movement": {
+//             Transform.x[eid] += 400 * input.move.dx * input.dt_ms * 0.001;
+//             Transform.y[eid] += 400 * input.move.dy * input.dt_ms * 0.001;
+//             break;
+//         }
+//         case "GA_Dash": {
+//             // Transform.x[eid] += input.move.dx * 500;
+//             // Transform.y[eid] += input.move.dy * 500;
+//             break;
+//         }
+//         case "GA_MeleeAttack": {
+//             // Transform.x[eid] += input.move.dx * 100;
+//             // Transform.y[eid] += input.move.dy * 100;
+//             break;
+//         }
+//         case "GA_RangedAttack": {
+//             // tryActivateGA_RangedAttack(eid, input.move.dx, input.move.dy);
+//             break;
+//         }
+//         default: break;
+//     }
+// }
+
+export const tryActivateGA = (scene: Phaser.Scene, world: IWorld, collisions: Collisions.System, eid: number, targetGA: string, start: {x:number,y:number}, finish: {x:number,y:number}, dir: {x:number,y:number} ) => {
     switch (targetGA) {
         case "GA_Dash": {
             playDashAnim(scene, start, finish);
             break;
         }
         case "GA_MeleeAttack": {
-            playMeleeAttackAnim(scene, start, dir);
+            // playMeleeAttackAnim(scene, start, dir);
+            tryActivateGA_MeleeAttack(eid, dir.x, dir.y);
             break;
         }
         case "GA_RangedAttack": {
-            playRangedAttackAnim(scene, world, eid, start, dir);
-            checkEnemyCollisions(world, collisions, start, dir);
+            tryActivateGA_RangedAttack(eid, dir.x, dir.y);
             break;
         }
         default: break;
@@ -251,27 +296,27 @@ export const playDashAnim = (scene: Phaser.Scene, start: {x:number,y:number}, fi
     });
 }
 
-export const playMeleeAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}) => {
-    // create circle
-    const circ = scene.add.circle(
-        start.x + dir.x*200,
-        start.y + dir.y*200,
-        150,
-        0xffffff
-    );
-    circ.setAlpha(0.75);
+// export const playMeleeAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}) => {
+//     // create circle
+//     const circ = scene.add.circle(
+//         start.x + dir.x*200,
+//         start.y + dir.y*200,
+//         150,
+//         0xffffff
+//     );
+//     circ.setAlpha(0.75);
     
-    // tween
-    scene.add.tween({
-        targets: circ,
-        alpha: 0,
-        duration: 500,
-        ease: 'Quad.easeIn',
-        onComplete: () => {
-            circ.destroy();
-        }
-    })
-}   
+//     // tween
+//     scene.add.tween({
+//         targets: circ,
+//         alpha: 0,
+//         duration: 500,
+//         ease: 'Quad.easeIn',
+//         onComplete: () => {
+//             circ.destroy();
+//         }
+//     })
+// }   
 
 // export const playRangedAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}) => {
 //     // create circle
@@ -295,32 +340,32 @@ export const playMeleeAttackAnim = (scene: Phaser.Scene, start: {x:number,y:numb
 //     });
 // }
 
-const checkEnemyCollisions = (world: IWorld, collisions: Collisions.System, start: {x:number,y:number}, dir: {x:number,y:number}) => {
-    const WIDTH = 1000;
-    const HEIGHT = 70;
+// const checkEnemyCollisions = (world: IWorld, collisions: Collisions.System, start: {x:number,y:number}, dir: {x:number,y:number}) => {
+//     const WIDTH = 1000;
+//     const HEIGHT = 70;
     
-    const hitCollider = collisions.createBox(
-        {x:0,y:0},
-        WIDTH,
-        HEIGHT, {
-            isCentered: true
-        }
-    )
+//     const hitCollider = collisions.createBox(
+//         {x:0,y:0},
+//         WIDTH,
+//         HEIGHT, {
+//             isCentered: true
+//         }
+//     )
 
-    // adjust hit collider pos/angle
-    hitCollider.setPosition(start.x + dir.x*WIDTH/2, start.y + dir.y*WIDTH/2);
-    hitCollider.setAngle(Collisions.deg2rad(ArcUtils.Angle.fromVector2(dir)));
-    collisions.insert(hitCollider); // need this to update bbox for hit collider
+//     // adjust hit collider pos/angle
+//     hitCollider.setPosition(start.x + dir.x*WIDTH/2, start.y + dir.y*WIDTH/2);
+//     hitCollider.setAngle(Collisions.deg2rad(ArcUtils.Angle.fromVector2(dir)));
+//     collisions.insert(hitCollider); // need this to update bbox for hit collider
 
-    // check collisions
-    collisions.checkOne(hitCollider, response => {
-        const { b } = response;
-        const goEid = (b as ArcCircleCollider).eid;
+//     // check collisions
+//     collisions.checkOne(hitCollider, response => {
+//         const { b } = response;
+//         const goEid = (b as ArcCircleCollider).eid;
 
-        if (hasComponent(world, Enemy, goEid)) {
-            setTimeout(() => {
-                tintFlash(goEid);
-            }, 100)
-        }
-    })
-}
+//         if (hasComponent(world, Enemy, goEid)) {
+//             setTimeout(() => {
+//                 tintFlash(goEid);
+//             }, 100)
+//         }
+//     })
+// }

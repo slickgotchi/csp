@@ -12,6 +12,7 @@ import { IGameState } from "../../../../server/src/types/IGameState";
 import { Schema } from '@colyseus/schema';
 import { Collider, ColliderShape } from "../componets/collisions/Collider";
 import { GA_RangedAttack } from "../componets/gas/gameplay-abillities/GA_RangedAttack";
+import { GA_MeleeAttack } from "../componets/gas/gameplay-abillities/GA_MeleeAttack";
 
 
 interface iProps {
@@ -62,6 +63,7 @@ export const createPfPlayer = (props: iProps) => {
     Collider.isAutoStaticSeparate[eid] = 1;
 
     // abilities
+    addComponent(props.world, GA_MeleeAttack, eid);
     addComponent(props.world, GA_RangedAttack, eid);
 
     // addComponent(props.world, CircleCollider, eid);

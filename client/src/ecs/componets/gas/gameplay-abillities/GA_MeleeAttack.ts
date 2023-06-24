@@ -1,7 +1,7 @@
 import { Types, defineComponent } from "bitecs";
 
 
-export const GA_RangedAttack = defineComponent({
+export const GA_MeleeAttack = defineComponent({
     isActivated: Types.ui8,
     isRunning: Types.ui8,
     dx: Types.f32,

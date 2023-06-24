@@ -12,7 +12,7 @@ import { Transform } from "../../../componets/Transform";
 import { Interpolate } from "../../../componets/Interpolate";
 import { saveBuffer, setLastPositionBufferByEid } from "../../InterpolateSystem";
 import { ArcUtils } from "../../../../utilities/ArcUtils";
-import { playRangedAttackAnim } from "../../gas/gameplay-abilities/GA_RangedAttack";
+import { playRangedAttackAnim } from "../../gas/gameplay-abilities/GA_RangedAttackSystem";
 import { getEidFromServerEid } from ".";
 
 

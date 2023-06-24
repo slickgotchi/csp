@@ -11,7 +11,8 @@ import { createPingSystem } from "../ecs/systems/PingSystem";
 import * as Collisions from 'detect-collisions';
 import { createRectangleSystem } from "../ecs/systems/RectangleSystem";
 import { createColliderSystem } from "../ecs/systems/collisions/ColliderSystem";
-import { createGA_RangedAttackSystem } from "../ecs/systems/gas/gameplay-abilities/GA_RangedAttack";
+import { createGA_RangedAttackSystem } from "../ecs/systems/gas/gameplay-abilities/GA_RangedAttackSystem";
+import { createGA_MeleeAttackSystem } from "../ecs/systems/gas/gameplay-abilities/GA_MeleeAttackSystem";
 
 export class Game extends Phaser.Scene {
     private world!: IWorld;
@@ -48,7 +49,9 @@ export class Game extends Phaser.Scene {
         this.systems.push(createClientPlayerInputSystem(this, this.room, this.collisionSystem));
         this.systems.push(createColliderSystem(this.world, this.collisionSystem));
 
-        this.systems.push(createGA_RangedAttackSystem(this, this.world));
+        // 2b. gameplay ability systems
+        this.systems.push(createGA_MeleeAttackSystem(this, this.room, this.world, this.collisionSystem));
+        this.systems.push(createGA_RangedAttackSystem(this, this.room, this.world, this.collisionSystem));
 
         // 3. interpolation
         this.systems.push(createInterpolateSystem());

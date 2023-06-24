@@ -4,7 +4,7 @@ import { IWorld, defineQuery, hasComponent } from "bitecs";
 import { Player } from "../../../componets/Player";
 import { ServerMessage } from "../../../componets/ServerMessage";
 import { ClientPlayerInput } from "../../../componets/ClientPlayerInput";
-import { applyInput, pending_inputs, playDashAnim } from "../../ClientPlayerInputSystem";
+import { applyMoveInput, pending_inputs, playDashAnim } from "../../ClientPlayerInputSystem";
 import { ping } from "../../PingSystem";
 import { getEidFromServerEid } from ".";
 import { sPlayer } from "../../../../../../server/src/types/sPlayer";
@@ -40,7 +40,7 @@ export const playerMoveRoute = (message: IMessage, room: Room, world: IWorld, sc
                 if (input.id <= message.payload.last_processed_input) {
                     pending_inputs.splice(j,1);
                 } else {
-                    applyInput(eid, input);
+                    applyMoveInput(eid, input);
                     separateFromStaticColliders(eid, collidersByEid.get(eid));
                     j++;
                 }
