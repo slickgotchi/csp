@@ -7,14 +7,15 @@ const tryActivateGA_strings = [
 ];
 
 export interface IInput {
-    tryActivateGA: string,
-    move: {
-        dx: number,
-        dy: number,
+    targetGA: string,
+    dir: {
+        x: number,
+        y: number,
     },
     key_release: {
         l: boolean,
-        j: boolean
+        j: boolean,
+        k: boolean,
     },
     dt_ms: number,
     id: number,

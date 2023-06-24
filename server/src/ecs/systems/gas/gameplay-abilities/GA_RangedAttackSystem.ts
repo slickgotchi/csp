@@ -9,6 +9,7 @@ import { ArcUtils } from "../../../../utilities/ArcUtils";
 import { ASC_Enemy } from "../../../components/gas/ability-system-components/ASC_Enemy";
 import { ASC_Player } from "../../../components/gas/ability-system-components/ASC_Player";
 import { sPlayer } from "../../../../types/sPlayer";
+import { IInput } from "../../../../types/Input";
 
 let counter = 0;
 
@@ -37,7 +38,7 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
         })
 
         onUpdate(world).forEach(eid => {
-            if (GA_RangedAttack.activated[eid]) {
+            if (GA_RangedAttack.isActivated[eid]) {
                 // 1. check no blocker abilities
 
                 // 2. check ap & cooldown requirements met
@@ -114,12 +115,12 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
 
 
                 // turn off activate tag
-                GA_RangedAttack.activated[eid] = 0;
+                GA_RangedAttack.isActivated[eid] = 0;
 
                 // set timeout on running tag
                 setTimeout(() => {
-                    GA_RangedAttack.running[eid] = 0;
-                }, 200)
+                    GA_RangedAttack.isRunning[eid] = 0;
+                }, 1000)
             }
         })
 
@@ -127,11 +128,13 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
     })
 }
 
-export const tryActivateGA_RangedAttack = (eid: number, dx: number, dy: number) => {
-    GA_RangedAttack.activated[eid] = 1;
-    GA_RangedAttack.running[eid] = 1;
-    GA_RangedAttack.dx[eid] = dx;
-    GA_RangedAttack.dy[eid] = dy;
+export const tryActivateGA_RangedAttack = (eid: number, input: IInput) => {
+    // 1. check blockers
+    
+    GA_RangedAttack.isActivated[eid] = 1;
+    GA_RangedAttack.isRunning[eid] = 1;
+    GA_RangedAttack.dx[eid] = input.dir.x;
+    GA_RangedAttack.dy[eid] = input.dir.y;
 }
 
 
@@ -162,8 +165,6 @@ const rollbackColliders = (room: GameRoom, world: IWorld, time_ms: number) => {
             })
         }
     });
-
-    // room.broadcast('positions', positions);
 }
 
 const unrollColliders = (room: GameRoom, world: IWorld) => {

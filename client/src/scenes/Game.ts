@@ -13,6 +13,8 @@ import { createRectangleSystem } from "../ecs/systems/RectangleSystem";
 import { createColliderSystem } from "../ecs/systems/collisions/ColliderSystem";
 import { createGA_RangedAttackSystem } from "../ecs/systems/gas/gameplay-abilities/GA_RangedAttackSystem";
 import { createGA_MeleeAttackSystem } from "../ecs/systems/gas/gameplay-abilities/GA_MeleeAttackSystem";
+import { createGA_MoveSystem } from "../ecs/systems/gas/gameplay-abilities/GA_MoveSystem";
+import { createGA_DashSystem } from "../ecs/systems/gas/gameplay-abilities/GA_DashSystem";
 
 export class Game extends Phaser.Scene {
     private world!: IWorld;
@@ -50,6 +52,8 @@ export class Game extends Phaser.Scene {
         this.systems.push(createColliderSystem(this.world, this.collisionSystem));
 
         // 2b. gameplay ability systems
+        this.systems.push(createGA_MoveSystem(this.room));
+        this.systems.push(createGA_DashSystem(this.room));
         this.systems.push(createGA_MeleeAttackSystem(this, this.room, this.world, this.collisionSystem));
         this.systems.push(createGA_RangedAttackSystem(this, this.room, this.world, this.collisionSystem));
 

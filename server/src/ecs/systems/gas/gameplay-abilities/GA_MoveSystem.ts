@@ -7,6 +7,8 @@ import { GA_Move } from "../../../components/gas/gameplay-abilities/GA_Move";
 import { GA_RangedAttack } from "../../../components/gas/gameplay-abilities/GA_RangedAttack";
 import { sPlayer } from "../../../../types/sPlayer";
 import { Timer } from "../../../../utilities/Timer";
+import { IInput } from "../../../../types/Input";
+import { GA_Dash } from "../../../components/gas/gameplay-abilities/GA_Dash";
 
 
 export const createGA_MoveSystem = (room: GameRoom) => {
@@ -22,9 +24,9 @@ export const createGA_MoveSystem = (room: GameRoom) => {
         onUpdate(world).forEach(eid => {
 
             // activae the move
-            if (GA_Move.activated[eid]) {
+            if (GA_Move.isActivated[eid]) {
                 // 1. check no blocker abilities
-                if (GA_RangedAttack.running[eid]) return;
+                if (GA_RangedAttack.isRunning[eid]) return;
 
                 // 2. check ap & cooldown requirements met
 
@@ -43,7 +45,7 @@ export const createGA_MoveSystem = (room: GameRoom) => {
                     last_processed_input: (room.state.gameObjects.get(eid.toString()) as sPlayer).last_processed_input
                 });
 
-                GA_Move.activated[eid] = 0;
+                GA_Move.isActivated[eid] = 0;
             }
         });
 
@@ -51,11 +53,16 @@ export const createGA_MoveSystem = (room: GameRoom) => {
     })
 }
 
-export const tryActivateGA_Move = (eid: number, dx: number, dy: number) => {
-    GA_Move.activated[eid] = 1;
-    GA_Move.running[eid] = 1;
-    GA_Move.dx[eid] = dx;
-    GA_Move.dy[eid] = dy;
+export const tryActivateGA_Move = (eid: number, input: IInput) => {
+    // 1. check blockers
+    let vel = input.targetGA === "GA_Idol" ? 0 : 400;
+    if (GA_RangedAttack.isRunning[eid]) vel = 0;
+    if (GA_Dash.isRunning[eid]) return;
+    
+    GA_Move.isActivated[eid] = 1;
+    GA_Move.isRunning[eid] = 1;
+    GA_Move.dx[eid] = input.dir.x * vel * input.dt_ms * 0.001;
+    GA_Move.dy[eid] = input.dir.y * vel * input.dt_ms * 0.001;
 }
 
 

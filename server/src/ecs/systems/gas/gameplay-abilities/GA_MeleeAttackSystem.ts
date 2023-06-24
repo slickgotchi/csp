@@ -7,6 +7,7 @@ import { GA_MeleeAttack } from "../../../components/gas/gameplay-abilities/GA_Me
 import * as Collisions from 'detect-collisions';
 import { ASC_Player } from "../../../components/gas/ability-system-components/ASC_Player";
 import { ASC_Enemy } from "../../../components/gas/ability-system-components/ASC_Enemy";
+import { IInput } from "../../../../types/Input";
 
 export const createGA_MeleeAttackSystem = (room: GameRoom, collisions: Collisions.System) => {
 
@@ -29,7 +30,7 @@ export const createGA_MeleeAttackSystem = (room: GameRoom, collisions: Collision
         })
 
         onUpdate(world).forEach(eid => {
-            if (GA_MeleeAttack.tryActivate[eid]) {
+            if (GA_MeleeAttack.isActivated[eid]) {
                 // 1. check no blocker abilities
 
                 // 2. check ap & cooldown requirements met
@@ -87,7 +88,7 @@ export const createGA_MeleeAttackSystem = (room: GameRoom, collisions: Collision
                 })
 
                 // turn off activate tag
-                GA_MeleeAttack.tryActivate[eid] = 0;
+                GA_MeleeAttack.isActivated[eid] = 0;
             }
         })
 
@@ -95,10 +96,11 @@ export const createGA_MeleeAttackSystem = (room: GameRoom, collisions: Collision
     })
 }
 
-export const tryActivateGA_MeleeAttack = (eid: number, dx: number, dy: number) => {
-    GA_MeleeAttack.tryActivate[eid] = 1;
-    GA_MeleeAttack.dx[eid] = dx;
-    GA_MeleeAttack.dy[eid] = dy;
+export const tryActivateGA_MeleeAttack = (eid: number, input: IInput) => {
+    GA_MeleeAttack.isActivated[eid] = 1;
+    GA_MeleeAttack.isRunning[eid] = 1;
+    GA_MeleeAttack.dx[eid] = input.dir.x;
+    GA_MeleeAttack.dy[eid] = input.dir.y;
 }
 
 

@@ -4,6 +4,7 @@ import { Transform } from "../../../components/Transform";
 import { GA_Dash } from "../../../components/gas/gameplay-abilities/GA_Dash";
 import { collidersByEid, separateFromStaticColliders } from "../../collisions/ColliderSystem";
 import { Message } from "../../../../types/Messages";
+import { IInput } from "../../../../types/Input";
 
 
 export const createGA_DashSystem = (room: GameRoom) => {
@@ -13,10 +14,7 @@ export const createGA_DashSystem = (room: GameRoom) => {
     // update code
     return defineSystem((world: IWorld) => {
         onUpdate(world).forEach(eid => {
-            if (GA_Dash.tryActivate[eid]) {
-                // 1. check no blocker abilities
-
-                // 2. check ap & cooldown requirements met
+            if (GA_Dash.isActivated[eid]) {
 
                 // 3. activate
                 const start = {
@@ -42,7 +40,11 @@ export const createGA_DashSystem = (room: GameRoom) => {
                 });
 
                 // turn off activate tag
-                GA_Dash.tryActivate[eid] = 0;
+                GA_Dash.isActivated[eid] = 0;
+
+                setTimeout(() => {
+                    GA_Dash.isRunning[eid] = 0;
+                }, 1000);
             }
         })
 
@@ -50,10 +52,11 @@ export const createGA_DashSystem = (room: GameRoom) => {
     })
 }
 
-export const tryActivateGA_Dash = (eid: number, dx: number, dy: number) => {
-    GA_Dash.tryActivate[eid] = 1;
-    GA_Dash.dx[eid] = dx;
-    GA_Dash.dy[eid] = dy;
+export const tryActivateGA_Dash = (eid: number, input: IInput) => {
+    GA_Dash.isActivated[eid] = 1;
+    GA_Dash.isRunning[eid] = 1;
+    GA_Dash.dx[eid] = input.dir.x;
+    GA_Dash.dy[eid] = input.dir.y;
     GA_Dash.distance[eid] = 500;
 }
 

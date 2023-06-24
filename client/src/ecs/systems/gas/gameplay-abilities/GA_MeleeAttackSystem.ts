@@ -7,7 +7,7 @@ import { tintFlash } from "../../server-message/routes/EnemyTakeDamageRoute";
 import { Transform } from "../../../componets/Transform";
 import { GA_MeleeAttack } from "../../../componets/gas/gameplay-abillities/GA_MeleeAttack";
 import { saveBuffer } from "../../InterpolateSystem";
-import { IInput, createMoveInput, logMoveInput } from "../../ClientPlayerInputSystem";
+import { IInput } from "../../ClientPlayerInputSystem";
 import { Room } from "colyseus.js";
 
 export const createGA_MeleeAttackSystem = (scene: Phaser.Scene, room: Room, world: IWorld, collisions: Collisions.System) => {
@@ -37,10 +37,7 @@ export const createGA_MeleeAttackSystem = (scene: Phaser.Scene, room: Room, worl
                 GA_MeleeAttack.isActivated[eid] = 0;
 
                 // 0. move object
-                logMoveInput(room, eid, createMoveInput(
-                    "GA_Movement",
-                    dir
-                ))
+                // logMoveInput(room, eid, createMoveInput(dir.x, dir.y, 100));
 
                 // 4. set a timeout on running
                 setTimeout(() => {
@@ -53,7 +50,7 @@ export const createGA_MeleeAttackSystem = (scene: Phaser.Scene, room: Room, worl
     })
 }
 
-export const tryActivateGA_MeleeAttack = (eid: number, dx: number, dy: number) => {
+export const tryActivateGA_MeleeAttack = (eid: number, input: IInput) => {
     // 0. check not already running
     // if (GA_MeleeAttack.isRunning[eid]) return;
 
@@ -66,8 +63,8 @@ export const tryActivateGA_MeleeAttack = (eid: number, dx: number, dy: number) =
     // 4. ok we can activate!
     GA_MeleeAttack.isActivated[eid] = 1;
     GA_MeleeAttack.isRunning[eid] = 1;
-    GA_MeleeAttack.dx[eid] = dx;
-    GA_MeleeAttack.dy[eid] = dy;
+    GA_MeleeAttack.dx[eid] = input.dir.x;
+    GA_MeleeAttack.dy[eid] = input.dir.y;
 }
 
 export const playMeleeAttackAnim = (scene: Phaser.Scene, world: IWorld, eid: number, start: {x:number,y:number}, dir: {x:number,y:number}) => {

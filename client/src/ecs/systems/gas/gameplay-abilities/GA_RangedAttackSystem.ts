@@ -7,6 +7,7 @@ import { Enemy } from "../../../componets/Enemy";
 import { tintFlash } from "../../server-message/routes/EnemyTakeDamageRoute";
 import { Transform } from "../../../componets/Transform";
 import { Room } from "colyseus.js";
+import { IInput } from "../../ClientPlayerInputSystem";
 
 export const createGA_RangedAttackSystem = (scene: Phaser.Scene, room: Room, world: IWorld, collisions: Collisions.System) => {
 
@@ -36,7 +37,7 @@ export const createGA_RangedAttackSystem = (scene: Phaser.Scene, room: Room, wor
                 // 4. set a timeout on running
                 setTimeout(() => {
                     GA_RangedAttack.isRunning[eid] = 0;
-                }, 200);
+                }, 1000);
             }
         })
 
@@ -44,9 +45,9 @@ export const createGA_RangedAttackSystem = (scene: Phaser.Scene, room: Room, wor
     })
 }
 
-export const tryActivateGA_RangedAttack = (eid: number, dx: number, dy: number) => {
+export const tryActivateGA_RangedAttack = (eid: number, input: IInput) => {
     // 0. check not already running
-    // if (GA_RangedAttack.isRunning[eid]) return;
+    if (GA_RangedAttack.isRunning[eid]) return;
 
     // 1. check other ability blockers
 
@@ -57,8 +58,8 @@ export const tryActivateGA_RangedAttack = (eid: number, dx: number, dy: number) 
     // 4. ok we can activate!
     GA_RangedAttack.isActivated[eid] = 1;
     GA_RangedAttack.isRunning[eid] = 1;
-    GA_RangedAttack.dx[eid] = dx;
-    GA_RangedAttack.dy[eid] = dy;
+    GA_RangedAttack.dx[eid] = input.dir.x;
+    GA_RangedAttack.dy[eid] = input.dir.y;
 }
 
 

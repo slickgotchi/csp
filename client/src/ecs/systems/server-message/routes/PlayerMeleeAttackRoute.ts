@@ -13,7 +13,7 @@ export const playerMeleeAttackRoute = (message: IMessage, room: Room, world: IWo
     onUpdate(world).forEach(eid => {
         if (!hasComponent(world, ClientPlayerInput, eid)) {
             if (ServerMessage.serverEid[eid] === message.payload.serverEid) {
-                // setTimeout(() => {
+                setTimeout(() => {
                     playMeleeAttackAnim(
                         scene, 
                         world,
@@ -22,7 +22,7 @@ export const playerMeleeAttackRoute = (message: IMessage, room: Room, world: IWo
                         message.payload.dir, 
                     );
 
-                // },ping/2 + 100 + 100)
+                },ping/2 + 100 + 100)
             }
         }
     })

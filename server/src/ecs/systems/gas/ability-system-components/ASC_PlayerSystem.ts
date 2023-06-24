@@ -57,7 +57,7 @@ export const createASC_PlayerSystem = (room: GameRoom) => {
                         message = validateInputMessage(message);
         
                         // apply input
-                        applyInput(room, world, playerGo.serverEid, playerGo, message.input);
+                        applyInput(playerGo.serverEid, playerGo, message.input);
                     }
                 }
             }   
@@ -68,50 +68,20 @@ export const createASC_PlayerSystem = (room: GameRoom) => {
 }
 
 // use router to find correct ability to activate
-const applyInput = (room: Room, world: IWorld, eid: number, gameObject: sGameObject, input: IInput) => {
-    const handler = (tryActivateGA_Routes as any)[input.tryActivateGA];
-    handler(room, world, eid, input);
+const applyInput = (eid: number, gameObject: sGameObject, input: IInput) => {
+    const handler = (tryActivateGA_Routes as any)[input.targetGA];
+    handler(eid, input);
 
     (gameObject as sPlayer).last_processed_input = input.id;
     (gameObject as sPlayer).accum_ms = 0;
 }
 
-// abilities
-const tryActivateGA_IdolRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
-    tryActivateGA_Move(eid, 0, 0);
-}
-
-const tryActivateGA_MoveRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
-    tryActivateGA_Move(
-        eid,
-        400*input.move.dx*input.dt_ms*0.001,
-        400*input.move.dy*input.dt_ms*0.001
-    )
-}
-
-const tryActivateGA_DashRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
-    tryActivateGA_Dash(eid, input.move.dx, input.move.dy);
-}
-
-const tryActivateGA_MeleeAttackRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
-    tryActivateGA_MeleeAttack(eid, input.move.dx, input.move.dy);
-}
-
-const tryActivateGA_RangedAttackRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
-    tryActivateGA_RangedAttack(eid, input.move.dx, input.move.dy);
-}
-
-const tryActivateGA_WaitRoute = (room: Room, world: IWorld, eid: number, input: IInput) => {
-    console.log('wait');
-}
-
 export const tryActivateGA_Routes = {
-    "GA_Idol": tryActivateGA_IdolRoute,
-    'GA_Movement': tryActivateGA_MoveRoute,
-    "GA_Dash": tryActivateGA_DashRoute,
-    "GA_MeleeAttack": tryActivateGA_MeleeAttackRoute,
-    "GA_RangedAttack": tryActivateGA_RangedAttackRoute,
-    "GA_Wait": tryActivateGA_WaitRoute,
+    "GA_Idol": tryActivateGA_Move,
+    'GA_Move': tryActivateGA_Move,
+    "GA_Dash": tryActivateGA_Dash,
+    "GA_MeleeAttack": tryActivateGA_MeleeAttack,
+    "GA_RangedAttack": tryActivateGA_RangedAttack,
 }
 
 export const recvMsBuffersByClient = new Map<Client,number[]>();

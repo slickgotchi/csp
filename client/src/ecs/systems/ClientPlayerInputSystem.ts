@@ -15,6 +15,8 @@ import { tintFlash } from "./server-message/routes/EnemyTakeDamageRoute";
 import { Enemy } from "../componets/Enemy";
 import { playRangedAttackAnim, tryActivateGA_RangedAttack } from "./gas/gameplay-abilities/GA_RangedAttackSystem";
 import { tryActivateGA_MeleeAttack } from "./gas/gameplay-abilities/GA_MeleeAttackSystem";
+import { tryActivateGA_Move } from "./gas/gameplay-abilities/GA_MoveSystem";
+import { tryActivateGA_Dash } from "./gas/gameplay-abilities/GA_DashSystem";
 
 export enum PlayerState {
     Idol,
@@ -34,14 +36,15 @@ export enum InputType {
 }
 
 export interface IInput {
-    tryActivateGA: string,
-    move: {
-        dx: number,
-        dy: number,
+    targetGA: string,
+    dir: {
+        x: number,
+        y: number,
     },
     key_release: {
         l: boolean,
-        j: boolean
+        j: boolean,
+        k: boolean,
     },
     dt_ms: number,
     id: number,
@@ -78,17 +81,12 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, c
 
     const timer = new Timer();
     let accum = 0;
-    
-    let state = PlayerState.Moving;
-    let dir = {
-        x: 0,
-        y: 1
-    }
-    let waiting = false;
+    let dir = { x: 0, y: 1 }
 
+    // define system
     return defineSystem((world: IWorld) => {
 
-        // update
+        // update time
         timer.tick();
 
         // only do input as per our emit interval frequency
@@ -99,86 +97,45 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, c
             accum -= EMIT_INTERVAL_MS;
         }
 
-        // calc move direction vector
+        // calc move direction vector and normalize it
         if (w_key?.isDown || a_key?.isDown || s_key?.isDown || d_key?.isDown) dir = {x:0,y:0}
         if (w_key?.isDown) dir.y = -1;
         if (a_key?.isDown) dir.x = -1;
         if (s_key?.isDown) dir.y = 1;
         if (d_key?.isDown) dir.x = 1;
-
         dir = ArcUtils.Vector2.normalise(dir);
 
         // update (NOTE: there should only ever be one client input eid)
         onUpdate(world).forEach(eid => {
-            // determine target GA based on input config
+            // determine target game ability based on key presses
             let targetGA = "GA_Idol";
-            // if (!waiting) {
-                if (w_key?.isDown || a_key?.isDown || s_key?.isDown || d_key?.isDown) {
-                    targetGA = "GA_Movement";
-                }
-                if (l_release) {
-                    targetGA = "GA_Dash";
-                    // waiting = true;
-                    // setTimeout(() => {waiting = false}, 200);
-                }
-                if (j_release) {
-                    targetGA = "GA_MeleeAttack";
-                    // waiting = true;
-                    // setTimeout(() => {waiting = false}, 200);
-                } 
-                if (k_release) {
-                    targetGA = "GA_RangedAttack";
-                    // waiting = true;
-                    // setTimeout(() => {waiting = false}, 200);
-                }
-            // }
-
-            // save position before starting input
-            const start = {
-                x: Transform.x[eid],
-                y: Transform.y[eid]
-            }
+            if (w_key?.isDown || a_key?.isDown || s_key?.isDown || d_key?.isDown) { targetGA = "GA_Move"; }
+            if (l_release) { targetGA = "GA_Dash"; }
+            if (j_release) { targetGA = "GA_MeleeAttack"; } 
+            if (k_release) { targetGA = "GA_RangedAttack"; }
 
             // create an input
             const input: IInput = {
-                tryActivateGA: targetGA,
-                move: {
-                    dx: dir.x,
-                    dy: dir.y,
+                targetGA: targetGA,
+                dir: {
+                    x: dir.x,
+                    y: dir.y,
                 },
                 key_release: {
                     l: l_release,
                     j: j_release,
+                    k: k_release,
                 },
                 dt_ms: timer.dt_ms > EMIT_INTERVAL_MS ? timer.dt_ms : EMIT_INTERVAL_MS,
                 id: sequence_number++
             }
 
-            // apply movement input, check collisions, save buffer pos
-            // applyInput(eid, input);
-            // separateFromStaticColliders(eid, collidersByEid.get(eid));
-            // saveBuffer(room, eid);
-
-            logMoveInput(
-                room, 
-                eid, 
-                input
-            )
-
-            // store final position
-            const finish = {
-                x: Transform.x[eid],
-                y: Transform.y[eid]
-            }
-
-            // try activate gameplay ability
-            tryActivateGA(scene, world, collisions, eid, targetGA, start, finish, dir);
-
             // update server with latest input
             room.send("client-input", input);
-            
-            // add to pending inputs
-            pending_inputs.push(input);
+
+            // try activate gameplay ability
+            const tryActivateGA = (tryActivateGA_Routes as any)[targetGA];
+            tryActivateGA(eid, input);
             
             // reset key status'
             j_release = false;
@@ -190,182 +147,12 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, c
     });
 }
 
-export const logMoveInput = (room: Room, eid: number, input: IInput) => {
-    applyMoveInput(eid, input);
-    separateFromStaticColliders(eid, collidersByEid.get(eid));
-    saveBuffer(room, eid);
+export const tryActivateGA_Routes = {
+    "GA_Idol": tryActivateGA_Move,  // move knows how to handle idols
+    'GA_Move': tryActivateGA_Move,
+    "GA_Dash": tryActivateGA_Dash,
+    "GA_MeleeAttack": tryActivateGA_MeleeAttack,
+    "GA_RangedAttack": tryActivateGA_RangedAttack,
 }
 
-export const applyMoveInput = (eid: number, input: IInput) => {
-    let vel = 0;
-    if (input.tryActivateGA === "GA_Movement") vel = 400;
 
-    Transform.x[eid] += vel * input.move.dx * input.dt_ms * 0.001;
-    Transform.y[eid] += vel * input.move.dy * input.dt_ms * 0.001;
-}
-
-export const createMoveInput = (targetGA: string, dir: {x:number, y:number}) => {
-    // create an input
-    const input: IInput = {
-        tryActivateGA: targetGA,
-        move: {
-            dx: dir.x,
-            dy: dir.y,
-        },
-        key_release: {
-            l: false,
-            j: false,
-        },
-        dt_ms: 100,
-        id: sequence_number++
-    }
-
-    return input;
-}
-
-// core input function
-// export const applyInput = (eid: number, input: IInput) => {
-
-//     // apply input depending on state
-//     switch(input.tryActivateGA) {
-//         case "GA_Movement": {
-//             Transform.x[eid] += 400 * input.move.dx * input.dt_ms * 0.001;
-//             Transform.y[eid] += 400 * input.move.dy * input.dt_ms * 0.001;
-//             break;
-//         }
-//         case "GA_Dash": {
-//             // Transform.x[eid] += input.move.dx * 500;
-//             // Transform.y[eid] += input.move.dy * 500;
-//             break;
-//         }
-//         case "GA_MeleeAttack": {
-//             // Transform.x[eid] += input.move.dx * 100;
-//             // Transform.y[eid] += input.move.dy * 100;
-//             break;
-//         }
-//         case "GA_RangedAttack": {
-//             // tryActivateGA_RangedAttack(eid, input.move.dx, input.move.dy);
-//             break;
-//         }
-//         default: break;
-//     }
-// }
-
-export const tryActivateGA = (scene: Phaser.Scene, world: IWorld, collisions: Collisions.System, eid: number, targetGA: string, start: {x:number,y:number}, finish: {x:number,y:number}, dir: {x:number,y:number} ) => {
-    switch (targetGA) {
-        case "GA_Dash": {
-            playDashAnim(scene, start, finish);
-            break;
-        }
-        case "GA_MeleeAttack": {
-            // playMeleeAttackAnim(scene, start, dir);
-            tryActivateGA_MeleeAttack(eid, dir.x, dir.y);
-            break;
-        }
-        case "GA_RangedAttack": {
-            tryActivateGA_RangedAttack(eid, dir.x, dir.y);
-            break;
-        }
-        default: break;
-    }
-}
-
-export const playDashAnim = (scene: Phaser.Scene, start: {x:number,y:number}, finish: {x:number,y:number}) => {
-// export const playDashAnim = (scene: Phaser.Scene, dx: number, dy: number, eid: number, duration_ms: number) => {
-    const line = scene.add.line(
-        0,
-        0,
-        start.x,
-        start.y,
-        finish.x,
-        finish.y,
-        0x66ff66
-    )
-        .setOrigin(0,0)
-        .setDepth(-1)
-        .setAlpha(0)
-
-    scene.add.tween({
-        targets: line,
-        alpha: 1,
-        duration: 125,
-        yoyo: true,
-        onComplete: () => {
-            line.destroy();
-        }
-    });
-}
-
-// export const playMeleeAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}) => {
-//     // create circle
-//     const circ = scene.add.circle(
-//         start.x + dir.x*200,
-//         start.y + dir.y*200,
-//         150,
-//         0xffffff
-//     );
-//     circ.setAlpha(0.75);
-    
-//     // tween
-//     scene.add.tween({
-//         targets: circ,
-//         alpha: 0,
-//         duration: 500,
-//         ease: 'Quad.easeIn',
-//         onComplete: () => {
-//             circ.destroy();
-//         }
-//     })
-// }   
-
-// export const playRangedAttackAnim = (scene: Phaser.Scene, start: {x:number,y:number}, dir: {x:number,y:number}) => {
-//     // create circle
-//     const circ = scene.add.circle(
-//         start.x + dir.x * 85,
-//         start.y + dir.y * 85,
-//         35,
-//         0xffffff
-//     );
-//     circ.setAlpha(0.75);
-    
-//     // tween
-//     scene.add.tween({
-//         targets: circ,
-//         x: start.x + dir.x*1000,
-//         y: start.y + dir.y*1000,
-//         duration: 250,
-//         onComplete: () => {
-//             circ.destroy();
-//         }
-//     });
-// }
-
-// const checkEnemyCollisions = (world: IWorld, collisions: Collisions.System, start: {x:number,y:number}, dir: {x:number,y:number}) => {
-//     const WIDTH = 1000;
-//     const HEIGHT = 70;
-    
-//     const hitCollider = collisions.createBox(
-//         {x:0,y:0},
-//         WIDTH,
-//         HEIGHT, {
-//             isCentered: true
-//         }
-//     )
-
-//     // adjust hit collider pos/angle
-//     hitCollider.setPosition(start.x + dir.x*WIDTH/2, start.y + dir.y*WIDTH/2);
-//     hitCollider.setAngle(Collisions.deg2rad(ArcUtils.Angle.fromVector2(dir)));
-//     collisions.insert(hitCollider); // need this to update bbox for hit collider
-
-//     // check collisions
-//     collisions.checkOne(hitCollider, response => {
-//         const { b } = response;
-//         const goEid = (b as ArcCircleCollider).eid;
-
-//         if (hasComponent(world, Enemy, goEid)) {
-//             setTimeout(() => {
-//                 tintFlash(goEid);
-//             }, 100)
-//         }
-//     })
-// }
