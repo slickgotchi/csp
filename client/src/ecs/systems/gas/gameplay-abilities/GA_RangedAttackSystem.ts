@@ -8,6 +8,7 @@ import { tintFlash } from "../../server-message/routes/EnemyTakeDamageRoute";
 import { Transform } from "../../../componets/Transform";
 import { IInput } from "../../ClientPlayerInputSystem";
 import { GameScene } from "../../../../scenes/GameScene";
+import { isActiveAbilities } from ".";
 
 export const createGA_RangedAttackSystem = (gScene: GameScene) => {
 
@@ -47,15 +48,9 @@ export const createGA_RangedAttackSystem = (gScene: GameScene) => {
 
 export const tryActivateGA_RangedAttack = (eid: number, input: IInput) => {
     // 0. check not already running
-    if (GA_RangedAttack.isRunning[eid]) return;
+    if (isActiveAbilities(eid)) return false;
 
-    // 1. check other ability blockers
-
-    // 2. check ap
-
-    // 3. check cooldown
-
-    // 4. ok we can activate!
+    // 2. ok we can activate!
     GA_RangedAttack.isActivated[eid] = 1;
     GA_RangedAttack.isRunning[eid] = 1;
     GA_RangedAttack.dx[eid] = input.dir.x;

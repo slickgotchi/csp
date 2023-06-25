@@ -10,6 +10,7 @@ import { ASC_Enemy } from "../../../components/gas/ability-system-components/ASC
 import { ASC_Player } from "../../../components/gas/ability-system-components/ASC_Player";
 import { sPlayer } from "../../../../types/sPlayer";
 import { IInput } from "../../../../types/Input";
+import { isActiveAbilities } from ".";
 
 let counter = 0;
 
@@ -63,9 +64,8 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
                     rollbackColliders(world, targetTime_ms);
                     
                     // adjust hit collider pos/angle
-                    hitCollider.setPosition(start.x + dir.x*WIDTH/2, start.y + dir.y*WIDTH/2);
                     hitCollider.setAngle(Collisions.deg2rad(ArcUtils.Angle.fromVector2(dir)));
-                    collisions.insert(hitCollider); // need this to update bbox for hit collider
+                    hitCollider.setPosition(start.x + dir.x*WIDTH/2, start.y + dir.y*WIDTH/2);  // call this last to ensure bounding box is updated
 
                     // store any hit enemies/players
                     const hitEnemies: any[] = [];
@@ -109,11 +109,16 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
 
 export const tryActivateGA_RangedAttack = (eid: number, input: IInput) => {
     // 1. check blockers
-    
+    if (isActiveAbilities(eid)) return false;
+
+    // 2. activate
     GA_RangedAttack.isActivated[eid] = 1;
     GA_RangedAttack.isRunning[eid] = 1;
     GA_RangedAttack.dx[eid] = input.dir.x;
     GA_RangedAttack.dy[eid] = input.dir.y;
+
+    // 3. success
+    return true;
 }
 
 // smol func to make some random damage

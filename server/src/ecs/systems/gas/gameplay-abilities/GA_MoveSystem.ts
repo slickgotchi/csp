@@ -10,6 +10,8 @@ import { Timer } from "../../../../utilities/Timer";
 import { IInput } from "../../../../types/Input";
 import { GA_Dash } from "../../../components/gas/gameplay-abilities/GA_Dash";
 import { GA_MeleeAttack } from "../../../components/gas/gameplay-abilities/GA_MeleeAttack";
+import { GA_PortalMageAxe } from "../../../components/gas/gameplay-abilities/GA_PortalMageAxe";
+import { isActiveAbilities } from ".";
 
 
 export const createGA_MoveSystem = (room: GameRoom) => {
@@ -53,9 +55,7 @@ export const createGA_MoveSystem = (room: GameRoom) => {
 
 export const tryActivateGA_Move = (eid: number, input: IInput) => {
     // 1. check blockers
-    if (GA_Dash.isRunning[eid]) return false;
-    if (GA_RangedAttack.isRunning[eid]) return false;
-    if (GA_MeleeAttack.isRunning[eid]) return false;
+    if (isActiveAbilities(eid)) return false;
     
     // 2. activate
     GA_Move.isActivated[eid] = 1;

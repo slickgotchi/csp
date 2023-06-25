@@ -23,6 +23,7 @@ import { tryActivateGA_Move } from "../gameplay-abilities/GA_MoveSystem";
 import { tryActivateGA_MeleeAttack } from "../gameplay-abilities/GA_MeleeAttackSystem";
 import { tryActivateGA_RangedAttack } from "../gameplay-abilities/GA_RangedAttackSystem";
 import { tryActivateGA_Null } from "../gameplay-abilities/GA_NullSystem";
+import { tryActivateGA_PortalMageAxe } from "../gameplay-abilities/GA_PortalMageAxeSystem";
 
 export const createASC_PlayerSystem = (room: GameRoom) => {
 
@@ -83,6 +84,7 @@ export const tryActivateGA_Routes = {
     "GA_Dash": tryActivateGA_Dash,
     "GA_MeleeAttack": tryActivateGA_MeleeAttack,
     "GA_RangedAttack": tryActivateGA_RangedAttack,
+    "GA_PortalMageAxe": tryActivateGA_PortalMageAxe
 }
 
 export const recvMsBuffersByClient = new Map<Client,number[]>();

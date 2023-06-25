@@ -9,6 +9,7 @@ import { serverUpdateRoute } from "./ServerUpdateRoute";
 import { Player } from "../../../componets/Player";
 import { Enemy } from "../../../componets/Enemy";
 import { ServerMessage } from "../../../componets/ServerMessage";
+import { playerPortalMageAxeRoute } from "./PlayerPortalMageAxeRoute";
 
 export const serverMessageRoutes = {
     'server-update': serverUpdateRoute,
@@ -17,6 +18,7 @@ export const serverMessageRoutes = {
     'player-dash': playerDashRoute,
     'player-melee-attack': playerMeleeAttackRoute,
     'player-ranged-attack': playerRangedAttackRoute,
+    "player-portal-mage-axe": playerPortalMageAxeRoute,
     'enemy-take-damage': enemyTakeDamageRoute
 }
 

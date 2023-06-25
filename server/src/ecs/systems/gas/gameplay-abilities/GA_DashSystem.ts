@@ -5,6 +5,7 @@ import { GA_Dash } from "../../../components/gas/gameplay-abilities/GA_Dash";
 import { collidersByEid, separateFromStaticColliders } from "../../collisions/ColliderSystem";
 import { Message } from "../../../../types/Messages";
 import { IInput } from "../../../../types/Input";
+import { isActiveAbilities } from ".";
 
 
 export const createGA_DashSystem = (room: GameRoom) => {
@@ -54,6 +55,7 @@ export const createGA_DashSystem = (room: GameRoom) => {
 
 export const tryActivateGA_Dash = (eid: number, input: IInput) => {
     // 1. check blockers
+    if (isActiveAbilities(eid)) return false;
 
     // 2. activate
     GA_Dash.isActivated[eid] = 1;

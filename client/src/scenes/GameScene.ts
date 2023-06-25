@@ -16,6 +16,8 @@ import { createGA_MeleeAttackSystem } from "../ecs/systems/gas/gameplay-abilitie
 import { createGA_MoveSystem } from "../ecs/systems/gas/gameplay-abilities/GA_MoveSystem";
 import { createGA_DashSystem } from "../ecs/systems/gas/gameplay-abilities/GA_DashSystem";
 import { createGA_NullSystem } from "../ecs/systems/gas/gameplay-abilities/GA_NullSystem";
+import { createGA_PortalMageAxeSystem } from "../ecs/systems/gas/gameplay-abilities/GA_PortalMageAxe";
+import { createSectorSystem } from "../ecs/systems/SectorSystem";
 
 export class GameScene extends Phaser.Scene {
     world!: IWorld;
@@ -58,6 +60,7 @@ export class GameScene extends Phaser.Scene {
         this.systems.push(createGA_DashSystem(this));
         this.systems.push(createGA_MeleeAttackSystem(this));
         this.systems.push(createGA_RangedAttackSystem(this));
+        this.systems.push(createGA_PortalMageAxeSystem(this));
 
         // 3. interpolation
         this.systems.push(createInterpolateSystem());
@@ -65,6 +68,7 @@ export class GameScene extends Phaser.Scene {
         // 4. render
         this.systems.push(createCircleSystem(this));
         this.systems.push(createRectangleSystem(this));
+        this.systems.push(createSectorSystem(this));
 
         // 5. utility
         this.systems.push(createPingSystem(this));

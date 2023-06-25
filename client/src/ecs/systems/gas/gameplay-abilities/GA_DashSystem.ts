@@ -7,6 +7,7 @@ import { GA_Dash } from "../../../componets/gas/gameplay-abillities/GA_Dash";
 import { Player } from "../../../componets/Player";
 import { GameScene } from "../../../../scenes/GameScene";
 import { ArcUtils } from "../../../../utilities/ArcUtils";
+import { isActiveAbilities } from ".";
 
 export const createGA_DashSystem = (gScene: GameScene) => {
 
@@ -49,7 +50,7 @@ export const createGA_DashSystem = (gScene: GameScene) => {
 
 export const tryActivateGA_Dash = (eid: number, input: IInput) => {
     // 1. check blockers
-    if (GA_RangedAttack.isRunning[eid]) return false;
+    if (isActiveAbilities(eid)) return false;
     
     // 2. activate
     GA_Dash.isActivated[eid] = 1;

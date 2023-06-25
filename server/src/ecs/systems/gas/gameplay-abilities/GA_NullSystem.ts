@@ -43,9 +43,8 @@ export const createGA_NullSystem = (room: GameRoom) => {
 }
 
 export const tryActivateGA_Null = (eid: number, input: IInput) => {
-    // 1. check blockers
-    
-    
+    // 1. should never be blockers for null
+        
     // 2. activate
     GA_Null.isActivated[eid] = 1;
 

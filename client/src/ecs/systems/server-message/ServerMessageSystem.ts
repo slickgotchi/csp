@@ -65,6 +65,14 @@ export const createServerMessageSystem = (gScene: GameScene) => {
         })
     });
 
+    gScene.room.onMessage(Message.Player.PortalMageAxe, payload => {
+        messages.push({
+            name: 'player-portal-mage-axe',
+            payload: payload,
+            recv_ms: Date.now()
+        })
+    });
+
     gScene.room.onMessage(Message.Enemy.TakeDamage, payload => {
         messages.push({
             name: 'enemy-take-damage',

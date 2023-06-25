@@ -10,6 +10,7 @@ import { GA_RangedAttack } from "../../../componets/gas/gameplay-abillities/GA_R
 import { GameScene } from "../../../../scenes/GameScene";
 import { GA_Dash } from "../../../componets/gas/gameplay-abillities/GA_Dash";
 import { ArcUtils } from "../../../../utilities/ArcUtils";
+import { isActiveAbilities } from ".";
 
 export const createGA_MeleeAttackSystem = (gScene: GameScene) => {
 
@@ -49,9 +50,7 @@ export const createGA_MeleeAttackSystem = (gScene: GameScene) => {
 
 export const tryActivateGA_MeleeAttack = (eid: number, input: IInput) => {
     // 1. check ability blockers
-    if (GA_Dash.isRunning[eid]) return false;
-    if (GA_MeleeAttack.isRunning[eid]) return false;
-    if (GA_RangedAttack.isRunning[eid]) return false;
+    if (isActiveAbilities(eid)) return false;
 
     // 2. ok we can activate!
     GA_MeleeAttack.isActivated[eid] = 1;

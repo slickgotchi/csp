@@ -22,6 +22,7 @@ import { createGA_NullSystem } from '../ecs/systems/gas/gameplay-abilities/GA_Nu
 import { ASC_Player } from '../ecs/components/gas/ability-system-components/ASC_Player';
 import { sPlayer } from '../types/sPlayer';
 import { getEidFromClient, setupPingSystem } from './Ping';
+import { createGA_PortalMageAxeSystem } from '../ecs/systems/gas/gameplay-abilities/GA_PortalMageAxeSystem';
 
 const onPlayers = defineQuery([ASC_Player]);
 
@@ -102,6 +103,7 @@ export default class GameRoom extends Room<GameState> {
         this.systems.push(createGA_DashSystem(this));
         this.systems.push(createGA_MeleeAttackSystem(this, this.collisionSystem));
         this.systems.push(createGA_RangedAttackSystem(this, this.collisionSystem));
+        this.systems.push(createGA_PortalMageAxeSystem(this, this.collisionSystem));
 
         // 1c. AT systems => these run when activated by GA system
         this.systems.push(createAT_MoveSystem());

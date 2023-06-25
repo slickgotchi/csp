@@ -57,6 +57,9 @@ export const ArcUtils = {
             const rot =  Math.atan2(vec.y, vec.x);
             const deg = 180 * rot / Math.PI;
             return (360 + Math.round(deg))%360;
+        },
+        degToRad: (deg: number) => {
+            return deg * 2 * Math.PI / 360;
         }
     },
     Scalar: {
@@ -78,7 +81,7 @@ export const ArcUtils = {
                     circ.destroy();
                 }
             });
-            
+
             return circ;
         }
     }

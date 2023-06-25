@@ -17,6 +17,7 @@ import { GA_Move } from "../componets/gas/gameplay-abillities/GA_Move";
 import { GA_Null } from "../componets/gas/gameplay-abillities/GA_Null";
 import { GA_Dash } from "../componets/gas/gameplay-abillities/GA_Dash";
 import { GA_PortalMageAxe } from "../componets/gas/gameplay-abillities/GA_PortalMageAxe";
+import { Sector } from "../componets/Sector";
 
 
 interface iProps {
@@ -73,6 +74,14 @@ export const createPfPlayer = (props: iProps) => {
     addComponent(props.world, GA_MeleeAttack, eid);
     addComponent(props.world, GA_RangedAttack, eid);
     addComponent(props.world, GA_PortalMageAxe, eid);
+
+    // add sector here for now for diplay
+    addComponent(props.world, Sector, eid);
+    Sector.radius[eid] = 400;
+    Sector.spread[eid] = 60;
+    Sector.angle[eid] = 0;
+    Sector.alpha[eid] = 0.5;
+    Sector.visible[eid] = 0;
 
     // addComponent(props.world, CircleCollider, eid);
     // CircleCollider.radius[eid] = 50;

@@ -16,6 +16,8 @@ import { tryActivateGA_Dash } from "./gas/gameplay-abilities/GA_DashSystem";
 import { tryActivateGA_Null } from "./gas/gameplay-abilities/GA_NullSystem";
 import { saveBuffer } from "./InterpolateSystem";
 import { GameScene } from "../../scenes/GameScene";
+import { tryActivateGA_PortalMageAxe } from "./gas/gameplay-abilities/GA_PortalMageAxe";
+import { Sector } from "../componets/Sector";
 
 export enum PlayerState {
     Idol,
@@ -44,6 +46,7 @@ export interface IInput {
         l: boolean,
         j: boolean,
         k: boolean,
+        u: boolean,
     },
     dt_ms: number,
     id: number,
@@ -76,6 +79,10 @@ export const createClientPlayerInputSystem = (gScene: GameScene) => {
     let k_release = false;
     k_key?.on('up', () => { k_release = true; });
 
+    const u_key = gScene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.U);
+    let u_release = false;
+    u_key?.on('up', () => { u_release = true; });
+
     const timer = new Timer();
     let accum = 0;
     let dir = { x: 0, y: 1 }
@@ -104,12 +111,18 @@ export const createClientPlayerInputSystem = (gScene: GameScene) => {
 
         // update (NOTE: there should only ever be one client input eid)
         onUpdate(world).forEach(eid => {
+            // update sector angle for portal mage axe targeting
+            const angle = ArcUtils.Angle.fromVector2(dir);
+            Sector.angle[eid] = angle - 90;
+            Sector.visible[eid] = u_key?.isDown ? 1 : 0;
+
             // determine target game ability based on key presses
             let targetGA = "GA_Null";
             if (w_key?.isDown || a_key?.isDown || s_key?.isDown || d_key?.isDown) { targetGA = "GA_Move"; }
             if (l_release) { targetGA = "GA_Dash"; }
             if (j_release) { targetGA = "GA_MeleeAttack"; } 
             if (k_release) { targetGA = "GA_RangedAttack"; }  // note there will be a pause in movement if these abilities fail later
+            if (u_release) { targetGA = "GA_PortalMageAxe"; }
 
             // create an input
             const input: IInput = {
@@ -122,6 +135,7 @@ export const createClientPlayerInputSystem = (gScene: GameScene) => {
                     l: l_release,
                     j: j_release,
                     k: k_release,
+                    u: u_release,
                 },
                 dt_ms: timer.dt_ms > EMIT_INTERVAL_MS ? timer.dt_ms : EMIT_INTERVAL_MS,
                 id: sequence_number++
@@ -147,6 +161,7 @@ export const createClientPlayerInputSystem = (gScene: GameScene) => {
             j_release = false;
             k_release = false;
             l_release = false;
+            u_release = false;
         });
 
         return world;
@@ -159,6 +174,7 @@ export const tryActivateGA_Routes = {
     "GA_Dash": tryActivateGA_Dash,
     "GA_MeleeAttack": tryActivateGA_MeleeAttack,
     "GA_RangedAttack": tryActivateGA_RangedAttack,
+    "GA_PortalMageAxe": tryActivateGA_PortalMageAxe
 }
 
 
