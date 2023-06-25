@@ -22,6 +22,8 @@ export class ArcBoxCollider extends Collisions.Box {
     positionBuffer: IPosition[] = [];
 }
 
+const POSITION_BUFFER_SIZE = 30;
+
 export const collidersByEid = new Map<number, ArcCircleCollider | ArcBoxCollider>();
 
 export const createColliderSystem = (room: GameRoom, world: IWorld, system: Collisions.System) => {
@@ -78,7 +80,7 @@ export const createColliderSystem = (room: GameRoom, world: IWorld, system: Coll
                     y: collider.y,
                     serverTime_ms: room.state.serverTime_ms
                 });
-                if (collider.positionBuffer.length > 100) {
+                if (collider.positionBuffer.length > POSITION_BUFFER_SIZE) {
                     collider.positionBuffer.shift();
                 }
             }
@@ -109,14 +111,16 @@ export const rollbackCollider = (eid: number, targetTime_ms: number,) => {
     const collider = collidersByEid.get(eid);
     if (collider) {
         let i = 0;
+        let found = 0;
         while (i < collider.positionBuffer.length) {
             if (collider.positionBuffer[i].serverTime_ms > targetTime_ms) {
+                found = i;
                 break;
             } else {
                 i++;
             }
         }
-        collider.setPosition(collider.positionBuffer[i].x, collider.positionBuffer[i].y);
+        collider.setPosition(collider.positionBuffer[found].x, collider.positionBuffer[found].y);
     }
 }
 
