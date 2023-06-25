@@ -63,5 +63,23 @@ export const ArcUtils = {
         lerp: (a: number, b: number, alpha: number) => {
             return a + alpha * (b - a);
         }
+    },
+    Draw: {
+        makeFadeCircle: (scene: Phaser.Scene, pos: {x:number,y:number}, radius: number, color: number, duration_ms: number = 250) => {
+            const circ = scene.add.circle( pos.x, pos.y, radius, color );
+            circ.setDepth(-1);
+        
+            scene.add.tween({
+                targets: circ,
+                alpha: 0,
+                duration: duration_ms,
+                ease: "Quad.easeOut",
+                onComplete: () => {
+                    circ.destroy();
+                }
+            });
+            
+            return circ;
+        }
     }
 }

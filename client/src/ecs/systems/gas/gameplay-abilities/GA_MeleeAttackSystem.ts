@@ -1,16 +1,17 @@
-import { IWorld, addComponent, defineQuery, defineSystem, hasComponent } from "bitecs";
+import { IWorld, defineQuery, defineSystem, hasComponent } from "bitecs";
 import * as Collisions from 'detect-collisions';
-import { ArcUtils } from "../../../../utilities/ArcUtils";
-import { ArcCircleCollider } from "../../collisions/ColliderSystem";
+import { ArcCircleCollider, collidersByEid, separateFromStaticColliders } from "../../collisions/ColliderSystem";
 import { Enemy } from "../../../componets/Enemy";
 import { tintFlash } from "../../server-message/routes/EnemyTakeDamageRoute";
 import { Transform } from "../../../componets/Transform";
 import { GA_MeleeAttack } from "../../../componets/gas/gameplay-abillities/GA_MeleeAttack";
-import { saveBuffer } from "../../InterpolateSystem";
 import { IInput } from "../../ClientPlayerInputSystem";
-import { Room } from "colyseus.js";
+import { GA_RangedAttack } from "../../../componets/gas/gameplay-abillities/GA_RangedAttack";
+import { GameScene } from "../../../../scenes/GameScene";
+import { GA_Dash } from "../../../componets/gas/gameplay-abillities/GA_Dash";
+import { ArcUtils } from "../../../../utilities/ArcUtils";
 
-export const createGA_MeleeAttackSystem = (scene: Phaser.Scene, room: Room, world: IWorld, collisions: Collisions.System) => {
+export const createGA_MeleeAttackSystem = (gScene: GameScene) => {
 
     const onUpdate = defineQuery([GA_MeleeAttack]);
 
@@ -20,29 +21,25 @@ export const createGA_MeleeAttackSystem = (scene: Phaser.Scene, room: Room, worl
             if (GA_MeleeAttack.isActivated[eid]) {
                 
                 // 1. check collisions and play any enemy hit anims
-                const start = {
-                    x: Transform.x[eid],
-                    y: Transform.y[eid],
-                }
-                const dir = {
-                    x: GA_MeleeAttack.dx[eid],
-                    y: GA_MeleeAttack.dy[eid]
-                }
-                playEnemyCollisionAnims(world, collisions, start, dir);
+                const start = { x: Transform.x[eid], y: Transform.y[eid], }
+                const dir = { x: GA_MeleeAttack.dx[eid]/100, y: GA_MeleeAttack.dy[eid]/100 }
+                playEnemyCollisionAnims(world, gScene.collisions, start, dir);
 
-                // 2. render attack anim
-                playMeleeAttackAnim(scene, world, eid, start, dir);
+                // 2. move
+                Transform.x[eid] += GA_MeleeAttack.dx[eid];
+                Transform.y[eid] += GA_MeleeAttack.dy[eid];
+                separateFromStaticColliders(eid, collidersByEid.get(eid));
+
+                // 3. render attack anim
+                playAnimGA_MeleeAttack(gScene, world, eid, start, dir);
 
                 // 3. activate done
                 GA_MeleeAttack.isActivated[eid] = 0;
 
-                // 0. move object
-                // logMoveInput(room, eid, createMoveInput(dir.x, dir.y, 100));
-
                 // 4. set a timeout on running
                 setTimeout(() => {
                     GA_MeleeAttack.isRunning[eid] = 0;
-                }, 200);
+                }, 250);
             }
         })
 
@@ -51,44 +48,39 @@ export const createGA_MeleeAttackSystem = (scene: Phaser.Scene, room: Room, worl
 }
 
 export const tryActivateGA_MeleeAttack = (eid: number, input: IInput) => {
-    // 0. check not already running
-    // if (GA_MeleeAttack.isRunning[eid]) return;
+    // 1. check ability blockers
+    if (GA_Dash.isRunning[eid]) return false;
+    if (GA_MeleeAttack.isRunning[eid]) return false;
+    if (GA_RangedAttack.isRunning[eid]) return false;
 
-    // 1. check other ability blockers
-
-    // 2. check ap
-
-    // 3. check cooldown
-
-    // 4. ok we can activate!
+    // 2. ok we can activate!
     GA_MeleeAttack.isActivated[eid] = 1;
     GA_MeleeAttack.isRunning[eid] = 1;
-    GA_MeleeAttack.dx[eid] = input.dir.x;
-    GA_MeleeAttack.dy[eid] = input.dir.y;
+    GA_MeleeAttack.dx[eid] = input.dir.x * 100;
+    GA_MeleeAttack.dy[eid] = input.dir.y * 100;
 
+    // 3. success
     return true;
 }
 
-export const playMeleeAttackAnim = (scene: Phaser.Scene, world: IWorld, eid: number, start: {x:number,y:number}, dir: {x:number,y:number}) => {
-    // create circle
-    const circ = scene.add.circle(
-        start.x + dir.x*200,
-        start.y + dir.y*200,
-        150,
-        0xffffff
-    );
-    circ.setAlpha(0.75);
-    
-    // tween
-    scene.add.tween({
-        targets: circ,
-        alpha: 0,
-        duration: 500,
-        ease: 'Quad.easeIn',
-        onComplete: () => {
-            circ.destroy();
-        }
-    })
+export const applyInputGA_MeleeAttack = (eid: number, input: IInput) => {
+    Transform.x[eid] += input.dir.x * 100;
+    Transform.y[eid] += input.dir.y * 100;
+    separateFromStaticColliders(eid, collidersByEid.get(eid));
+}
+
+export const playAnimGA_MeleeAttack = (scene: Phaser.Scene, world: IWorld, eid: number, start: {x:number,y:number}, dir: {x:number,y:number}) => {
+    setTimeout(() => {
+        ArcUtils.Draw.makeFadeCircle(
+            scene,
+            {
+                x: start.x + dir.x*200,
+                y: start.y + dir.y*200
+            },
+            150,
+            0xffffff
+        )
+    }, 100);
 }   
 
 

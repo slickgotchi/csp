@@ -1,16 +1,17 @@
 import { IWorld } from "bitecs";
 import { Room } from "colyseus.js";
+import { GameScene } from "../../scenes/GameScene";
 
 export let ping = 0;
 
-export const createPingSystem = (room: Room, scene: Phaser.Scene) => {
+export const createPingSystem = (gScene: GameScene) => {
 
     const ping_buffer: number[] = [];
     
-    room.onMessage('server-ping', client_time_ms => {
+    gScene.room.onMessage('server-ping', client_time_ms => {
         const now = Date.now();
         ping_buffer.push(now - client_time_ms);
-        room.send('ping-server', now);
+        gScene.room.send('ping-server', now);
 
         if (ping_buffer.length > 10) {
             ping_buffer.shift();
@@ -24,9 +25,9 @@ export const createPingSystem = (room: Room, scene: Phaser.Scene) => {
         }
     });
 
-    room.send('ping-server', Date.now());
+    gScene.room.send('ping-server', Date.now());
 
-    const text = scene.add.text(60, 60, "Ping: ", {fontSize: "36px"});
+    const text = gScene.add.text(60, 60, "Ping: ", {fontSize: "36px"});
 
     return ((world: IWorld) => {
 

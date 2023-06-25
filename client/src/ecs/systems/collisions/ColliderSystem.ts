@@ -1,14 +1,8 @@
-import { IWorld, defineQuery, defineSystem, enterQuery, exitQuery, hasComponent } from "bitecs";
+import { IWorld, defineQuery, defineSystem, enterQuery, exitQuery } from "bitecs";
 import * as Collisions from 'detect-collisions';
 import { Collider, ColliderShape } from "../../componets/collisions/Collider";
 import { Transform } from "../../componets/Transform";
-import { ClientPlayerInput } from "../../componets/ClientPlayerInput";
-
-interface IPosition {
-    x: number;
-    y: number;
-    serverTime_ms: number;
-}
+import { GameScene } from "../../../scenes/GameScene";
 
 export class ArcCircleCollider extends Collisions.Circle {
     eid: number = 0;
@@ -20,7 +14,7 @@ export class ArcBoxCollider extends Collisions.Box {
 
 export const collidersByEid = new Map<number, ArcCircleCollider | ArcBoxCollider>();
 
-export const createColliderSystem = (world: IWorld, system: Collisions.System) => {
+export const createColliderSystem = (gScene: GameScene) => {
     const onUpdate = defineQuery([Collider]);
     const onAdd = enterQuery(onUpdate);
     const onRemove = exitQuery(onUpdate);
@@ -29,7 +23,7 @@ export const createColliderSystem = (world: IWorld, system: Collisions.System) =
         onAdd(world).forEach(eid => {
             switch (Collider.shape[eid]) {
                 case ColliderShape.Circle: {
-                    const circ = system.createCircle(
+                    const circ = gScene.collisions.createCircle(
                         {x: Transform.x[eid], y: Transform.y[eid]},
                         Collider.radius[eid]
                     ) as ArcCircleCollider;
@@ -40,7 +34,7 @@ export const createColliderSystem = (world: IWorld, system: Collisions.System) =
                     break;
                 }
                 case ColliderShape.Box: {
-                    const box = system.createBox(
+                    const box = gScene.collisions.createBox(
                         {x: Transform.x[eid], y: Transform.y[eid]},
                         Collider.width[eid],
                         Collider.height[eid]

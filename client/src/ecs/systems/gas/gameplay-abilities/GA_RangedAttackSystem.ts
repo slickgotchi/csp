@@ -1,4 +1,4 @@
-import { IWorld, addComponent, defineQuery, defineSystem, hasComponent } from "bitecs";
+import { IWorld, defineQuery, defineSystem, hasComponent } from "bitecs";
 import { GA_RangedAttack } from "../../../componets/gas/gameplay-abillities/GA_RangedAttack";
 import * as Collisions from 'detect-collisions';
 import { ArcUtils } from "../../../../utilities/ArcUtils";
@@ -6,10 +6,10 @@ import { ArcCircleCollider } from "../../collisions/ColliderSystem";
 import { Enemy } from "../../../componets/Enemy";
 import { tintFlash } from "../../server-message/routes/EnemyTakeDamageRoute";
 import { Transform } from "../../../componets/Transform";
-import { Room } from "colyseus.js";
 import { IInput } from "../../ClientPlayerInputSystem";
+import { GameScene } from "../../../../scenes/GameScene";
 
-export const createGA_RangedAttackSystem = (scene: Phaser.Scene, room: Room, world: IWorld, collisions: Collisions.System) => {
+export const createGA_RangedAttackSystem = (gScene: GameScene) => {
 
     const onUpdate = defineQuery([GA_RangedAttack]);
 
@@ -26,10 +26,10 @@ export const createGA_RangedAttackSystem = (scene: Phaser.Scene, room: Room, wor
                     x: GA_RangedAttack.dx[eid],
                     y: GA_RangedAttack.dy[eid]
                 }
-                playEnemyCollisionAnims(world, collisions, start, dir);
+                playEnemyCollisionAnims(world, gScene.collisions, start, dir);
 
                 // 2. render attack anim
-                playRangedAttackAnim(scene, world, eid, start, dir);
+                playRangedAttackAnim(gScene, world, eid, start, dir);
 
                 // 3. activate done
                 GA_RangedAttack.isActivated[eid] = 0;
@@ -65,6 +65,9 @@ export const tryActivateGA_RangedAttack = (eid: number, input: IInput) => {
     return true;
 }
 
+export const applyInputGA_RangedAttack = (eid: number, input: IInput) => {
+
+}
 
 export const playRangedAttackAnim = (scene: Phaser.Scene, world: IWorld, eid: number, start: {x:number,y:number}, dir: {x:number,y:number}) => {
     // create circle

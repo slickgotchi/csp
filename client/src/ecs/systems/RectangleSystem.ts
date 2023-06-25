@@ -4,9 +4,10 @@ import { Transform } from "../componets/Transform";
 import { Color } from "../componets/Color";
 import { Interpolate } from "../componets/Interpolate";
 import { Rectangle } from "../componets/Rectangle";
+import { GameScene } from "../../scenes/GameScene";
 
 
-export const createRectangleSystem = (world: IWorld, scene: Phaser.Scene) => {
+export const createRectangleSystem = (gScene: GameScene) => {
 
     const qUpdate = defineQuery([Rectangle]);
     const qEnter = enterQuery(qUpdate);
@@ -18,7 +19,7 @@ export const createRectangleSystem = (world: IWorld, scene: Phaser.Scene) => {
 
         const onAdd = qEnter(world);
         onAdd.forEach(eid => {
-            const rect = scene.add.rectangle(
+            const rect = gScene.add.rectangle(
                 Transform.x[eid], 
                 Transform.y[eid], 
                 Rectangle.width[eid],

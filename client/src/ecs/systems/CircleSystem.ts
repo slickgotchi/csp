@@ -4,9 +4,10 @@ import { Circle } from "../componets/Circle";
 import { Transform } from "../componets/Transform";
 import { Color } from "../componets/Color";
 import { Interpolate } from "../componets/Interpolate";
+import { GameScene } from "../../scenes/GameScene";
 
 
-export const createCircleSystem = (world: IWorld, scene: Phaser.Scene) => {
+export const createCircleSystem = (gScene: GameScene) => {
 
     const qUpdate = defineQuery([Circle]);
     const qEnter = enterQuery(qUpdate);
@@ -18,7 +19,7 @@ export const createCircleSystem = (world: IWorld, scene: Phaser.Scene) => {
 
         const onAdd = qEnter(world);
         onAdd.forEach(eid => {
-            circlesById.set(eid, scene.add.circle(
+            circlesById.set(eid, gScene.add.circle(
                 Transform.x[eid], 
                 Transform.y[eid], 
                 Circle.radius[eid],

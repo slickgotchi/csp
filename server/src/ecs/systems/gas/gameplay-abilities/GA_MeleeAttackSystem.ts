@@ -89,6 +89,10 @@ export const createGA_MeleeAttackSystem = (room: GameRoom, collisions: Collision
 
                 // turn off activate tag
                 GA_MeleeAttack.isActivated[eid] = 0;
+
+                setTimeout(() => {
+                    GA_MeleeAttack.isRunning[eid] = 0;
+                }, 250);
             }
         })
 

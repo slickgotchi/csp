@@ -1,17 +1,16 @@
 import { Room } from "colyseus.js";
 import { IMessage } from "../ServerMessageSystem";
-import { IWorld, defineQuery, hasComponent } from "bitecs";
-import { Player } from "../../../componets/Player";
-import { ServerMessage } from "../../../componets/ServerMessage";
-import { ClientPlayerInput } from "../../../componets/ClientPlayerInput";
-import { IInput, pending_inputs } from "../../ClientPlayerInputSystem";
-import { ping } from "../../PingSystem";
+import { IWorld } from "bitecs";
+import { pending_inputs } from "../../ClientPlayerInputSystem";
 import { getEidFromServerEid } from ".";
 import { sPlayer } from "../../../../../../server/src/types/sPlayer";
-import { GA_RangedAttack } from "../../../componets/gas/gameplay-abillities/GA_RangedAttack";
 import { Transform } from "../../../componets/Transform";
 import { saveBuffer } from "../../InterpolateSystem";
-import { collidersByEid, separateFromStaticColliders } from "../../collisions/ColliderSystem";
+import { applyInputGA_Move } from "../../gas/gameplay-abilities/GA_MoveSystem";
+import { applyInputGA_Null } from "../../gas/gameplay-abilities/GA_NullSystem";
+import { applyInputGA_Dash } from "../../gas/gameplay-abilities/GA_DashSystem";
+import { applyInputGA_MeleeAttack } from "../../gas/gameplay-abilities/GA_MeleeAttackSystem";
+import { applyInputGA_RangedAttack } from "../../gas/gameplay-abilities/GA_RangedAttackSystem";
 
 export const playerMoveRoute = (message: IMessage, room: Room, world: IWorld, scene: Phaser.Scene) => {
     // find the player
@@ -36,7 +35,7 @@ export const playerMoveRoute = (message: IMessage, room: Room, world: IWorld, sc
                 if (input.id <= message.payload.last_processed_input) {
                     pending_inputs.splice(j,1);
                 } else {
-                    // applyInputGA_Move(eid, input);
+                    const applyInput = (applyInputRoutes as any)[input.targetGA];
                     applyInput(eid, input);
                     j++;
                 }
@@ -45,28 +44,10 @@ export const playerMoveRoute = (message: IMessage, room: Room, world: IWorld, sc
     }
 }
 
-export const applyInput = (eid: number, input: IInput) => {
-    switch (input.targetGA) {
-        case "GA_Null": {
-            // do nothing
-            break;
-        }
-        case "GA_Move": {
-            Transform.x[eid] += input.dir.x * 400 * 0.1;
-            Transform.y[eid] += input.dir.y * 400 * 0.1;
-        
-            // separate from static colliders
-            separateFromStaticColliders(eid, collidersByEid.get(eid));
-            break;
-        }
-        case "GA_Dash": {
-            Transform.x[eid] += input.dir.x * 500;
-            Transform.y[eid] += input.dir.y * 500;
-        
-            // separate from static colliders
-            separateFromStaticColliders(eid, collidersByEid.get(eid));
-            break;
-        }
-        default: break;
-    }
+const applyInputRoutes = {
+    "GA_Null": applyInputGA_Null,
+    "GA_Move": applyInputGA_Move,
+    "GA_Dash": applyInputGA_Dash,
+    "GA_MeleeAttack": applyInputGA_MeleeAttack,
+    "GA_RangedAttack": applyInputGA_RangedAttack
 }

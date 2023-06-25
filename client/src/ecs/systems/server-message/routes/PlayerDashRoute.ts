@@ -7,7 +7,7 @@ import { ClientPlayerInput } from "../../../componets/ClientPlayerInput";
 import { ping } from "../../PingSystem";
 import { getEidFromServerEid } from ".";
 import { sPlayer } from "../../../../../../server/src/types/sPlayer";
-import { playDashAnim } from "../../gas/gameplay-abilities/GA_DashSystem";
+import { playAnimGA_Dash } from "../../gas/gameplay-abilities/GA_DashSystem";
 
 
 export const playerDashRoute = (message: IMessage, room: Room, world: IWorld, scene: Phaser.Scene) => {
@@ -19,7 +19,7 @@ export const playerDashRoute = (message: IMessage, room: Room, world: IWorld, sc
         if (!hasComponent(world, ClientPlayerInput, eid)) {
             if (ServerMessage.serverEid[eid] === message.payload.serverEid) {
                 setTimeout(() => {
-                    playDashAnim(
+                    playAnimGA_Dash(
                         scene, 
                         message.payload.start, 
                         message.payload.finish
@@ -29,22 +29,4 @@ export const playerDashRoute = (message: IMessage, room: Room, world: IWorld, sc
             }
         }
     }
-    
-    
-    
-    
-    // onUpdate(world).forEach(eid => {
-    //     if (!hasComponent(world, ClientPlayerInput, eid)) {
-    //         if (ServerMessage.serverEid[eid] === message.payload.serverEid) {
-    //             setTimeout(() => {
-    //                 playDashAnim(
-    //                     scene, 
-    //                     message.payload.start, 
-    //                     message.payload.finish
-    //                 );
-
-    //             },ping/2 + 100 + 100)
-    //         }
-    //     }
-    // })
 }

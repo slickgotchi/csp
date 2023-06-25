@@ -46,28 +46,28 @@ export class GameScene extends Phaser.Scene {
 
         // SYSTEMS
         // 1. process server messages
-        this.systems.push(createServerMessageSystem(this.room, this));
+        this.systems.push(createServerMessageSystem(this));
 
         // 2. process client inputs and game logic
-        this.systems.push(createClientPlayerInputSystem(this, this.room, this.collisions));
-        this.systems.push(createColliderSystem(this.world, this.collisions));
+        this.systems.push(createClientPlayerInputSystem(this));
+        this.systems.push(createColliderSystem(this));
 
         // 2b. gameplay ability systems
-        this.systems.push(createGA_NullSystem(this.room));
-        this.systems.push(createGA_MoveSystem(this.room));
+        this.systems.push(createGA_NullSystem(this));
+        this.systems.push(createGA_MoveSystem(this));
         this.systems.push(createGA_DashSystem(this));
-        this.systems.push(createGA_MeleeAttackSystem(this, this.room, this.world, this.collisions));
-        this.systems.push(createGA_RangedAttackSystem(this, this.room, this.world, this.collisions));
+        this.systems.push(createGA_MeleeAttackSystem(this));
+        this.systems.push(createGA_RangedAttackSystem(this));
 
         // 3. interpolation
         this.systems.push(createInterpolateSystem());
 
         // 4. render
-        this.systems.push(createCircleSystem(this.world, this));
-        this.systems.push(createRectangleSystem(this.world, this));
+        this.systems.push(createCircleSystem(this));
+        this.systems.push(createRectangleSystem(this));
 
         // 5. utility
-        this.systems.push(createPingSystem(this.room, this));
+        this.systems.push(createPingSystem(this));
     }
 
     update() {

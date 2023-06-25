@@ -5,7 +5,7 @@ import { Player } from "../../../componets/Player";
 import { ServerMessage } from "../../../componets/ServerMessage";
 import { ClientPlayerInput } from "../../../componets/ClientPlayerInput";
 import { ping } from "../../PingSystem";
-import { playMeleeAttackAnim } from "../../gas/gameplay-abilities/GA_MeleeAttackSystem";
+import { playAnimGA_MeleeAttack } from "../../gas/gameplay-abilities/GA_MeleeAttackSystem";
 
 const onUpdate = defineQuery([Player]);
 
@@ -14,7 +14,7 @@ export const playerMeleeAttackRoute = (message: IMessage, room: Room, world: IWo
         if (!hasComponent(world, ClientPlayerInput, eid)) {
             if (ServerMessage.serverEid[eid] === message.payload.serverEid) {
                 setTimeout(() => {
-                    playMeleeAttackAnim(
+                    playAnimGA_MeleeAttack(
                         scene, 
                         world,
                         eid,

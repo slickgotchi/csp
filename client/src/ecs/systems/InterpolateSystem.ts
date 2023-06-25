@@ -125,6 +125,5 @@ const cspInterpolation = (eid: number, position_buffer: IPosition[] | undefined)
         while (position_buffer.length > 2) {
             position_buffer.shift();
         }
-        console.log(Interpolate.x[eid].toFixed(), interp.toFixed(2));
     }
 }

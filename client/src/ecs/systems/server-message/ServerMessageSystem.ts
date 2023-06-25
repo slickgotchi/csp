@@ -4,6 +4,7 @@ import { sGameObject } from "../../../../../server/src/types/sGameObject";
 import { serverMessageRoutes } from "./routes";
 
 import { Message } from '../../../../../server/src/types/Messages';
+import { GameScene } from "../../../scenes/GameScene";
 
 export interface IMessage {
     name: string;
@@ -13,10 +14,10 @@ export interface IMessage {
 
 export const messages: IMessage[] = [];
 
-export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
+export const createServerMessageSystem = (gScene: GameScene) => {
 
     // SERVER MESSAGE RECEIVED PROCESSING
-    room.onMessage('server-update', () => {
+    gScene.room.onMessage('server-update', () => {
         messages.push({
             name: 'server-update',
             payload: null,
@@ -24,7 +25,7 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
         });
     });
     
-    room.state.gameObjects.onAdd((go: sGameObject, key: string) => {
+    gScene.room.state.gameObjects.onAdd((go: sGameObject, key: string) => {
         messages.push({
             name: 'add-game-object',
             payload: go,
@@ -32,7 +33,7 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
         });
     });
 
-    room.onMessage(Message.Player.Move, payload => {
+    gScene.room.onMessage(Message.Player.Move, payload => {
         messages.push({
             name: 'player-move',
             payload: payload,
@@ -40,7 +41,7 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
         })
     });
 
-    room.onMessage(Message.Player.Dash, payload => {
+    gScene.room.onMessage(Message.Player.Dash, payload => {
         messages.push({
             name: 'player-dash',
             payload: payload,
@@ -48,7 +49,7 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
         })
     });
 
-    room.onMessage(Message.Player.MeleeAttack, payload => {
+    gScene.room.onMessage(Message.Player.MeleeAttack, payload => {
         messages.push({
             name: 'player-melee-attack',
             payload: payload,
@@ -56,7 +57,7 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
         })
     });
 
-    room.onMessage(Message.Player.RangedAttack, payload => {
+    gScene.room.onMessage(Message.Player.RangedAttack, payload => {
         messages.push({
             name: 'player-ranged-attack',
             payload: payload,
@@ -64,7 +65,7 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
         })
     });
 
-    room.onMessage(Message.Enemy.TakeDamage, payload => {
+    gScene.room.onMessage(Message.Enemy.TakeDamage, payload => {
         messages.push({
             name: 'enemy-take-damage',
             payload: payload,
@@ -72,9 +73,9 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
         })
     });
 
-    room.onMessage('positions', positions => {
+    gScene.room.onMessage('positions', positions => {
         positions.forEach((pos: any) => {
-            const circ = scene.add.circle(
+            const circ = gScene.add.circle(
                 pos.x,
                 pos.y,
                 40,
@@ -86,8 +87,8 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
         })
     })
 
-    room.onMessage('hit-box', hitCollider => {
-        const rect = scene.add.rectangle(
+    gScene.room.onMessage('hit-box', hitCollider => {
+        const rect = gScene.add.rectangle(
             hitCollider.x,
             hitCollider.y,
             hitCollider.width,
@@ -102,8 +103,8 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
         }, 2000)
     })
 
-    room.onMessage('bbox', bbox => {
-        const rect = scene.add.rectangle(
+    gScene.room.onMessage('bbox', bbox => {
+        const rect = gScene.add.rectangle(
             bbox.minX,
             bbox.minY,
             bbox.maxX - bbox.minX,
@@ -128,7 +129,7 @@ export const createServerMessageSystem = (room: Room, scene: Phaser.Scene) => {
             if (message.recv_ms <= now) {
                 // grab and run handler for that message
                 const handler = (serverMessageRoutes as any)[message.name];
-                handler(message, room, world, scene);
+                handler(message, gScene.room, world, gScene);
 
                 // remove the message
                 messages.splice(i,1);

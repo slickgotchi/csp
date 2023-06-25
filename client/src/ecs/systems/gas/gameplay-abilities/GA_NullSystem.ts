@@ -1,15 +1,10 @@
 import { IWorld, defineQuery, defineSystem } from "bitecs"
 import { GA_Null } from "../../../componets/gas/gameplay-abillities/GA_Null";
-import { Transform } from "../../../componets/Transform";
-import { collidersByEid, separateFromStaticColliders } from "../../collisions/ColliderSystem";
 import { IInput, pending_inputs } from "../../ClientPlayerInputSystem";
-import { saveBuffer } from "../../InterpolateSystem";
-import { Room } from "colyseus.js";
-import { GA_RangedAttack } from "../../../componets/gas/gameplay-abillities/GA_RangedAttack";
-import { GA_Dash } from "../../../componets/gas/gameplay-abillities/GA_Dash";
+import { GameScene } from "../../../../scenes/GameScene";
 
 
-export const createGA_NullSystem = (room: Room) => {
+export const createGA_NullSystem = (gScene: GameScene) => {
 
     const onUpdate = defineQuery([GA_Null]);
 
@@ -17,9 +12,6 @@ export const createGA_NullSystem = (room: Room) => {
     return defineSystem((world: IWorld) => {
         onUpdate(world).forEach(eid => {
             if (GA_Null.isActivated[eid]) {
-
-                // save to buffer
-                // saveBuffer(room, eid);
 
                 // turn off activate tag
                 GA_Null.isActivated[eid] = 0;
@@ -38,6 +30,10 @@ export const tryActivateGA_Null = (eid: number, input: IInput) => {
 
     // 3. success
     return true;
+}
+
+export const applyInputGA_Null = (eid: number, input: IInput) => {
+    // do nothing
 }
 
 
