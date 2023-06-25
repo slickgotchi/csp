@@ -1,4 +1,4 @@
-import { Game } from './scenes/Game';
+import { GameScene } from './scenes/GameScene';
 import './style.css'
 
 // create game config
@@ -10,7 +10,7 @@ const config = {
       width: 1920,
       height: 1080,
   },
-  scene: [Game],
+  scene: [GameScene],
   pixelArt: true
 }
 

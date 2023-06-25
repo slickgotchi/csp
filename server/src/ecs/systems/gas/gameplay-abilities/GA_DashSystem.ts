@@ -44,7 +44,7 @@ export const createGA_DashSystem = (room: GameRoom) => {
 
                 setTimeout(() => {
                     GA_Dash.isRunning[eid] = 0;
-                }, 1000);
+                }, 500);
             }
         })
 
@@ -53,11 +53,17 @@ export const createGA_DashSystem = (room: GameRoom) => {
 }
 
 export const tryActivateGA_Dash = (eid: number, input: IInput) => {
+    // 1. check blockers
+
+    // 2. activate
     GA_Dash.isActivated[eid] = 1;
     GA_Dash.isRunning[eid] = 1;
     GA_Dash.dx[eid] = input.dir.x;
     GA_Dash.dy[eid] = input.dir.y;
     GA_Dash.distance[eid] = 500;
+
+    // 3. success
+    return true;
 }
 
 

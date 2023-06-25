@@ -60,6 +60,9 @@ export const tryActivateGA_RangedAttack = (eid: number, input: IInput) => {
     GA_RangedAttack.isRunning[eid] = 1;
     GA_RangedAttack.dx[eid] = input.dir.x;
     GA_RangedAttack.dy[eid] = input.dir.y;
+
+    // 3. success
+    return true;
 }
 
 

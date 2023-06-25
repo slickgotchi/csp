@@ -1,19 +1,14 @@
 import { Room } from "colyseus.js";
 import { IMessage } from "../ServerMessageSystem";
-import { IWorld, defineQuery, hasComponent } from "bitecs";
-import { Player } from "../../../componets/Player";
+import { IWorld, hasComponent } from "bitecs";
 import { ServerMessage } from "../../../componets/ServerMessage";
 import { ClientPlayerInput } from "../../../componets/ClientPlayerInput";
 
 import { ping } from "../../PingSystem";
 import { getEidFromServerEid } from ".";
-import { Transform } from "../../../componets/Transform";
-import { saveBuffer } from "../../InterpolateSystem";
-import { pending_inputs } from "../../ClientPlayerInputSystem";
 import { sPlayer } from "../../../../../../server/src/types/sPlayer";
 import { playDashAnim } from "../../gas/gameplay-abilities/GA_DashSystem";
 
-const onUpdate = defineQuery([Player]);
 
 export const playerDashRoute = (message: IMessage, room: Room, world: IWorld, scene: Phaser.Scene) => {
     // find the player

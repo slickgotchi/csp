@@ -10,6 +10,7 @@ import { GA_Dash } from "../../../components/gas/gameplay-abilities/GA_Dash";
 import { GA_Move } from "../../../components/gas/gameplay-abilities/GA_Move";
 import { GA_MeleeAttack } from "../../../components/gas/gameplay-abilities/GA_MeleeAttack";
 import { GA_RangedAttack } from "../../../components/gas/gameplay-abilities/GA_RangedAttack";
+import { GA_Null } from "../../../components/gas/gameplay-abilities/GA_Null";
 
 
 interface IProps {
@@ -56,6 +57,7 @@ export const createPf_ASC_Player = (props: IProps) => {
     addComponent(props.world, Sync, eid);
 
     // gameplay abilities
+    addComponent(props.world, GA_Null, eid);
     addComponent(props.world, GA_Move, eid);
     addComponent(props.world, GA_Dash, eid);
     addComponent(props.world, GA_MeleeAttack, eid);

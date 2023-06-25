@@ -9,14 +9,11 @@ import { Room } from 'colyseus.js';
 import * as Collisions from 'detect-collisions';
 import { Interpolate } from "../componets/Interpolate";
 import { ClientPlayerInput } from "../componets/ClientPlayerInput";
-import { positionBufferByEid, saveBuffer } from "./InterpolateSystem";
-import { ArcCircleCollider, collidersByEid, separateFromStaticColliders } from "./collisions/ColliderSystem";
-import { tintFlash } from "./server-message/routes/EnemyTakeDamageRoute";
-import { Enemy } from "../componets/Enemy";
-import { playRangedAttackAnim, tryActivateGA_RangedAttack } from "./gas/gameplay-abilities/GA_RangedAttackSystem";
+import { tryActivateGA_RangedAttack } from "./gas/gameplay-abilities/GA_RangedAttackSystem";
 import { tryActivateGA_MeleeAttack } from "./gas/gameplay-abilities/GA_MeleeAttackSystem";
 import { tryActivateGA_Move } from "./gas/gameplay-abilities/GA_MoveSystem";
 import { tryActivateGA_Dash } from "./gas/gameplay-abilities/GA_DashSystem";
+import { tryActivateGA_Null } from "./gas/gameplay-abilities/GA_NullSystem";
 
 export enum PlayerState {
     Idol,
@@ -59,8 +56,6 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, c
     const onUpdate = defineQuery([ClientPlayerInput, Player, Transform]);
     const onAdd = enterQuery(onUpdate);
     const onRemove = exitQuery(onUpdate);
-
-    const qPlayer = defineQuery(['player']);
 
     const w_key = scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.W);
     const a_key = scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.A);
@@ -108,11 +103,11 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, c
         // update (NOTE: there should only ever be one client input eid)
         onUpdate(world).forEach(eid => {
             // determine target game ability based on key presses
-            let targetGA = "GA_Idol";
+            let targetGA = "GA_Null";
             if (w_key?.isDown || a_key?.isDown || s_key?.isDown || d_key?.isDown) { targetGA = "GA_Move"; }
             if (l_release) { targetGA = "GA_Dash"; }
             if (j_release) { targetGA = "GA_MeleeAttack"; } 
-            if (k_release) { targetGA = "GA_RangedAttack"; }
+            if (k_release) { targetGA = "GA_RangedAttack"; }  // note there will be a pause in movement if these abilities fail later
 
             // create an input
             const input: IInput = {
@@ -130,12 +125,18 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, c
                 id: sequence_number++
             }
 
+            // try activate gameplay ability
+            const tryActivateGA = (tryActivateGA_Routes as any)[targetGA];
+            if (!tryActivateGA(eid, input)) {
+                input.targetGA = "GA_Null";
+                tryActivateGA_Null(eid, input);
+            }
+
             // update server with latest input
             room.send("client-input", input);
 
-            // try activate gameplay ability
-            const tryActivateGA = (tryActivateGA_Routes as any)[targetGA];
-            tryActivateGA(eid, input);
+            // add to inputs
+            pending_inputs.push(input);
             
             // reset key status'
             j_release = false;
@@ -148,11 +149,12 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, c
 }
 
 export const tryActivateGA_Routes = {
-    "GA_Idol": tryActivateGA_Move,  // move knows how to handle idols
+    "GA_Null": tryActivateGA_Null,
     'GA_Move': tryActivateGA_Move,
     "GA_Dash": tryActivateGA_Dash,
     "GA_MeleeAttack": tryActivateGA_MeleeAttack,
     "GA_RangedAttack": tryActivateGA_RangedAttack,
 }
+
 
 

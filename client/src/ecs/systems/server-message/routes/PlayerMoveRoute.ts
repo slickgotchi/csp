@@ -47,7 +47,7 @@ export const playerMoveRoute = (message: IMessage, room: Room, world: IWorld, sc
 
 export const applyInput = (eid: number, input: IInput) => {
     switch (input.targetGA) {
-        case "GA_Idol": {
+        case "GA_Null": {
             // do nothing
             break;
         }

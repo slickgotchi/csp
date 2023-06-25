@@ -14,6 +14,8 @@ import { Collider, ColliderShape } from "../componets/collisions/Collider";
 import { GA_RangedAttack } from "../componets/gas/gameplay-abillities/GA_RangedAttack";
 import { GA_MeleeAttack } from "../componets/gas/gameplay-abillities/GA_MeleeAttack";
 import { GA_Move } from "../componets/gas/gameplay-abillities/GA_Move";
+import { GA_Null } from "../componets/gas/gameplay-abillities/GA_Null";
+import { GA_Dash } from "../componets/gas/gameplay-abillities/GA_Dash";
 
 
 interface iProps {
@@ -64,7 +66,9 @@ export const createPfPlayer = (props: iProps) => {
     Collider.isAutoStaticSeparate[eid] = 1;
 
     // abilities
+    addComponent(props.world, GA_Null, eid);
     addComponent(props.world, GA_Move, eid);
+    addComponent(props.world, GA_Dash, eid);
     addComponent(props.world, GA_MeleeAttack, eid);
     addComponent(props.world, GA_RangedAttack, eid);
 

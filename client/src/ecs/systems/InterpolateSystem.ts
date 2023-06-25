@@ -3,12 +3,7 @@ import { Interpolate } from "../componets/Interpolate";
 import { Transform } from "../componets/Transform";
 import { Timer } from "../../utilities/Timer";
 import { ArcUtils } from "../../utilities/ArcUtils";
-import { Enemy } from "../componets/Enemy";
-import { Player } from "../componets/Player";
 import { ClientPlayerInput } from "../componets/ClientPlayerInput";
-import { IGameState } from "../../../../server/src/types/IGameState";
-// import { position_buffer } from "./ClientPlayerInputSystem";
-// import GameRoom from '../../../../server/src/rooms/Game';
 import { Room } from "colyseus.js";
 import { ping } from "./PingSystem";
 
@@ -130,5 +125,6 @@ const cspInterpolation = (eid: number, position_buffer: IPosition[] | undefined)
         while (position_buffer.length > 2) {
             position_buffer.shift();
         }
+        console.log(Interpolate.x[eid].toFixed(), interp.toFixed(2));
     }
 }

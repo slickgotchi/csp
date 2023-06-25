@@ -18,6 +18,7 @@ import { createGA_DashSystem } from '../ecs/systems/gas/gameplay-abilities/GA_Da
 import { createGA_MoveSystem } from '../ecs/systems/gas/gameplay-abilities/GA_MoveSystem';
 import { createGA_MeleeAttackSystem } from '../ecs/systems/gas/gameplay-abilities/GA_MeleeAttackSystem';
 import { createGA_RangedAttackSystem } from '../ecs/systems/gas/gameplay-abilities/GA_RangedAttackSystem';
+import { createGA_NullSystem } from '../ecs/systems/gas/gameplay-abilities/GA_NullSystem';
 
 
 export default class GameRoom extends Room<GameState> {
@@ -89,6 +90,7 @@ export default class GameRoom extends Room<GameState> {
         // this.systems.push(createPlayerInputMessageSystem(this));
 
         // 1b. GA Systems => these run when activated by ASC system
+        this.systems.push(createGA_NullSystem(this));
         this.systems.push(createGA_MoveSystem(this));
         this.systems.push(createGA_DashSystem(this));
         this.systems.push(createGA_MeleeAttackSystem(this, this.collisionSystem));

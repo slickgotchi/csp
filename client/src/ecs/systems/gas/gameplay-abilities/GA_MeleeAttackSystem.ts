@@ -65,6 +65,8 @@ export const tryActivateGA_MeleeAttack = (eid: number, input: IInput) => {
     GA_MeleeAttack.isRunning[eid] = 1;
     GA_MeleeAttack.dx[eid] = input.dir.x;
     GA_MeleeAttack.dy[eid] = input.dir.y;
+
+    return true;
 }
 
 export const playMeleeAttackAnim = (scene: Phaser.Scene, world: IWorld, eid: number, start: {x:number,y:number}, dir: {x:number,y:number}) => {

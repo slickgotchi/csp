@@ -22,6 +22,7 @@ import { tryActivateGA_Dash } from "../gameplay-abilities/GA_DashSystem";
 import { tryActivateGA_Move } from "../gameplay-abilities/GA_MoveSystem";
 import { tryActivateGA_MeleeAttack } from "../gameplay-abilities/GA_MeleeAttackSystem";
 import { tryActivateGA_RangedAttack } from "../gameplay-abilities/GA_RangedAttackSystem";
+import { tryActivateGA_Null } from "../gameplay-abilities/GA_NullSystem";
 
 export const createASC_PlayerSystem = (room: GameRoom) => {
 
@@ -77,7 +78,7 @@ const applyInput = (eid: number, gameObject: sGameObject, input: IInput) => {
 }
 
 export const tryActivateGA_Routes = {
-    "GA_Idol": tryActivateGA_Move,
+    "GA_Null": tryActivateGA_Null,
     'GA_Move': tryActivateGA_Move,
     "GA_Dash": tryActivateGA_Dash,
     "GA_MeleeAttack": tryActivateGA_MeleeAttack,
