@@ -120,7 +120,7 @@ export const createGA_RangedAttackSystem = (room: GameRoom, collisions: Collisio
                 // set timeout on running tag
                 setTimeout(() => {
                     GA_RangedAttack.isRunning[eid] = 0;
-                }, 1000)
+                }, 250)
             }
         })
 

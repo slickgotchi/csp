@@ -44,7 +44,7 @@ export const createGA_DashSystem = (room: GameRoom) => {
 
                 setTimeout(() => {
                     GA_Dash.isRunning[eid] = 0;
-                }, 500);
+                }, 250);
             }
         })
 

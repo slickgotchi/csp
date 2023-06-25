@@ -37,7 +37,7 @@ export const createGA_RangedAttackSystem = (scene: Phaser.Scene, room: Room, wor
                 // 4. set a timeout on running
                 setTimeout(() => {
                     GA_RangedAttack.isRunning[eid] = 0;
-                }, 1000);
+                }, 250);
             }
         })
 

@@ -14,6 +14,7 @@ import { tryActivateGA_MeleeAttack } from "./gas/gameplay-abilities/GA_MeleeAtta
 import { tryActivateGA_Move } from "./gas/gameplay-abilities/GA_MoveSystem";
 import { tryActivateGA_Dash } from "./gas/gameplay-abilities/GA_DashSystem";
 import { tryActivateGA_Null } from "./gas/gameplay-abilities/GA_NullSystem";
+import { saveBuffer } from "./InterpolateSystem";
 
 export enum PlayerState {
     Idol,
@@ -137,6 +138,9 @@ export const createClientPlayerInputSystem = (scene: Phaser.Scene, room: Room, c
 
             // add to inputs
             pending_inputs.push(input);
+
+            // save buffer
+            saveBuffer(room, eid);
             
             // reset key status'
             j_release = false;

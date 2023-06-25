@@ -26,7 +26,7 @@ export const createGA_MoveSystem = (room: Room) => {
                 separateFromStaticColliders(eid, collidersByEid.get(eid));
 
                 // save to buffer
-                saveBuffer(room, eid);
+                // saveBuffer(room, eid);
 
                 // turn off activate tag
                 GA_Move.isActivated[eid] = 0;

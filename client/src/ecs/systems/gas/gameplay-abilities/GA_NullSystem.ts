@@ -19,7 +19,7 @@ export const createGA_NullSystem = (room: Room) => {
             if (GA_Null.isActivated[eid]) {
 
                 // save to buffer
-                saveBuffer(room, eid);
+                // saveBuffer(room, eid);
 
                 // turn off activate tag
                 GA_Null.isActivated[eid] = 0;
