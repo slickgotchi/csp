@@ -3,6 +3,8 @@ import GameRoom from "../../../rooms/Game";
 import * as Collisions from 'detect-collisions';
 import { Collider, ColliderShape } from "../../components/collisions/Collider";
 import { Transform } from "../../components/Transform";
+import { ASC_Enemy } from "../../components/gas/ability-system-components/ASC_Enemy";
+import { ASC_Player } from "../../components/gas/ability-system-components/ASC_Player";
 
 interface IPosition {
     x: number;
@@ -101,4 +103,53 @@ export const separateFromStaticColliders = (eid: number, body: Collisions.Circle
             Transform.y[eid] = body.y;
         }
     });
+}
+
+export const rollbackCollider = (eid: number, targetTime_ms: number,) => {
+    const collider = collidersByEid.get(eid);
+    if (collider) {
+        let i = 0;
+        while (i < collider.positionBuffer.length) {
+            if (collider.positionBuffer[i].serverTime_ms > targetTime_ms) {
+                break;
+            } else {
+                i++;
+            }
+        }
+        collider.setPosition(collider.positionBuffer[i].x, collider.positionBuffer[i].y);
+    }
+}
+
+export const unRollbackCollider = (eid: number) => {
+    const collider = collidersByEid.get(eid);
+    if (collider) {
+        const last_i = collider.positionBuffer.length - 1;
+        collider.setPosition(
+            collider.positionBuffer[last_i].x, 
+            collider.positionBuffer[last_i].y
+        );
+    }
+}
+
+const onEnemies = defineQuery([ASC_Enemy]);
+const onPlayers = defineQuery([ASC_Player]);
+
+export const rollbackColliders = (world: IWorld, targetTime_ms: number) => {
+    onEnemies(world).forEach(eid => {
+        rollbackCollider(eid, targetTime_ms);
+    });
+
+    onPlayers(world).forEach(eid => {
+        rollbackCollider(eid, targetTime_ms);
+    })
+}
+
+export const unRollbackColliders = (world: IWorld) => {
+    onEnemies(world).forEach(eid => {
+        unRollbackCollider(eid);
+    });
+
+    onPlayers(world).forEach(eid => {
+        unRollbackCollider(eid);
+    })
 }

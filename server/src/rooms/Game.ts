@@ -1,7 +1,7 @@
 import { Client, Room } from 'colyseus';
 import GameState from './GameState';
 import * as Collisions from 'detect-collisions';
-import { IWorld, addComponent, addEntity, createWorld } from 'bitecs';
+import { IWorld, addComponent, addEntity, createWorld, defineQuery } from 'bitecs';
 import { AT_Move } from '../ecs/components/gas/ability-tasks/AT_Move';
 import { System } from 'bitecs';
 import { createSyncSystem } from '../ecs/systems/SyncSystem';
@@ -19,7 +19,14 @@ import { createGA_MoveSystem } from '../ecs/systems/gas/gameplay-abilities/GA_Mo
 import { createGA_MeleeAttackSystem } from '../ecs/systems/gas/gameplay-abilities/GA_MeleeAttackSystem';
 import { createGA_RangedAttackSystem } from '../ecs/systems/gas/gameplay-abilities/GA_RangedAttackSystem';
 import { createGA_NullSystem } from '../ecs/systems/gas/gameplay-abilities/GA_NullSystem';
+import { ASC_Player } from '../ecs/components/gas/ability-system-components/ASC_Player';
+import { sPlayer } from '../types/sPlayer';
+import { getEidFromClient, setupPingSystem } from './Ping';
 
+const onPlayers = defineQuery([ASC_Player]);
+
+// const clientPingByEid_ms = new Map<number, number>();
+export const clientPingBufferByEid_ms = new Map<number, number[]>();
 
 export default class GameRoom extends Room<GameState> {
 
@@ -35,10 +42,9 @@ export default class GameRoom extends Room<GameState> {
         this.collisionSystem = new Collisions.System();
 
         this.world = createWorld();
+        addEntity(this.world); // dummy entity that reserves "0" so we can compare against eid
 
-        this.onMessage('ping-server', (client: Client, client_time_ms: number) => {
-            client.send('server-ping', client_time_ms);
-        })
+        setupPingSystem(this, this.world);
 
         this.maxClients = 2;
     }
@@ -48,7 +54,7 @@ export default class GameRoom extends Room<GameState> {
 
         const delta = this.clients.length === 1 ? 200 : -200;
 
-        createPf_ASC_Player({
+        const eid = createPf_ASC_Player({
             room: this,
             world: this.world,
             system: this.collisionSystem,
@@ -58,6 +64,7 @@ export default class GameRoom extends Room<GameState> {
         })
 
         recvMsBuffersByClient.set(client, []);
+        clientPingBufferByEid_ms.set(eid, []);
 
         if (this.clients.length === this.maxClients) {
             this.lock();
@@ -110,6 +117,10 @@ export default class GameRoom extends Room<GameState> {
 
         // start updating
         this.setSimulationInterval((dt) => this.updateMatch(dt));
+   
+        // start client pings
+        this.state.serverTime_ms = Date.now();
+        this.broadcast('ping-client', this.state.serverTime_ms);
     }
 
     updateMatch(dt_ms: number) {

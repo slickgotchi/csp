@@ -119,6 +119,10 @@ export const createServerMessageSystem = (gScene: GameScene) => {
         }, 2000)
     })
 
+    gScene.room.onMessage('ping-client', server_time_ms => {
+        gScene.room.send('client-ping', server_time_ms);
+    })
+
 
     // SERVER MESSAGE PROCESSING
     return defineSystem((world: IWorld) => {

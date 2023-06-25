@@ -12,12 +12,6 @@ import { GA_MeleeAttack } from "../../../components/gas/gameplay-abilities/GA_Me
 import { GA_RangedAttack } from "../../../components/gas/gameplay-abilities/GA_RangedAttack";
 import { GA_Null } from "../../../components/gas/gameplay-abilities/GA_Null";
 
-
-interface IProps {
-
-}
-
-
 interface IProps {
     room: Room;
     world: IWorld;

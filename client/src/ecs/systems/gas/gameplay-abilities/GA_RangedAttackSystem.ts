@@ -85,6 +85,7 @@ export const playRangedAttackAnim = (scene: Phaser.Scene, world: IWorld, eid: nu
         x: start.x + dir.x*1000,
         y: start.y + dir.y*1000,
         duration: 250,
+        alpha: 0,
         onComplete: () => {
             circ.destroy();
         }
