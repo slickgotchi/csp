@@ -7,7 +7,7 @@ import { GameScene } from "../../scenes/GameScene";
 import { Sector } from "../componets/Sector";
 import { ArcUtils } from "../../utilities/ArcUtils";
 
-const generatePoints = (radius: number, spread: number, detail: number = 10) => {
+export const generateSectorPoints = (radius: number, spread: number, detail: number = 10) => {
     const points = [];
     const r = radius;
     const a = spread;
@@ -40,7 +40,7 @@ export const createSectorSystem = (gScene: GameScene) => {
         onAdd.forEach(eid => {
             const r = Sector.radius[eid];
             const a = ArcUtils.Angle.degToRad(Sector.spread[eid]);
-            const points = generatePoints(r, a);
+            const points = generateSectorPoints(r, a);
 
             const sector = gScene.add.polygon(
                 Transform.x[eid], 

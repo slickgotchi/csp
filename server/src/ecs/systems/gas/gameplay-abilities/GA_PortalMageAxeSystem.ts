@@ -35,8 +35,8 @@ export const createGA_PortalMageAxeSystem = (room: GameRoom, collisions: Collisi
                     x: Transform.x[eid],
                     y: Transform.y[eid]
                 }
-                Transform.x[eid] += GA_PortalMageAxe.dx[eid]*100;
-                Transform.y[eid] += GA_PortalMageAxe.dy[eid]*100;
+                // Transform.x[eid] += GA_PortalMageAxe.dx[eid]*100;
+                // Transform.y[eid] += GA_PortalMageAxe.dy[eid]*100;
 
                 separateFromStaticColliders(eid, collidersByEid.get(eid));
 

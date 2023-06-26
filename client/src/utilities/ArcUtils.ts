@@ -53,10 +53,11 @@ export const ArcUtils = {
         lerp: (radA: number, radB: number, alpha: number) => {
             return radA + ArcUtils.Angle.shortestDistance(radA, radB) * alpha;
         },
-        fromVector2: (vec: iVector2) => {
-            const rot =  Math.atan2(vec.y, vec.x);
-            const deg = 180 * rot / Math.PI;
-            return (360 + Math.round(deg))%360;
+        fromVector2: (vec: iVector2, inDegrees: boolean = true) => {
+            const rad =  Math.atan2(vec.y, vec.x);
+            let deg = 180 * rad / Math.PI;
+            deg = (360 + Math.round(deg))%360;
+            return inDegrees ? deg : rad;
         },
         degToRad: (deg: number) => {
             return deg * 2 * Math.PI / 360;
@@ -83,6 +84,22 @@ export const ArcUtils = {
             });
 
             return circ;
+        },
+        makeFadePolygon: (scene: Phaser.Scene, points: {x:number,y:number}[], color: number, duration_ms: number = 250) => {
+            const poly = scene.add.polygon(0, 0, points, color);
+            poly.setOrigin(0,0);
+            
+            scene.add.tween({
+                targets: poly,
+                alpha: 0,
+                duration: duration_ms,
+                ease: "Quad.easeOut",
+                onComplete: () => {
+                    poly.destroy();
+                }
+            });
+
+            return poly;
         }
     }
 }

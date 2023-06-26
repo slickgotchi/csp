@@ -11,6 +11,24 @@ import { GameScene } from "../../../../scenes/GameScene";
 import { GA_Dash } from "../../../componets/gas/gameplay-abillities/GA_Dash";
 import { ArcUtils } from "../../../../utilities/ArcUtils";
 import { isActiveAbilities } from ".";
+import { generateSectorPoints } from "../../SectorSystem";
+
+const createSectorColliderPoints = (start: {x:number,y:number}, dir: {x:number,y:number}, spread: number = 60, radius: number = 500) => {
+    const pointsArray = generateSectorPoints(radius, ArcUtils.Angle.degToRad(spread), 4);
+    const points: any[] = [];
+    const theta = ArcUtils.Angle.fromVector2(dir, false) - Math.PI/2;
+    pointsArray.forEach(pnt => {
+        const x0 = pnt[0];
+        const y0 = pnt[1];
+        const x1 = x0*Math.cos(theta) - y0*Math.sin(theta);
+        const y1 = y0*Math.cos(theta) + x0*Math.sin(theta);
+        points.push({
+            x: x1 + start.x,
+            y: y1 + start.y
+        });
+    });
+    return points;
+}
 
 export const createGA_PortalMageAxeSystem = (gScene: GameScene) => {
 
@@ -21,14 +39,20 @@ export const createGA_PortalMageAxeSystem = (gScene: GameScene) => {
         onUpdate(world).forEach(eid => {
             if (GA_PortalMageAxe.isActivated[eid]) {
                 
-                // 1. check collisions and play any enemy hit anims
+                // 1. store start and direction
                 const start = { x: Transform.x[eid], y: Transform.y[eid], }
-                const dir = { x: GA_PortalMageAxe.dx[eid]/100, y: GA_PortalMageAxe.dy[eid]/100 }
+                const dir = { x: GA_PortalMageAxe.dir.x[eid], y: GA_PortalMageAxe.dir.y[eid] }
+
+                // 2. build hitCollider with spread 60deg and radius 500
+                const points = createSectorColliderPoints(start, dir);
+                ArcUtils.Draw.makeFadePolygon(gScene, points, 0xffffff, 1000);
+
+
                 playEnemyCollisionAnims(world, gScene.collisions, start, dir);
 
                 // 2. move
-                Transform.x[eid] += GA_PortalMageAxe.dx[eid];
-                Transform.y[eid] += GA_PortalMageAxe.dy[eid];
+                // Transform.x[eid] += GA_PortalMageAxe.dir.x[eid];
+                // Transform.y[eid] += GA_PortalMageAxe.dir.y[eid];
                 separateFromStaticColliders(eid, collidersByEid.get(eid));
 
                 // 3. render attack anim
@@ -55,45 +79,33 @@ export const tryActivateGA_PortalMageAxe = (eid: number, input: IInput) => {
     // 2. ok we can activate!
     GA_PortalMageAxe.isActivated[eid] = 1;
     GA_PortalMageAxe.isRunning[eid] = 1;
-    GA_PortalMageAxe.dx[eid] = input.dir.x * 100;
-    GA_PortalMageAxe.dy[eid] = input.dir.y * 100;
+    GA_PortalMageAxe.dir.x[eid] = input.dir.x;
+    GA_PortalMageAxe.dir.y[eid] = input.dir.y;
 
     // 3. success
     return true;
 }
 
 export const applyInputGA_PortalMageAxe = (eid: number, input: IInput) => {
-    Transform.x[eid] += input.dir.x * 100;
-    Transform.y[eid] += input.dir.y * 100;
+    // Transform.x[eid] += input.dir.x * 100;
+    // Transform.y[eid] += input.dir.y * 100;
     separateFromStaticColliders(eid, collidersByEid.get(eid));
 }
 
 export const playAnimGA_PortalMageAxe = (scene: Phaser.Scene, world: IWorld, eid: number, start: {x:number,y:number}, dir: {x:number,y:number}) => {
-    setTimeout(() => {
-        ArcUtils.Draw.makeFadeCircle(
-            scene,
-            {
-                x: start.x + dir.x*200,
-                y: start.y + dir.y*200
-            },
-            150,
-            0xffffff
-        )
-    }, 100);
+    
 }   
 
 
 const playEnemyCollisionAnims = (world: IWorld, collisions: Collisions.System, start: {x:number,y:number}, dir: {x:number,y:number}) => {
     // create a collider
-    const hitCollider = collisions.createCircle(
-        {x:0,y:0},
-        150
-    )
+    const points = createSectorColliderPoints(start, dir);
+    const hitCollider = collisions.createPolygon( {x:0, y:0}, points );
 
     // adjust hit collider pos/angle
-    hitCollider.setPosition(start.x + dir.x*200, start.y + dir.y*200);
+    // hitCollider.setPosition(start.x + dir.x*200, start.y + dir.y*200);
 
-    // check collisions
+    // check collision
     collisions.checkOne(hitCollider, response => {
         const { b } = response;
         const goEid = (b as ArcCircleCollider).eid;
