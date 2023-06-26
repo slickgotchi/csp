@@ -60,7 +60,10 @@ export const ArcUtils = {
             return inDegrees ? deg : rad;
         },
         degToRad: (deg: number) => {
-            return deg * 2 * Math.PI / 360;
+            return deg * Math.PI / 180;
+        },
+        radToDeg: (rad: number) => {
+            return rad * 180 / Math.PI;
         }
     },
     Scalar: {
@@ -100,6 +103,45 @@ export const ArcUtils = {
             });
 
             return poly;
+        }
+    },
+    Shape: {
+        /**
+         * Creates an array of {x,y} points that form a circle sector. Clockwise winding
+         * @param start origin point of sector
+         * @param dir target direction of sector
+         * @param spreadDegrees total spread of sector in degrees
+         * @param radius radius of sector
+         */
+        createSectorPoints: (start: {x:number,y:number}, dir: {x:number,y:number}, spreadDegrees: number, radius: number, detail: number = 10) => {
+            const pointsArr = [];
+            const r = radius;
+            const a = ArcUtils.Angle.degToRad(spreadDegrees);
+            const delta = a / detail;
+        
+            pointsArr.push([0,0]);
+        
+            for (let i = 0; i < detail+1; i++) {
+                pointsArr.push([
+                    r*Math.sin(a/2-i*delta), 
+                    r*Math.cos(a/2-i*delta)
+                ])
+            }
+        
+            const points: any[] = [];
+            const theta = ArcUtils.Angle.fromVector2(dir, false) - Math.PI/2;
+            pointsArr.forEach(pnt => {
+                const x0 = pnt[0];
+                const y0 = pnt[1];
+                const x1 = x0*Math.cos(theta) - y0*Math.sin(theta);
+                const y1 = y0*Math.cos(theta) + x0*Math.sin(theta);
+                points.push({
+                    x: x1 + start.x,
+                    y: y1 + start.y
+                });
+            });
+
+            return points;
         }
     }
 }

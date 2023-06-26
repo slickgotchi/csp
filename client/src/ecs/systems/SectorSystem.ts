@@ -38,9 +38,7 @@ export const createSectorSystem = (gScene: GameScene) => {
 
         const onAdd = qEnter(world);
         onAdd.forEach(eid => {
-            const r = Sector.radius[eid];
-            const a = ArcUtils.Angle.degToRad(Sector.spread[eid]);
-            const points = generateSectorPoints(r, a);
+            const points = ArcUtils.Shape.createSectorPoints({x:0,y:0},{x:0,y:1},Sector.spreadDegrees[eid],Sector.radius[eid]);
 
             const sector = gScene.add.polygon(
                 Transform.x[eid], 

@@ -44,7 +44,8 @@ export const createGA_PortalMageAxeSystem = (gScene: GameScene) => {
                 const dir = { x: GA_PortalMageAxe.dir.x[eid], y: GA_PortalMageAxe.dir.y[eid] }
 
                 // 2. build hitCollider with spread 60deg and radius 500
-                const points = createSectorColliderPoints(start, dir);
+                // const points = createSectorColliderPoints(start, dir);
+                const points = ArcUtils.Shape.createSectorPoints(start, dir, 60, 500, 4);
                 ArcUtils.Draw.makeFadePolygon(gScene, points, 0xffffff, 1000);
 
 

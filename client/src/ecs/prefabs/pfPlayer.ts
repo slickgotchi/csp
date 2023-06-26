@@ -78,7 +78,7 @@ export const createPfPlayer = (props: iProps) => {
     // add sector here for now for diplay
     addComponent(props.world, Sector, eid);
     Sector.radius[eid] = 500;
-    Sector.spread[eid] = 60;
+    Sector.spreadDegrees[eid] = 60;
     Sector.angle[eid] = 0;
     Sector.alpha[eid] = 0.5;
     Sector.visible[eid] = 0;
