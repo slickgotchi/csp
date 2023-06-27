@@ -10,20 +10,22 @@ import { ASC_Enemy } from "../../../components/gas/ability-system-components/ASC
 import { IInput } from "../../../../types/Input";
 import { sPlayer } from "../../../../types/sPlayer";
 import { isActiveAbilities } from ".";
+import { ArcUtils } from "../../../../utilities/ArcUtils";
 
 export const createGA_PortalMageAxeSystem = (room: GameRoom, collisions: Collisions.System) => {
 
     const onUpdate = defineQuery([GA_PortalMageAxe]);
     const onAdd = enterQuery(onUpdate);
 
-    const hitCollidersByEid = new Map<number, Collisions.Circle>();
+    const hitCollidersByEid = new Map<number, Collisions.Polygon>();
 
     // update code
     return defineSystem((world: IWorld) => {
         onAdd(world).forEach(eid => {
-            const hitCollider = collisions.createCircle(
+            const points = ArcUtils.Shape.createSectorPoints({x:0,y:0}, {x:0,y:1}, 60, 500, 4);
+            const hitCollider = collisions.createPolygon(
                 {x: 0, y: 0},
-                150
+                points
             );
             hitCollidersByEid.set(eid, hitCollider);
         })
@@ -35,29 +37,29 @@ export const createGA_PortalMageAxeSystem = (room: GameRoom, collisions: Collisi
                     x: Transform.x[eid],
                     y: Transform.y[eid]
                 }
-                // Transform.x[eid] += GA_PortalMageAxe.dx[eid]*100;
-                // Transform.y[eid] += GA_PortalMageAxe.dy[eid]*100;
 
-                separateFromStaticColliders(eid, collidersByEid.get(eid));
+                // separateFromStaticColliders(eid, collidersByEid.get(eid));
 
                 const dir = {
                     x: GA_PortalMageAxe.dx[eid],
                     y: GA_PortalMageAxe.dy[eid]
                 }
                 
-                // create hit collider and check for collisions
-                const hitCollider = hitCollidersByEid.get(eid);
+                // get hit collider and check for collisions
+                const points = ArcUtils.Shape.createSectorPoints(start, dir, 60, 500, 4);
+                const hitCollider = collisions.createPolygon({x:0,y:0}, points);
                 const playerGo = room.state.gameObjects.get(eid.toString()) as sPlayer;
                 if (hitCollider && playerGo) {
                     // 1. rollback colliders
                     const targetTime_ms = room.state.serverTime_ms - playerGo.meanPing_ms/2 - 300;
                     rollbackColliders(world, targetTime_ms);
 
-                    // 2. set hitCollider position
-                    hitCollider.setPosition(
-                        start.x + dir.x*200,
-                        start.y + dir.y*200
-                    )
+                    // 2. set hitCollider angle and position
+                    // hitCollider.setAngle(ArcUtils.Angle.fromVector2(dir));
+                    // hitCollider.setPosition(
+                    //     ,
+                    //     start.y
+                    // )
 
                     // 3. check collisions
                     const hitEnemies: any[] = [];
@@ -72,11 +74,7 @@ export const createGA_PortalMageAxeSystem = (room: GameRoom, collisions: Collisi
                         serverEid: eid,
                         start: start,
                         dir: dir,
-                        hitCollider: {
-                            x: hitCollider?.x, y: hitCollider?.y,
-                            radius: 200,
-                            angle: hitCollider?.angle
-                        },
+                        hitColliderBbox: hitCollider.bbox,
                         hitEnemies: hitEnemies,
                         hitPlayers: hitPlayers,
                     })
@@ -113,7 +111,7 @@ const calcDamage = () => {
     return ((Math.random()-0.5)*5 + 29).toFixed();
 }
 
-const checkCollisionsGA_PortalMageAxe = (collisions: Collisions.System, hitCollider: Collisions.Circle, world: IWorld, hitEnemies: any[], hitPlayers: any[]) => {
+const checkCollisionsGA_PortalMageAxe = (collisions: Collisions.System, hitCollider: Collisions.Polygon, world: IWorld, hitEnemies: any[], hitPlayers: any[]) => {
     collisions.checkOne(hitCollider, response => {
         const { b } = response;
         const goEid = (b as ArcCircleCollider).serverEid;

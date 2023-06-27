@@ -72,7 +72,7 @@ export const ArcUtils = {
         }
     },
     Draw: {
-        makeFadeCircle: (scene: Phaser.Scene, pos: {x:number,y:number}, radius: number, color: number, duration_ms: number = 250) => {
+        makeFadeCircle: (scene: Phaser.Scene, pos: {x:number,y:number}, radius: number, color: number = 0xffffff, duration_ms: number = 250) => {
             const circ = scene.add.circle( pos.x, pos.y, radius, color );
             circ.setDepth(-1);
         
@@ -88,7 +88,7 @@ export const ArcUtils = {
 
             return circ;
         },
-        makeFadePolygon: (scene: Phaser.Scene, points: {x:number,y:number}[], color: number, duration_ms: number = 250) => {
+        makeFadePolygon: (scene: Phaser.Scene, points: {x:number,y:number}[], color: number = 0xffffff, duration_ms: number = 250) => {
             const poly = scene.add.polygon(0, 0, points, color);
             poly.setOrigin(0,0);
             
@@ -103,6 +103,22 @@ export const ArcUtils = {
             });
 
             return poly;
+        },
+        makeFadeRectangle: (scene: Phaser.Scene, pos: {x:number,y:number}, width: number, height: number, color: number = 0xffffff, duration_ms: number = 250) => {
+            const rect = scene.add.rectangle(pos.x, pos.y, width, height, color);
+            rect.setOrigin(0,0);
+            
+            scene.add.tween({
+                targets: rect,
+                alpha: 0,
+                duration: duration_ms,
+                ease: "Quad.easeOut",
+                onComplete: () => {
+                    rect.destroy();
+                }
+            });
+
+            return rect;
         }
     },
     Shape: {

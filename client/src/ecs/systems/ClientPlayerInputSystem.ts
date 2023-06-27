@@ -168,6 +168,25 @@ export const createClientPlayerInputSystem = (gScene: GameScene) => {
     });
 }
 
+export const createMoveSpecialInput = (dx: number, dy: number) => {
+    const input: IInput = {
+        targetGA: "GA_MoveSpecial",
+        dir: {
+            x: dx,
+            y: dy,
+        },
+        key_release: {
+            l: false,
+            j: false,
+            k: false,
+            u: false,
+        },
+        dt_ms: 0,
+        id: sequence_number++
+    }
+    return input;
+}
+
 export const tryActivateGA_Routes = {
     "GA_Null": tryActivateGA_Null,
     'GA_Move': tryActivateGA_Move,

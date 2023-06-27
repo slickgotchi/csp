@@ -11,6 +11,7 @@ export const Message = {
         MeleeAttack: getId(),
         RangedAttack: getId(),
         PortalMageAxe: getId(),
+        MoveSpecial: getId(),
         TakeDamage: getId()
     },
     Enemy: {

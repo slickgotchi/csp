@@ -8,11 +8,22 @@ import { getEidFromServerEid } from ".";
 import { createDamagePopup, tintFlash } from "./EnemyTakeDamageRoute";
 import { Interpolate } from "../../../componets/Interpolate";
 import { playAnimGA_PortalMageAxe } from "../../gas/gameplay-abilities/GA_PortalMageAxe";
+import { ArcUtils } from "../../../../utilities/ArcUtils";
 
 const onUpdate = defineQuery([Player]);
 
 export const playerPortalMageAxeRoute = (message: IMessage, room: Room, world: IWorld, scene: Phaser.Scene) => {
     onUpdate(world).forEach(eid => {
+
+        // const bbox = message.payload.hitColliderBbox;
+        // // console.log(points);
+        // ArcUtils.Draw.makeFadeRectangle(
+        //     scene,
+        //     {x:bbox.minX, y:bbox.minY},
+        //     bbox.maxX - bbox.minY,
+        //     bbox.maxY - bbox.minY
+        // )
+
         // play attacks for non clients
         if (!hasComponent(world, ClientPlayerInput, eid)) {
             if (ServerMessage.serverEid[eid] === message.payload.serverEid) {

@@ -11,7 +11,7 @@ import { applyInputGA_Null } from "../../gas/gameplay-abilities/GA_NullSystem";
 import { applyInputGA_Dash } from "../../gas/gameplay-abilities/GA_DashSystem";
 import { applyInputGA_MeleeAttack } from "../../gas/gameplay-abilities/GA_MeleeAttackSystem";
 import { applyInputGA_RangedAttack } from "../../gas/gameplay-abilities/GA_RangedAttackSystem";
-import { applyInputGA_PortalMageAxe } from "../../gas/gameplay-abilities/GA_PortalMageAxe";
+import { applyInputGA_PortalMageAxe, applyInputMoveSpecial } from "../../gas/gameplay-abilities/GA_PortalMageAxe";
 
 export const playerMoveRoute = (message: IMessage, room: Room, world: IWorld, scene: Phaser.Scene) => {
     // find the player
@@ -48,6 +48,7 @@ export const playerMoveRoute = (message: IMessage, room: Room, world: IWorld, sc
 const applyInputRoutes = {
     "GA_Null": applyInputGA_Null,
     "GA_Move": applyInputGA_Move,
+    "GA_MoveSpecial": applyInputMoveSpecial,
     "GA_Dash": applyInputGA_Dash,
     "GA_MeleeAttack": applyInputGA_MeleeAttack,
     "GA_RangedAttack": applyInputGA_RangedAttack,

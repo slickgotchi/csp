@@ -24,6 +24,8 @@ import { tryActivateGA_MeleeAttack } from "../gameplay-abilities/GA_MeleeAttackS
 import { tryActivateGA_RangedAttack } from "../gameplay-abilities/GA_RangedAttackSystem";
 import { tryActivateGA_Null } from "../gameplay-abilities/GA_NullSystem";
 import { tryActivateGA_PortalMageAxe } from "../gameplay-abilities/GA_PortalMageAxeSystem";
+import { collidersByEid, separateFromStaticColliders } from "../../collisions/ColliderSystem";
+import { tryActivateGA_MoveSpecial } from "../gameplay-abilities/GA_MoveSpecialSystem";
 
 export const createASC_PlayerSystem = (room: GameRoom) => {
 
@@ -56,7 +58,7 @@ export const createASC_PlayerSystem = (room: GameRoom) => {
                         playerGo.inputMessages.splice(i,1);
         
                         // validate our message
-                        message = validateInputMessage(message);
+                        // message = validateInputMessage(message);
         
                         // apply input
                         applyInput(playerGo.serverEid, playerGo, message.input);
@@ -84,7 +86,8 @@ export const tryActivateGA_Routes = {
     "GA_Dash": tryActivateGA_Dash,
     "GA_MeleeAttack": tryActivateGA_MeleeAttack,
     "GA_RangedAttack": tryActivateGA_RangedAttack,
-    "GA_PortalMageAxe": tryActivateGA_PortalMageAxe
+    "GA_PortalMageAxe": tryActivateGA_PortalMageAxe,
+    "GA_MoveSpecial": tryActivateGA_MoveSpecial
 }
 
 export const recvMsBuffersByClient = new Map<Client,number[]>();
