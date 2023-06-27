@@ -51,7 +51,7 @@ export const createGA_PortalMageAxeSystem = (gScene: GameScene) => {
 
                 // 3. find nearest hit enemy
                 const targetEidA = getNearestHitEid(world, gScene.collisions, start, dir);
-                
+                console.log(targetEidA);
                 // 4. if got a target, move towards it
                 if (targetEidA) {
                     const enemyPos = {
@@ -65,13 +65,15 @@ export const createGA_PortalMageAxeSystem = (gScene: GameScene) => {
                     vec = ArcUtils.Vector2.normalise(vec);
 
                     const newPos = {
-                        x: enemyPos.x - vec.x*(Circle.radius[targetEidA] + Circle.radius[eid]),
-                        y: enemyPos.x - vec.y*(Circle.radius[targetEidA] + Circle.radius[eid]),
+                        x: enemyPos.x,
+                        y: enemyPos.x,
+                        // x: enemyPos.x - vec.x*(Circle.radius[targetEidA] + Circle.radius[eid]),
+                        // y: enemyPos.x - vec.y*(Circle.radius[targetEidA] + Circle.radius[eid]),
                     }
 
-                    moveSpecial(gScene, eid, newPos.x - start.x, newPos.y - start.y);
-                    Transform.x[eid] = newPos.x;
-                    Transform.y[eid] = newPos.y;
+                    moveSpecial(gScene, eid, enemyPos.x - start.x, enemyPos.y - start.y);
+                    Transform.x[eid] = enemyPos.x;
+                    Transform.y[eid] = enemyPos.y;
                 }
 
 
@@ -104,7 +106,7 @@ const moveSpecial = (gScene: GameScene, eid: number, dx: number, dy: number) => 
     const input = createMoveSpecialInput(dx, dy);
 
     // update server with latest input
-    gScene.room.send("client-input", input);
+    // gScene.room.send("client-input", input);
 
     // add to inputs
     pending_inputs.push(input);

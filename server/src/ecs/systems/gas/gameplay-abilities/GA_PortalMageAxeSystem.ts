@@ -12,6 +12,7 @@ import { sPlayer } from "../../../../types/sPlayer";
 import { isActiveAbilities } from ".";
 import { ArcUtils } from "../../../../utilities/ArcUtils";
 
+
 export const createGA_PortalMageAxeSystem = (room: GameRoom, collisions: Collisions.System) => {
 
     const onUpdate = defineQuery([GA_PortalMageAxe]);
@@ -46,25 +47,26 @@ export const createGA_PortalMageAxeSystem = (room: GameRoom, collisions: Collisi
                 }
                 
                 // get hit collider and check for collisions
-                const points = ArcUtils.Shape.createSectorPoints(start, dir, 60, 500, 4);
-                const hitCollider = collisions.createPolygon({x:0,y:0}, points);
+                // const points = ArcUtils.Shape.createSectorPoints(start, dir, 60, 500, 4);
+                // const hitCollider = collisions.createPolygon({x:0,y:0}, points);
                 const playerGo = room.state.gameObjects.get(eid.toString()) as sPlayer;
-                if (hitCollider && playerGo) {
+                if (playerGo) {
                     // 1. rollback colliders
                     const targetTime_ms = room.state.serverTime_ms - playerGo.meanPing_ms/2 - 300;
                     rollbackColliders(world, targetTime_ms);
 
-                    // 2. set hitCollider angle and position
-                    // hitCollider.setAngle(ArcUtils.Angle.fromVector2(dir));
-                    // hitCollider.setPosition(
-                    //     ,
-                    //     start.y
-                    // )
+                    // 2. find nearest eid
+                    const nearestEid = getNearestHitEid(world, collisions, start, dir);
+                    const nearestCollider = collidersByEid.get(nearestEid);
+                    if (nearestEid && nearestCollider) {
+                        Transform.x[eid] = nearestCollider.x;
+                        Transform.y[eid] = nearestCollider.y;
+                    }
 
                     // 3. check collisions
-                    const hitEnemies: any[] = [];
-                    const hitPlayers: any[] = [];
-                    checkCollisionsGA_PortalMageAxe(collisions, hitCollider, world, hitEnemies, hitPlayers);
+                    // const hitEnemies: any[] = [];
+                    // const hitPlayers: any[] = [];
+                    // checkCollisionsGA_PortalMageAxe(collisions, hitCollider, world, hitEnemies, hitPlayers);
 
                     // 4. unroll colliders
                     unRollbackColliders(world);
@@ -74,9 +76,9 @@ export const createGA_PortalMageAxeSystem = (room: GameRoom, collisions: Collisi
                         serverEid: eid,
                         start: start,
                         dir: dir,
-                        hitColliderBbox: hitCollider.bbox,
-                        hitEnemies: hitEnemies,
-                        hitPlayers: hitPlayers,
+                        // hitColliderBbox: hitCollider.bbox,
+                        // hitEnemies: hitEnemies,
+                        // hitPlayers: hitPlayers,
                     })
                 }
 
@@ -131,6 +133,39 @@ const checkCollisionsGA_PortalMageAxe = (collisions: Collisions.System, hitColli
     })
 }
 
+const getNearestHitEid = (world: IWorld, collisions: Collisions.System, start: {x:number,y:number}, dir: {x:number,y:number}) => {
+    // create a collider
+    // const points = createSectorColliderPoints(start, dir);
+    // const hitCollider = collisions.createPolygon( {x:0, y:0}, points );
+
+    const points = ArcUtils.Shape.createSectorPoints(start, dir, 60, 500, 4);
+    const hitCollider = collisions.createPolygon({x:0,y:0}, points);
+
+    // check collision
+    let nearestEid = 0;
+    let closestDist = 1e9;
+    collisions.checkOne(hitCollider, response => {
+        const { b } = response;
+        const goEid = (b as ArcCircleCollider).serverEid;
+
+        // do tint flashes if we got a hit
+        if (hasComponent(world, ASC_Enemy, goEid)) {
+            // get location
+            const enemyPos = {
+                x: Transform.x[goEid],
+                y: Transform.y[goEid],
+            }
+
+            const dist = ArcUtils.Vector2.distance(start, enemyPos);
+            if (dist < closestDist) {
+                nearestEid = goEid;
+                closestDist = dist;
+            }
+        }
+    });
+
+    return nearestEid;
+}
 
 
 
