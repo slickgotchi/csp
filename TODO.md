@@ -1,4 +1,5 @@
 # To Do List
+- decouple predicted movement code for all abilities similar to one i am doing for portal mage axe ability
 - implement portal mage axe attack (3 dash strikes chained between enemies with targeting cone for first strike)
 - implement MK2 grenade attack (projectile that blows up a small circular area with targeting circl)
 - decouple abilities from key presses
