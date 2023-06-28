@@ -1,7 +1,7 @@
 import { IWorld, defineQuery, defineSystem } from "bitecs"
 import { Transform } from "../../../componets/Transform";
 import { collidersByEid, separateFromStaticColliders } from "../../collisions/ColliderSystem";
-import { IInput } from "../../ClientPlayerInputSystem";
+import { IInput, movePlayer } from "../../ClientPlayerInputSystem";
 import { GA_RangedAttack } from "../../../componets/gas/gameplay-abillities/GA_RangedAttack";
 import { GA_Dash } from "../../../componets/gas/gameplay-abillities/GA_Dash";
 import { Player } from "../../../componets/Player";
@@ -21,12 +21,8 @@ export const createGA_DashSystem = (gScene: GameScene) => {
                 // save start for anim
                 const start = { x: Transform.x[eid], y: Transform.y[eid] }
 
-                // 3. apply move input
-                Transform.x[eid] += GA_Dash.dx[eid];
-                Transform.y[eid] += GA_Dash.dy[eid];
-
-                // 4. separate from colliders
-                separateFromStaticColliders(eid, collidersByEid.get(eid));
+                // move player
+                movePlayer(gScene, eid, GA_Dash.dx[eid], GA_Dash.dy[eid]);
 
                 // save finish for anim
                 const finish = { x: Transform.x[eid], y: Transform.y[eid] }
@@ -60,14 +56,6 @@ export const tryActivateGA_Dash = (eid: number, input: IInput) => {
 
     // pending_inputs.push(input);
     return true;
-}
-
-export const applyInputGA_Dash = (eid: number, input: IInput) => {
-    Transform.x[eid] += input.dir.x * 500;
-    Transform.y[eid] += input.dir.y * 500;
-
-    // separate from static colliders
-    separateFromStaticColliders(eid, collidersByEid.get(eid));
 }
 
 // play dash anim

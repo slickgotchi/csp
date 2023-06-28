@@ -27,7 +27,6 @@ const createPfPlayerRoute = (room: Room, world: IWorld, go: sGameObject) => {
     //         y: go.y,
     //     });
     // }
-    console.log('create player');
 
     createPfPlayer({
         room: room,

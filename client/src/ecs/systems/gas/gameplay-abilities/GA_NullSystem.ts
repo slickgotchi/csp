@@ -1,6 +1,6 @@
 import { IWorld, defineQuery, defineSystem } from "bitecs"
 import { GA_Null } from "../../../componets/gas/gameplay-abillities/GA_Null";
-import { IInput, pending_inputs } from "../../ClientPlayerInputSystem";
+import { IInput, movePlayer, pending_inputs } from "../../ClientPlayerInputSystem";
 import { GameScene } from "../../../../scenes/GameScene";
 
 
@@ -12,6 +12,9 @@ export const createGA_NullSystem = (gScene: GameScene) => {
     return defineSystem((world: IWorld) => {
         onUpdate(world).forEach(eid => {
             if (GA_Null.isActivated[eid]) {
+
+                // 1. log a zero movement and don't check collisions
+                movePlayer(gScene, eid, 0, 0, false);
 
                 // turn off activate tag
                 GA_Null.isActivated[eid] = 0;
@@ -31,9 +34,4 @@ export const tryActivateGA_Null = (eid: number, input: IInput) => {
     // 3. success
     return true;
 }
-
-export const applyInputGA_Null = (eid: number, input: IInput) => {
-    // do nothing
-}
-
 

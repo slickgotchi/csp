@@ -1,17 +1,11 @@
 import { Room } from "colyseus.js";
 import { IMessage } from "../ServerMessageSystem";
 import { IWorld } from "bitecs";
-import { pending_inputs } from "../../ClientPlayerInputSystem";
+import { applyMovePlayerInput, pending_inputs } from "../../ClientPlayerInputSystem";
 import { getEidFromServerEid } from ".";
 import { sPlayer } from "../../../../../../server/src/types/sPlayer";
 import { Transform } from "../../../componets/Transform";
 import { saveBuffer } from "../../InterpolateSystem";
-import { applyInputGA_Move } from "../../gas/gameplay-abilities/GA_MoveSystem";
-import { applyInputGA_Null } from "../../gas/gameplay-abilities/GA_NullSystem";
-import { applyInputGA_Dash } from "../../gas/gameplay-abilities/GA_DashSystem";
-import { applyInputGA_MeleeAttack } from "../../gas/gameplay-abilities/GA_MeleeAttackSystem";
-import { applyInputGA_RangedAttack } from "../../gas/gameplay-abilities/GA_RangedAttackSystem";
-import { applyInputGA_PortalMageAxe, applyInputMoveSpecial } from "../../gas/gameplay-abilities/GA_PortalMageAxe";
 
 export const playerMoveRoute = (message: IMessage, room: Room, world: IWorld, scene: Phaser.Scene) => {
     // find the player
@@ -36,21 +30,10 @@ export const playerMoveRoute = (message: IMessage, room: Room, world: IWorld, sc
                 if (input.id <= message.payload.last_processed_input) {
                     pending_inputs.splice(j,1);
                 } else {
-                    const applyInput = (applyInputRoutes as any)[input.targetGA];
-                    applyInput(eid, input);
+                    applyMovePlayerInput(eid, input);
                     j++;
                 }
             }
         }
     }
-}
-
-const applyInputRoutes = {
-    "GA_Null": applyInputGA_Null,
-    "GA_Move": applyInputGA_Move,
-    "GA_MoveSpecial": applyInputMoveSpecial,
-    "GA_Dash": applyInputGA_Dash,
-    "GA_MeleeAttack": applyInputGA_MeleeAttack,
-    "GA_RangedAttack": applyInputGA_RangedAttack,
-    "GA_PortalMageAxe": applyInputGA_PortalMageAxe
 }

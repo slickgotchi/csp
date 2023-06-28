@@ -11,7 +11,7 @@ import { IInput } from "../../../../types/Input";
 import { GA_Dash } from "../../../components/gas/gameplay-abilities/GA_Dash";
 import { GA_MeleeAttack } from "../../../components/gas/gameplay-abilities/GA_MeleeAttack";
 import { GA_PortalMageAxe } from "../../../components/gas/gameplay-abilities/GA_PortalMageAxe";
-import { isActiveAbilities } from ".";
+import { isActiveAbilities, movePlayer } from ".";
 
 
 export const createGA_MoveSystem = (room: GameRoom) => {
@@ -31,10 +31,12 @@ export const createGA_MoveSystem = (room: GameRoom) => {
 
 
                 // 3. activate
-                Transform.x[eid] += GA_Move.dx[eid];
-                Transform.y[eid] += GA_Move.dy[eid];
+                movePlayer(room, eid, GA_Move.dx[eid], GA_Move.dy[eid]);
+                // Transform.x[eid] += GA_Move.dx[eid];
+                // Transform.y[eid] += GA_Move.dy[eid];
+                // (room.state.gameObjects.get(eid.toString()) as sPlayer).last_processed_input++;
 
-                separateFromStaticColliders(eid, collidersByEid.get(eid));
+                // separateFromStaticColliders(eid, collidersByEid.get(eid));
 
                 // 4. broadcast the move to players
                 room.broadcast(Message.Player.Move, {

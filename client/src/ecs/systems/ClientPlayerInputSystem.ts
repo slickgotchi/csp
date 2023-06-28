@@ -18,6 +18,7 @@ import { saveBuffer } from "./InterpolateSystem";
 import { GameScene } from "../../scenes/GameScene";
 import { tryActivateGA_PortalMageAxe } from "./gas/gameplay-abilities/GA_PortalMageAxe";
 import { Sector } from "../componets/Sector";
+import { collidersByEid, separateFromStaticColliders } from "./collisions/ColliderSystem";
 
 export enum PlayerState {
     Idol,
@@ -137,7 +138,8 @@ export const createClientPlayerInputSystem = (gScene: GameScene) => {
                     k: k_release,
                     u: u_release,
                 },
-                dt_ms: timer.dt_ms > EMIT_INTERVAL_MS ? timer.dt_ms : EMIT_INTERVAL_MS,
+                // dt_ms: timer.dt_ms > EMIT_INTERVAL_MS ? timer.dt_ms : EMIT_INTERVAL_MS,
+                dt_ms: EMIT_INTERVAL_MS,
                 id: sequence_number++
             }
 
@@ -150,12 +152,6 @@ export const createClientPlayerInputSystem = (gScene: GameScene) => {
 
             // update server with latest input
             gScene.room.send("client-input", input);
-
-            // add to inputs
-            pending_inputs.push(input);
-
-            // save buffer
-            saveBuffer(gScene.room, eid);
             
             // reset key status'
             j_release = false;
@@ -168,9 +164,31 @@ export const createClientPlayerInputSystem = (gScene: GameScene) => {
     });
 }
 
-export const createMoveSpecialInput = (dx: number, dy: number) => {
+// movePlayer() call this function in abilities
+export const movePlayer = (gScene: GameScene, eid: number, dx: number, dy: number, checkCollisions: boolean = true) => {
+    // 1. update transform
+    Transform.x[eid] += dx;
+    Transform.y[eid] += dy;
+
+    // 1b. update for colliders
+    if (checkCollisions) {
+        separateFromStaticColliders(eid, collidersByEid.get(eid));
+    }
+
+    // 2. create an input
+    const input = createMovePlayerInput(dx, dy);
+
+    // 3. add to inputs
+    pending_inputs.push(input);
+
+    // 4. save buffer
+    saveBuffer(gScene.room, eid);
+}
+
+// called by move player
+export const createMovePlayerInput = (dx: number, dy: number) => {
     const input: IInput = {
-        targetGA: "GA_MoveSpecial",
+        targetGA: "GA_MovePlayer",
         dir: {
             x: dx,
             y: dy,
@@ -185,6 +203,14 @@ export const createMoveSpecialInput = (dx: number, dy: number) => {
         id: sequence_number++
     }
     return input;
+}
+
+// this get called during server reconciliation
+export const applyMovePlayerInput = (eid: number, input: IInput) => {
+    Transform.x[eid] += input.dir.x;
+    Transform.y[eid] += input.dir.y;
+
+    separateFromStaticColliders(eid, collidersByEid.get(eid));
 }
 
 export const tryActivateGA_Routes = {

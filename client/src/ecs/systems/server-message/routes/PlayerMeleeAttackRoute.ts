@@ -9,24 +9,26 @@ import { playAnimGA_MeleeAttack } from "../../gas/gameplay-abilities/GA_MeleeAtt
 import { getEidFromServerEid } from ".";
 import { createDamagePopup, tintFlash } from "./EnemyTakeDamageRoute";
 import { Interpolate } from "../../../componets/Interpolate";
+import { GameScene } from "../../../../scenes/GameScene";
 
 const onUpdate = defineQuery([Player]);
 
-export const playerMeleeAttackRoute = (message: IMessage, room: Room, world: IWorld, scene: Phaser.Scene) => {
+export const playerMeleeAttackRoute = (message: IMessage, room: Room, world: IWorld, gScene: GameScene) => {
     onUpdate(world).forEach(eid => {
         // play attacks for non clients
         if (!hasComponent(world, ClientPlayerInput, eid)) {
             if (ServerMessage.serverEid[eid] === message.payload.serverEid) {
-                setTimeout(() => {
+                // setTimeout(() => {
                     playAnimGA_MeleeAttack(
-                        scene, 
+                        gScene, 
                         world,
                         eid,
                         message.payload.start, 
                         message.payload.dir, 
+                        false
                     );
 
-                },0)
+                // },0)
             }
         } else {
             // go through hit enemies
@@ -35,7 +37,7 @@ export const playerMeleeAttackRoute = (message: IMessage, room: Room, world: IWo
                 if (enemEid) {
                     setTimeout(() => {tintFlash(enemEid);}, 100);
                     setTimeout(() => {
-                        createDamagePopup(scene, he.damage, Interpolate.x[enemEid], Interpolate.y[enemEid]-25)
+                        createDamagePopup(gScene, he.damage, Interpolate.x[enemEid], Interpolate.y[enemEid]-25)
                     }, 0);
                     
                 }

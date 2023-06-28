@@ -25,6 +25,8 @@ export const createGA_NullSystem = (room: GameRoom) => {
             // activae the move
             if (GA_Null.isActivated[eid]) {
 
+                (room.state.gameObjects.get(eid.toString()) as sPlayer).last_processed_input++;
+
                 // 4. broadcast the move to players
                 room.broadcast(Message.Player.Move, {
                     serverEid: eid,

@@ -1,19 +1,15 @@
 import { IWorld, defineQuery, defineSystem, hasComponent } from "bitecs";
 import * as Collisions from 'detect-collisions';
-import { ArcCircleCollider, collidersByEid, separateFromStaticColliders } from "../../collisions/ColliderSystem";
+import { ArcCircleCollider } from "../../collisions/ColliderSystem";
 import { Enemy } from "../../../componets/Enemy";
-import { tintFlash } from "../../server-message/routes/EnemyTakeDamageRoute";
 import { Transform } from "../../../componets/Transform";
 import { GA_PortalMageAxe } from "../../../componets/gas/gameplay-abillities/GA_PortalMageAxe";
-import { IInput, createMoveSpecialInput, pending_inputs, sequence_number } from "../../ClientPlayerInputSystem";
-import { GA_RangedAttack } from "../../../componets/gas/gameplay-abillities/GA_RangedAttack";
+import { IInput, movePlayer } from "../../ClientPlayerInputSystem";
 import { GameScene } from "../../../../scenes/GameScene";
-import { GA_Dash } from "../../../componets/gas/gameplay-abillities/GA_Dash";
 import { ArcUtils } from "../../../../utilities/ArcUtils";
 import { isActiveAbilities } from ".";
 import { generateSectorPoints } from "../../SectorSystem";
-import { Circle } from "../../../componets/Circle";
-import { saveBuffer } from "../../InterpolateSystem";
+import { playAnimGA_MeleeAttack } from "./GA_MeleeAttackSystem";
 
 const createSectorColliderPoints = (start: {x:number,y:number}, dir: {x:number,y:number}, spread: number = 60, radius: number = 500) => {
     const pointsArray = generateSectorPoints(radius, ArcUtils.Angle.degToRad(spread), 4);
@@ -32,6 +28,15 @@ const createSectorColliderPoints = (start: {x:number,y:number}, dir: {x:number,y
     return points;
 }
 
+// GA_PortalMageAxe
+// Description: 
+//  1. sector targeting reticle
+//  2. lunge towards closest player in reticle
+//  3. perform melee attack
+//  4. look for another player with 500 radius
+//  5. melee attack
+//  6. repeat again on 3rd player
+
 export const createGA_PortalMageAxeSystem = (gScene: GameScene) => {
 
     const onUpdate = defineQuery([GA_PortalMageAxe]);
@@ -46,43 +51,34 @@ export const createGA_PortalMageAxeSystem = (gScene: GameScene) => {
                 const dir = { x: GA_PortalMageAxe.dir.x[eid], y: GA_PortalMageAxe.dir.y[eid] }
 
                 // 2. build hitCollider with spread 60deg and radius 500
-                const points = ArcUtils.Shape.createSectorPoints(start, dir, 60, 500, 4);
-                ArcUtils.Draw.makeFadePolygon(gScene, points, 0xffffff, 1000);
+                // const points = ArcUtils.Shape.createSectorPoints(start, dir, 60, 500, 4);
+                // ArcUtils.Draw.makeFadePolygon(gScene, points, 0xffffff, 1000);
 
                 // 3. find nearest hit enemy
                 const targetEidA = getNearestHitEid(world, gScene.collisions, start, dir);
-                console.log(targetEidA);
+
                 // 4. if got a target, move towards it
                 if (targetEidA) {
                     const enemyPos = {
                         x: Transform.x[targetEidA],
                         y: Transform.y[targetEidA]
                     }
-                    let vec = {
+                    let dir = {
                         x: enemyPos.x - start.x,
                         y: enemyPos.y - start.y
                     }
-                    vec = ArcUtils.Vector2.normalise(vec);
+                    dir = ArcUtils.Vector2.normalise(dir);
+
 
                     const newPos = {
-                        x: enemyPos.x,
-                        y: enemyPos.x,
-                        // x: enemyPos.x - vec.x*(Circle.radius[targetEidA] + Circle.radius[eid]),
-                        // y: enemyPos.x - vec.y*(Circle.radius[targetEidA] + Circle.radius[eid]),
+                        x: enemyPos.x - dir.x*90,
+                        y: enemyPos.y - dir.y*90,
                     }
 
-                    moveSpecial(gScene, eid, enemyPos.x - start.x, enemyPos.y - start.y);
-                    Transform.x[eid] = enemyPos.x;
-                    Transform.y[eid] = enemyPos.y;
+                    // move to first position
+                    movePlayer(gScene, eid, newPos.x - start.x, newPos.y - start.y);
+                    playAnimGA_MeleeAttack(gScene, gScene.world, eid, newPos, dir);
                 }
-
-
-                // playEnemyCollisionAnims(world, gScene.collisions, start, dir);
-
-                // 2. move
-                // Transform.x[eid] += GA_PortalMageAxe.dir.x[eid];
-                // Transform.y[eid] += GA_PortalMageAxe.dir.y[eid];
-                separateFromStaticColliders(eid, collidersByEid.get(eid));
 
                 // 3. render attack anim
                 playAnimGA_PortalMageAxe(gScene, world, eid, start, dir);
@@ -101,27 +97,6 @@ export const createGA_PortalMageAxeSystem = (gScene: GameScene) => {
     })
 }
 
-const moveSpecial = (gScene: GameScene, eid: number, dx: number, dy: number) => {
-    // create an input
-    const input = createMoveSpecialInput(dx, dy);
-
-    // update server with latest input
-    // gScene.room.send("client-input", input);
-
-    // add to inputs
-    pending_inputs.push(input);
-
-    // save buffer
-    saveBuffer(gScene.room, eid);
-}
-
-export const applyInputMoveSpecial = (eid: number, input: IInput) => {
-    Transform.x[eid] += input.dir.x;
-    Transform.y[eid] += input.dir.y;
-
-    separateFromStaticColliders(eid, collidersByEid.get(eid));
-}
-
 export const tryActivateGA_PortalMageAxe = (eid: number, input: IInput) => {
     // 1. check ability blockers
     if (isActiveAbilities(eid)) return false;
@@ -134,12 +109,6 @@ export const tryActivateGA_PortalMageAxe = (eid: number, input: IInput) => {
 
     // 3. success
     return true;
-}
-
-export const applyInputGA_PortalMageAxe = (eid: number, input: IInput) => {
-    // Transform.x[eid] += input.dir.x * 100;
-    // Transform.y[eid] += input.dir.y * 100;
-    separateFromStaticColliders(eid, collidersByEid.get(eid));
 }
 
 export const playAnimGA_PortalMageAxe = (scene: Phaser.Scene, world: IWorld, eid: number, start: {x:number,y:number}, dir: {x:number,y:number}) => {
@@ -175,27 +144,4 @@ const getNearestHitEid = (world: IWorld, collisions: Collisions.System, start: {
     });
 
     return nearestEid;
-}
-
-
-const playEnemyCollisionAnims = (world: IWorld, collisions: Collisions.System, start: {x:number,y:number}, dir: {x:number,y:number}) => {
-    // create a collider
-    const points = createSectorColliderPoints(start, dir);
-    const hitCollider = collisions.createPolygon( {x:0, y:0}, points );
-
-    // adjust hit collider pos/angle
-    // hitCollider.setPosition(start.x + dir.x*200, start.y + dir.y*200);
-
-    // check collision
-    collisions.checkOne(hitCollider, response => {
-        const { b } = response;
-        const goEid = (b as ArcCircleCollider).eid;
-
-        // do tint flashes if we got a hit
-        if (hasComponent(world, Enemy, goEid)) {
-            setTimeout(() => {
-                tintFlash(goEid);
-            }, 100)
-        }
-    })
 }

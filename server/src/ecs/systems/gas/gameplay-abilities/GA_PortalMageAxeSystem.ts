@@ -9,7 +9,7 @@ import { ASC_Player } from "../../../components/gas/ability-system-components/AS
 import { ASC_Enemy } from "../../../components/gas/ability-system-components/ASC_Enemy";
 import { IInput } from "../../../../types/Input";
 import { sPlayer } from "../../../../types/sPlayer";
-import { isActiveAbilities } from ".";
+import { isActiveAbilities, movePlayer } from ".";
 import { ArcUtils } from "../../../../utilities/ArcUtils";
 
 
@@ -59,8 +59,23 @@ export const createGA_PortalMageAxeSystem = (room: GameRoom, collisions: Collisi
                     const nearestEid = getNearestHitEid(world, collisions, start, dir);
                     const nearestCollider = collidersByEid.get(nearestEid);
                     if (nearestEid && nearestCollider) {
-                        Transform.x[eid] = nearestCollider.x;
-                        Transform.y[eid] = nearestCollider.y;
+                        const enemyPos = {
+                            x: nearestCollider.x,
+                            y: nearestCollider.y
+                        }
+                        let dir = {
+                            x: enemyPos.x - start.x,
+                            y: enemyPos.y - start.y
+                        }
+                        dir = ArcUtils.Vector2.normalise(dir);
+    
+                        const newPos = {
+                            x: enemyPos.x - dir.x*90,
+                            y: enemyPos.y - dir.y*90,
+                        }
+                        
+                        // move player
+                        movePlayer(room, eid, newPos.x - start.x, newPos.y - start.y);
                     }
 
                     // 3. check collisions
