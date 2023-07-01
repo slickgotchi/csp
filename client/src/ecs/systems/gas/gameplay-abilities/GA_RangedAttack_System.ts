@@ -2,7 +2,7 @@ import { IWorld, defineQuery, defineSystem, hasComponent } from "bitecs";
 import * as Collisions from 'detect-collisions';
 import { ArcUtils } from "../../../../utilities/ArcUtils";
 import { tintFlash } from "../../network/routes/EnemyTakeDamageRoute";
-import { IInput } from "../../input/ClientPlayerInput_System";
+import { IInput } from "../../../../internal";
 import { GameScene } from "../../../../scenes/GameScene";
 import { isActiveAbilities } from ".";
 import { GA_RangedAttack_Component } from "../../../componets/gas/gameplay-abillities/GA_RangedAttack_Component";

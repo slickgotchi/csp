@@ -1,6 +1,6 @@
 import { IWorld, defineQuery, defineSystem, hasComponent } from "bitecs";
 import { tintFlash } from "../../network/routes/EnemyTakeDamageRoute";
-import { IInput, movePlayer } from "../../input/ClientPlayerInput_System";
+import { IInput, movePlayer } from "../../../../internal";
 import { GameScene } from "../../../../scenes/GameScene";
 import { ArcUtils } from "../../../../utilities/ArcUtils";
 import { isActiveAbilities } from ".";

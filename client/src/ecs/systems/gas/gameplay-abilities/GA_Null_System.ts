@@ -1,5 +1,5 @@
 import { IWorld, defineQuery, defineSystem } from "bitecs"
-import { IInput, movePlayer } from "../../input/ClientPlayerInput_System";
+import { IInput, movePlayer } from "../../../../internal";
 import { GameScene } from "../../../../scenes/GameScene";
 import { GA_Null_Component } from "../../../componets/gas/gameplay-abillities/GA_Null_Component";
 

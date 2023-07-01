@@ -6,7 +6,7 @@ import { isActiveAbilities } from ".";
 import { GA_PortalMageAxe_Component } from "../../../componets/gas/gameplay-abillities/GA_PortalMageAxe_Component";
 import { generateSectorPoints } from "../../render/Sector_System";
 import { Transform_Component } from "../../../componets/core/Transform_Component";
-import { IInput, movePlayer } from "../../input/ClientPlayerInput_System";
+import { IInput, movePlayer } from "../../../../internal";
 import { playAnimGA_MeleeAttack } from "./GA_MeleeAttack_System";
 import { ArcCircleCollider } from "../../collisions/Collider_System";
 import { ASC_Enemy_Component } from "../../../componets/gas/ability-system-components/ASC_Enemy_Component";

@@ -1,11 +1,11 @@
 import { IWorld, defineQuery, defineSystem } from "bitecs"
-import { IInput, movePlayer } from "../../input/ClientPlayerInput_System";
-import { GameScene } from "../../../../scenes/GameScene";
 import { ArcUtils } from "../../../../utilities/ArcUtils";
 import { isActiveAbilities } from ".";
 import { ASC_Player_Component } from "../../../componets/gas/ability-system-components/ASC_Player_Component";
 import { GA_Dash_Component } from "../../../componets/gas/gameplay-abillities/GA_Dash_Component";
 import { Transform_Component } from "../../../componets/core/Transform_Component";
+import { IInput, movePlayer } from "../../../../internal";
+import { GameScene } from "../../../../scenes/GameScene";
 
 export const createGA_Dash_System = (gScene: GameScene) => {
 
