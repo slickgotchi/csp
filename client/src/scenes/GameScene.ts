@@ -1,23 +1,23 @@
 import { IWorld, System, addEntity, createWorld } from "bitecs";
 import * as Phaser from "phaser";
-import { createCircleSystem } from "../ecs/systems/CircleSystem";
-import { createClientPlayerInputSystem } from "../ecs/systems/ClientPlayerInputSystem";
 import { Client, Room } from 'colyseus.js';
 import { Schema } from "@colyseus/schema";
 import { IGameState } from '../../../server/src/types/IGameState';
-import { createServerMessageSystem } from "../ecs/systems/server-message/ServerMessageSystem";
-import { createInterpolateSystem } from "../ecs/systems/InterpolateSystem";
-import { createPingSystem } from "../ecs/systems/PingSystem";
 import * as Collisions from 'detect-collisions';
-import { createRectangleSystem } from "../ecs/systems/RectangleSystem";
-import { createColliderSystem } from "../ecs/systems/collisions/ColliderSystem";
-import { createGA_RangedAttackSystem } from "../ecs/systems/gas/gameplay-abilities/GA_RangedAttackSystem";
-import { createGA_MeleeAttackSystem } from "../ecs/systems/gas/gameplay-abilities/GA_MeleeAttackSystem";
-import { createGA_MoveSystem } from "../ecs/systems/gas/gameplay-abilities/GA_MoveSystem";
-import { createGA_DashSystem } from "../ecs/systems/gas/gameplay-abilities/GA_DashSystem";
-import { createGA_NullSystem } from "../ecs/systems/gas/gameplay-abilities/GA_NullSystem";
-import { createGA_PortalMageAxeSystem } from "../ecs/systems/gas/gameplay-abilities/GA_PortalMageAxe";
-import { createSectorSystem } from "../ecs/systems/SectorSystem";
+import { createServerMessage_System } from "../ecs/systems/network/ServerMessage_System";
+import { createClientPlayerInput_System } from "../ecs/systems/input/ClientPlayerInput_System";
+import { createCollider_System } from "../ecs/systems/collisions/Collider_System";
+import { createGA_Null_System } from "../ecs/systems/gas/gameplay-abilities/GA_Null_System";
+import { createGA_Move_System } from "../ecs/systems/gas/gameplay-abilities/GA_Move_System";
+import { createGA_Dash_System } from "../ecs/systems/gas/gameplay-abilities/GA_Dash_System";
+import { createGA_MeleeAttack_System } from "../ecs/systems/gas/gameplay-abilities/GA_MeleeAttack_System";
+import { createGA_RangedAttack_System } from "../ecs/systems/gas/gameplay-abilities/GA_RangedAttack_System";
+import { createGA_PortalMageAxe_System } from "../ecs/systems/gas/gameplay-abilities/GA_PortalMageAxe_System";
+import { createInterpolate_System } from "../ecs/systems/render/Interpolate_System";
+import { createCircle_System } from "../ecs/systems/render/Circle_System";
+import { createRectangle_System } from "../ecs/systems/render/Rectangle_System";
+import { createSector_System } from "../ecs/systems/render/Sector_System";
+import { createPing_System } from "../ecs/systems/network/Ping_System";
 
 export class GameScene extends Phaser.Scene {
     world!: IWorld;
@@ -48,30 +48,30 @@ export class GameScene extends Phaser.Scene {
 
         // SYSTEMS
         // 1. process server messages
-        this.systems.push(createServerMessageSystem(this));
+        this.systems.push(createServerMessage_System(this));
 
         // 2. process client inputs and game logic
-        this.systems.push(createClientPlayerInputSystem(this));
-        this.systems.push(createColliderSystem(this));
+        this.systems.push(createClientPlayerInput_System(this));
+        this.systems.push(createCollider_System(this));
 
         // 2b. gameplay ability systems
-        this.systems.push(createGA_NullSystem(this));
-        this.systems.push(createGA_MoveSystem(this));
-        this.systems.push(createGA_DashSystem(this));
-        this.systems.push(createGA_MeleeAttackSystem(this));
-        this.systems.push(createGA_RangedAttackSystem(this));
-        this.systems.push(createGA_PortalMageAxeSystem(this));
+        this.systems.push(createGA_Null_System(this));
+        this.systems.push(createGA_Move_System(this));
+        this.systems.push(createGA_Dash_System(this));
+        this.systems.push(createGA_MeleeAttack_System(this));
+        this.systems.push(createGA_RangedAttack_System(this));
+        this.systems.push(createGA_PortalMageAxe_System(this));
 
-        // 3. interpolation
-        this.systems.push(createInterpolateSystem());
+        // 3a. interpolation
+        this.systems.push(createInterpolate_System());
 
-        // 4. render
-        this.systems.push(createCircleSystem(this));
-        this.systems.push(createRectangleSystem(this));
-        this.systems.push(createSectorSystem(this));
+        // 3b. render
+        this.systems.push(createCircle_System(this));
+        this.systems.push(createRectangle_System(this));
+        this.systems.push(createSector_System(this));
 
         // 5. utility
-        this.systems.push(createPingSystem(this));
+        this.systems.push(createPing_System(this));
     }
 
     update() {
