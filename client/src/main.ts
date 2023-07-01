@@ -1,4 +1,4 @@
-import { GameScene } from './scenes/GameScene';
+import { GameScene } from './internalExports';
 import './style.css'
 
 // create game config

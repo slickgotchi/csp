@@ -1,9 +1,7 @@
 import { IWorld, defineQuery, defineSystem } from "bitecs"
-import { IInput, movePlayer } from "../../../../internal";
-import { GameScene } from "../../../../scenes/GameScene";
+import { IInput, movePlayer, GameScene } from "../../../../internalExports";
 import { isActiveAbilities } from ".";
 import { GA_Move_Component } from "../../../componets/gas/gameplay-abillities/GA_Move_Component";
-
 
 export const createGA_Move_System = (gScene: GameScene) => {
 

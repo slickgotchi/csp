@@ -1,6 +1,6 @@
 import { IWorld } from "bitecs";
 import { Room } from "colyseus.js";
-import { GameScene } from "../../../scenes/GameScene";
+import { GameScene } from "../../../internalExports";
 
 export let ping = 0;
 

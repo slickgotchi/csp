@@ -3,7 +3,7 @@ import { sGameObject } from "../../../../../server/src/types/sGameObject";
 import { serverMessageRoutes } from "./routes";
 
 import { Message } from '../../../../../server/src/types/Messages';
-import { GameScene } from "../../../scenes/GameScene";
+import { GameScene } from "../../../internalExports";
 
 export interface IMessage {
     name: string;

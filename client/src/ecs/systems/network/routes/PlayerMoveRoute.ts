@@ -1,7 +1,7 @@
 import { Room } from "colyseus.js";
 import { IMessage } from "../ServerMessage_System";
 import { IWorld } from "bitecs";
-import { applyMovePlayerInput, pending_inputs } from "../../input/ClientPlayerInput_System";
+import { applyMovePlayerInput, pending_inputs } from "../../../../internalExports";
 import { getEidFromServerEid } from ".";
 import { sPlayer } from "../../../../../../server/src/types/sPlayer";
 import { Transform_Component } from "../../../componets/core/Transform_Component";

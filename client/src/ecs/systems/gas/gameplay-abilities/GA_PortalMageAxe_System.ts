@@ -1,12 +1,11 @@
 import { IWorld, defineQuery, defineSystem, hasComponent } from "bitecs";
 import * as Collisions from 'detect-collisions';
-import { GameScene } from "../../../../scenes/GameScene";
 import { ArcUtils } from "../../../../utilities/ArcUtils";
 import { isActiveAbilities } from ".";
 import { GA_PortalMageAxe_Component } from "../../../componets/gas/gameplay-abillities/GA_PortalMageAxe_Component";
 import { generateSectorPoints } from "../../render/Sector_System";
 import { Transform_Component } from "../../../componets/core/Transform_Component";
-import { IInput, movePlayer } from "../../../../internal";
+import { IInput, movePlayer, GameScene } from "../../../../internalExports";
 import { playAnimGA_MeleeAttack } from "./GA_MeleeAttack_System";
 import { ArcCircleCollider } from "../../collisions/Collider_System";
 import { ASC_Enemy_Component } from "../../../componets/gas/ability-system-components/ASC_Enemy_Component";

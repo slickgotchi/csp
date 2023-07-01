@@ -3,7 +3,7 @@ import { IMessage } from "../ServerMessage_System";
 import { IWorld, defineQuery, hasComponent } from "bitecs";
 import { getEidFromServerEid } from ".";
 import { createDamagePopup, tintFlash } from "./EnemyTakeDamageRoute";
-import { GameScene } from "../../../../scenes/GameScene";
+import { GameScene } from "../../../../internalExports";
 import { ASC_Player_Component } from "../../../componets/gas/ability-system-components/ASC_Player_Component";
 import { ClientPlayerInput_Component } from "../../../componets/input/ClientPlayerInput_Component";
 import { ServerMessage_Component } from "../../../componets/network/ServerMessage_Component";

@@ -1,6 +1,6 @@
 import { IWorld, defineQuery, defineSystem, enterQuery, exitQuery } from "bitecs";
 import * as Collisions from 'detect-collisions';
-import { GameScene } from "../../../scenes/GameScene";
+import { GameScene } from "../../../internalExports";
 import { ColliderShape, Collider_Component } from "../../componets/collisions/Collider_Component";
 import { Transform_Component } from "../../componets/core/Transform_Component";
 

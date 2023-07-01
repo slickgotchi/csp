@@ -1,6 +1,6 @@
 import { defineQuery, defineSystem, enterQuery, exitQuery, hasComponent } from "bitecs";
 import { IWorld } from "bitecs";
-import { GameScene } from "../../../scenes/GameScene";
+import { GameScene } from "../../../internalExports";
 import { Sector_Component } from "../../componets/render/Sector_Component";
 import { ArcUtils } from "../../../utilities/ArcUtils";
 import { Transform_Component } from "../../componets/core/Transform_Component";

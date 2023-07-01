@@ -1,7 +1,6 @@
 import { IWorld, defineQuery, defineSystem, hasComponent } from "bitecs";
 import { tintFlash } from "../../network/routes/EnemyTakeDamageRoute";
-import { IInput, movePlayer } from "../../../../internal";
-import { GameScene } from "../../../../scenes/GameScene";
+import { IInput, movePlayer, GameScene } from "../../../../internalExports";
 import { ArcUtils } from "../../../../utilities/ArcUtils";
 import { isActiveAbilities } from ".";
 import { GA_MeleeAttack_Component } from "../../../componets/gas/gameplay-abillities/GA_MeleeAttack_Component";

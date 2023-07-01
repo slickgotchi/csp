@@ -1,6 +1,6 @@
 import { defineQuery, defineSystem, enterQuery, exitQuery, hasComponent } from "bitecs";
 import { IWorld } from "bitecs";
-import { GameScene } from "../../../scenes/GameScene";
+import { GameScene } from "../../../internalExports";
 import { Rectangle_Component } from "../../componets/render/Rectangle_Component";
 import { Transform_Component } from "../../componets/core/Transform_Component";
 import { Color_Component } from "../../componets/render/Color_Component";

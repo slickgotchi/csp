@@ -1,15 +1,28 @@
 import { IWorld, defineQuery, defineSystem, enterQuery, exitQuery } from "bitecs";
 import { ClientPlayerInput_Component } from "../../componets/input/ClientPlayerInput_Component";
-import { GameScene } from "../../../scenes/GameScene";
 import { ASC_Player_Component } from "../../componets/gas/ability-system-components/ASC_Player_Component";
 import { Transform_Component } from "../../componets/core/Transform_Component";
 import { Timer } from "../../../utilities/Timer";
 import { ArcUtils } from "../../../utilities/ArcUtils";
 import { Sector_Component } from "../../componets/render/Sector_Component";
-import { tryActivateGA_Null } from "../../../internal";
+// import { 
+//     tryActivateGA_Null, 
+//     tryActivateGA_Dash,
+//     tryActivateGA_MeleeAttack,
+//     tryActivateGA_Move,
+//     tryActivateGA_PortalMageAxe,
+//     tryActivateGA_RangedAttack,
+//     GameScene 
+// } from "../../../internalExports";
 import { collidersByEid, separateFromStaticColliders } from "../collisions/Collider_System";
 import { saveBuffer } from "../render/Interpolate_System";
-import { tryActivateGA_Routes } from "../gas/gameplay-abilities";
+import { tryActivateGA_Null } from "../gas/gameplay-abilities/GA_Null_System";
+import { tryActivateGA_Move } from "../gas/gameplay-abilities/GA_Move_System";
+import { tryActivateGA_Dash } from "../gas/gameplay-abilities/GA_Dash_System";
+import { tryActivateGA_MeleeAttack } from "../gas/gameplay-abilities/GA_MeleeAttack_System";
+import { tryActivateGA_RangedAttack } from "../gas/gameplay-abilities/GA_RangedAttack_System";
+import { tryActivateGA_PortalMageAxe } from "../gas/gameplay-abilities/GA_PortalMageAxe_System";
+import { GameScene } from "../../../internalExports";
 
 export enum PlayerState {
     Idol,
@@ -43,6 +56,16 @@ export interface IInput {
     dt_ms: number,
     id: number,
 }
+
+const tryActivateGA_Routes = {
+    "GA_Null": tryActivateGA_Null,
+    'GA_Move': tryActivateGA_Move,
+    "GA_Dash": tryActivateGA_Dash,
+    "GA_MeleeAttack": tryActivateGA_MeleeAttack,
+    "GA_RangedAttack": tryActivateGA_RangedAttack,
+    "GA_PortalMageAxe": tryActivateGA_PortalMageAxe
+}
+
 
 export const pending_inputs: IInput[] = [];
 export let sequence_number = 0;
